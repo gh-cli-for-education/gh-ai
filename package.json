@@ -1,0 +1,32 @@
+{
+  "name": "gh-ai",
+  "version": "0.0.0",
+  "description": "gh-cli extension that provides help in the creation of other gh extensions using AI and prompt-engineering ",
+  "main": "gh-ai.js",
+  "bin": {
+    "gh-ai": "bin/gh-ai.js"
+  },
+  "directories": {
+    "doc": "doc",
+    "example": "examples",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gh-cli-for-education/gh-ai.git"
+  },
+  "keywords": [
+    "AI",
+    "prompt-engineering",
+    "gh-cli"
+  ],
+  "author": "Raimon Mejías <alu0101390161@ull.edu.es>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gh-cli-for-education/gh-ai/issues"
+  },
+  "homepage": "https://github.com/gh-cli-for-education/gh-ai#readme"
+}
