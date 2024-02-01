@@ -1,7 +1,8 @@
 {
   "name": "gh-ai",
   "version": "0.0.0",
-  "description": "gh-cli extension that provides help in the creation of other gh extensions using AI and prompt-engineering ",
+  "type": "module",
+  "description": "gh-cli extension that provides help in the creation of other gh extensions using AI and prompt-engineering",
   "main": "gh-ai.js",
   "bin": {
     "gh-ai": "bin/gh-ai.js"
@@ -28,5 +29,9 @@
   "bugs": {
     "url": "https://github.com/gh-cli-for-education/gh-ai/issues"
   },
-  "homepage": "https://github.com/gh-cli-for-education/gh-ai#readme"
+  "homepage": "https://github.com/gh-cli-for-education/gh-ai#readme",
+  "dependencies": {
+    "commander": "^11.1.0",
+    "shell.js": "^4.3.4"
+  }
 }
