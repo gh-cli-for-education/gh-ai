@@ -10,7 +10,7 @@
  * @desc @TODO
  */
 import { Command } from "commander";
-import packageJson from '../package.json' assert { type: "json" }; // Esto se puede mejorar
+import packageJson from '../package.json' assert { type: "json" }; /** @Todo Esto se puede mejorar */ 
 
 'use strict';
 
@@ -24,23 +24,24 @@ PROGRAM
   .name(packageJson.name)
   .usage('[options]')
   .description(packageJson.description)
-  .addHelpText('after',`
-Aditional help:
-    If no option is passed the program will execute in 'interactive mode' asking the user different program options one by one
-  `);
+  .addHelpText('after','Aditional help:\n  If no option is passed the program will execute in \'interactive mode\' asking the user different program options one by one');
 
 // Program options 
 PROGRAM
   .allowUnknownOption() // Obvia las opciones incorrectas
-  .version(packageJson.version, '-v | -V | --version', 'Print the current version of the program')
-  .option('-d | --debug', 'output extra information about the execution process') 
+  .version(packageJson.version, '-V | --version', 'Print the current version of the program')
+  .option('-d | --debug', 'output extra information about the execution') 
   .option('-f | --source-file <FILE>', 'TODO')
   .option('-g | --generate-file', 'TODO');
 
 PROGRAM.parse(process.argv);
 
 const executeProgram = () => {
-
+  const DEBUG = PROGRAM.options.debug;
+  console.log(PROGRAM.options);
+  if (PROGRAM.options.sourceFile) {
+    
+  }
 }
 
 executeProgram();

@@ -1,0 +1,20 @@
+{
+  "proposal": {
+    "type": "extension",
+    "name": "Name",
+    "script-language": "JavaScript",
+    "description": "Description",
+    "parameters": [
+      {
+       "name": "-d | --debug",
+       "description": "parameter description"
+      }
+    ],
+    "examples": [
+      {
+        "example-text": "Example01",
+        "expected-output": "expected output"
+      }
+    ]
+  }
+}

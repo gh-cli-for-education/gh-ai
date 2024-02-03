@@ -13,7 +13,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -32,6 +32,11 @@
   "homepage": "https://github.com/gh-cli-for-education/gh-ai#readme",
   "dependencies": {
     "commander": "^11.1.0",
-    "shell.js": "^4.3.4"
+    "shelljs": "^0.8.4"
+  },
+  "devDependencies": {
+    "c8": "^9.1.0",
+    "chai": "^5.0.3",
+    "mocha": "^10.2.0"
   }
 }
