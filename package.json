@@ -32,6 +32,7 @@
   "homepage": "https://github.com/gh-cli-for-education/gh-ai#readme",
   "dependencies": {
     "commander": "^11.1.0",
+    "dotenv": "^16.4.1",
     "shelljs": "^0.8.4"
   },
   "devDependencies": {

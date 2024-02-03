@@ -7,42 +7,60 @@
  *
  * @author Raimon José Mejías Hernández  <alu0101390161@ull.edu.es>
  * @date 01/02/2024
- * @desc @TODO
+ * @desc @TODO hacer la descripción
  */
-import { Command } from "commander";
-import packageJson from '../package.json' assert { type: "json" }; /** @Todo Esto se puede mejorar */ 
-
 'use strict';
 
-const PROGRAM = new Command();
+import { Command } from 'commander'; 
+import { createRequire } from 'module';
+import * as fs from 'fs';
 
-// IDEA: Permitir que el usuario pueda genera el fichero automaticamente desde la línea de comandos, puede ser por opción -g o ejecutar el programa sin parametros. 
-//.option('-l, --llm-type', 'TODO') // IDEA: Permitir diferentes tipo de LLM
+import { isEmptyObject } from '../src/utils.js';
+import { setNewAPIKey } from '../src/command-actions.js';
+
+const require = createRequire(import.meta.url);
+const dotEnv = require('dotenv');
+dotEnv.config();
+const shell = require('shelljs');
+const PACKAGE = {
+  name: require('../package.json').name,
+  version: require('../package.json').version,
+  description: require('../package.json').description
+};
+const PROGRAM = new Command();
 
 // Program data
 PROGRAM
-  .name(packageJson.name)
+  .name(PACKAGE.name)
   .usage('[options]')
-  .description(packageJson.description)
+  .description(PACKAGE.description)
   .addHelpText('after','Aditional help:\n  If no option is passed the program will execute in \'interactive mode\' asking the user different program options one by one');
 
 // Program options 
 PROGRAM
   .allowUnknownOption() // Obvia las opciones incorrectas
-  .version(packageJson.version, '-V | --version', 'Print the current version of the program')
+  .version(PACKAGE.version, '-V | --version', 'Print the current version of the program')
   .option('-d | --debug', 'output extra information about the execution') 
-  .option('-f | --source-file <FILE>', 'TODO')
-  .option('-g | --generate-file', 'TODO');
+  .option('-l | --llm <API>', 'Select the llm <API> to use'/*, 'openAI'*/) // Utilizar las opciones de commander para acotar los posibles argumentos 
+  .option('-k | --api-key <KEY>', 'Input the <KEY> needed to use the llm <API>')
+  .option('-t | --command-type <TYPE>', 'TODO'/*, 'extension'*/) // Utilizar las opciones de commander para acotar los posibles argumentos 
+  .option('-f | --source-file <PATH>', 'TODO')
+  .option('-g | --generate-file <PATH>', 'TODO'); // Añadir una variable PATH para indicar donde generarlo
 
 PROGRAM.parse(process.argv);
 
+
 const executeProgram = () => {
-  const DEBUG = PROGRAM.options.debug;
-  console.log(PROGRAM.options);
-  if (PROGRAM.options.sourceFile) {
-    
+  const OPTIONS = PROGRAM.opts();
+  if (!isEmptyObject(OPTIONS)) {
+    let llm = OPTIONS.llm || 'OPENAI'; // Se podría aprovechar el .env para guardar valores por defecto
+    if (OPTIONS.apiKey) { // Por ahora ejecutar esto solamente 
+      setNewAPIKey(dotEnv, llm, OPTIONS.apiKey, OPTIONS.debug);
+      process.exit(0);
+    }
   }
-}
+  // interactiveMode(OPTIONS); // En caso de que se ejecute sin parametros
+};
 
 executeProgram();
 

@@ -2,6 +2,7 @@ import { should } from 'chai'; // Importando el estilo de testing "expect"
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const shell = require('shelljs');
+const VERSION = require('../package.json').version;
 should();
 
 /**
@@ -42,12 +43,12 @@ describe('Testing command line options with Commander', () => {
     it('Testing -V', () => {
       let result = shell.exec('node ./bin/gh-ai -V', {silent: true});
       result.code.should.equal(0);
-      cleanOutputText(result.stdout).should.equal('0.0.0'); // Cambiar esto por la lectura de la versión.
+      cleanOutputText(result.stdout).should.equal(VERSION);
     });
     it('Testing --version', () => {
       let result = shell.exec('node ./bin/gh-ai --version', {silent: true});
       result.code.should.equal(0);
-      cleanOutputText(result.stdout).should.equal('0.0.0'); // Cambiar esto por la lectura de la versión.
+      cleanOutputText(result.stdout).should.equal(VERSION);
     });
   }); 
 });
