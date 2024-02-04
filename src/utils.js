@@ -8,8 +8,10 @@
  * @author Raimon José Mejías Hernández  <alu0101390161@ull.edu.es>
  * @date 03/02/2024
  * @name utils.js
- * @desc store any utility function needed by the whole program @TODO mejorar la descripción
+ * @desc store any utility function or object needed by the whole program @TODO mejorar la descripción
  */
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 
 /**
  * @description Check if an object literal is empty
@@ -24,7 +26,22 @@ const isEmptyObject = (object) => {
   return true;
 };
 
+// ENUMS 
+const APIS = Object.freeze({
+  OPENAI: 'OPENAI' 
+});
+const HELP_TYPES = Object.freeze({
+  EXTENSION: 'EXTENSION' 
+});
+const PACKAGE_DATA = Object.freeze({
+  name: require('../package.json').name,
+  version: require('../package.json').version,
+  description: require('../package.json').description
+});
 
 export { 
-  isEmptyObject 
+  isEmptyObject,
+  APIS,
+  HELP_TYPES,
+  PACKAGE_DATA
 };

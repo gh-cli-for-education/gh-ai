@@ -13,33 +13,33 @@
 
 import { Command } from 'commander'; 
 import { createRequire } from 'module';
-import * as fs from 'fs';
+const require = createRequire(import.meta.url);
 
-import { isEmptyObject } from '../src/utils.js';
+import { 
+  isEmptyObject, 
+  APIS, 
+  HELP_TYPES,
+  PACKAGE_DATA
+} from '../src/utils.js';
 import { setNewAPIKey } from '../src/command-actions.js';
 
-const require = createRequire(import.meta.url);
 const dotEnv = require('dotenv');
-dotEnv.config();
-const shell = require('shelljs');
-const PACKAGE = {
-  name: require('../package.json').name,
-  version: require('../package.json').version,
-  description: require('../package.json').description
-};
+const KEY_MANAGER = {};
+dotEnv.config({ processEnv: KEY_MANAGER });
+const SHELL = require('shelljs');
 const PROGRAM = new Command();
 
 // Program data
 PROGRAM
-  .name(PACKAGE.name)
+  .name(PACKAGE_DATA.name)
   .usage('[options]')
-  .description(PACKAGE.description)
+  .description(PACKAGE_DATA.description)
   .addHelpText('after','Aditional help:\n  If no option is passed the program will execute in \'interactive mode\' asking the user different program options one by one');
 
 // Program options 
 PROGRAM
   .allowUnknownOption() // Obvia las opciones incorrectas
-  .version(PACKAGE.version, '-V | --version', 'Print the current version of the program')
+  .version(PACKAGE_DATA.version, '-V | --version', 'Print the current version of the program')
   .option('-d | --debug', 'output extra information about the execution') 
   .option('-l | --llm <API>', 'Select the llm <API> to use'/*, 'openAI'*/) // Utilizar las opciones de commander para acotar los posibles argumentos 
   .option('-k | --api-key <KEY>', 'Input the <KEY> needed to use the llm <API>')
@@ -49,13 +49,12 @@ PROGRAM
 
 PROGRAM.parse(process.argv);
 
-
 const executeProgram = () => {
   const OPTIONS = PROGRAM.opts();
   if (!isEmptyObject(OPTIONS)) {
     let llm = OPTIONS.llm || 'OPENAI'; // Se podría aprovechar el .env para guardar valores por defecto
     if (OPTIONS.apiKey) { // Por ahora ejecutar esto solamente 
-      setNewAPIKey(dotEnv, llm, OPTIONS.apiKey, OPTIONS.debug);
+      setNewAPIKey(dotEnv, KEY_MANAGER, llm, OPTIONS.apiKey, OPTIONS.debug);
       process.exit(0);
     }
   }

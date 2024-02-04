@@ -9,6 +9,9 @@
  * @date 01/02/2024
  * @desc @TODO hacer la descripción
  */
+import * as fs from 'fs';
+
+const ENV_PATH = './.env';
 
 const checkJsonFileFormat = (sourceFile, debugFlag) => {
 
@@ -30,28 +33,31 @@ const readJsonFile = (sourceFile, debugFlag) => {
 };
 
 /**
- * 
- * @param {*} dotEnv 
- * @param {*} api 
- * @param {*} newKey 
- * @param {*} debugFlag 
+ * @description 
+ * @param {Object} dotEnv 
+ * @param {Object} keyManager 
+ * @param {string} selectedAPI 
+ * @param {string} newKey 
+ * @param {boolean} debugFlag 
+ * @TODO (Mantener los comentarios al sobreescribir el fichero .env)
+ * En caso de tener comentarios en el fichero .env estos no se guardan al 
+ * sobreescribir una key. 
  */
-const setNewAPIKey = (dotEnv, selectedAPI, newKey, debugFlag) => {
+const setNewAPIKey = (dotEnv, keyManager, selectedAPI, newKeyValue, debugFlag) => {
   if (!selectedAPI) { 
-    throw Error('api is not defined'); /** @TODO */ 
+    throw Error('api is not defined'); /** @TODO Mejorar esto */ 
   }
-  if (typeof newKey !== 'string') {
-    throw Error('the value of the key is not a string'); /** @TODO */
+  if (typeof newKeyValue !== 'string') {
+    throw Error('the value of the key is not a string'); /** @TODO Mejorar esto */
   }
-  let apiKeyFormat = `${selectedAPI}_API_KEY`;
-  if (debugFlag) { 
-    console.log(process.env.OPENAI_API_KEY); // Para comprobar si las variable de .env se han añadido.
-    console.log(`Setting ${apiKeyFormat}`); 
-  }
-  let newKeyObject = {};
-  newKeyObject[apiKeyFormat] = newKey;
-  dotEnv.populate(process.env, newKeyObject, {override: true, debug: debugFlag}); // Esto no cambia el valor de la clave en .env (hay que leer el fichero completo y sobreescribirlo)
-  /** @see https://stackoverflow.com/questions/55660763/how-to-generically-update-an-existing-environment-variable-to-env-file */
+  if (debugFlag) { console.log('Setting the new key value'); } /** @TODO Mejorar esto */
+  const KEY_NAME = `${selectedAPI}_API_KEY`;
+  let newKeyObject = dotEnv.parse(`${KEY_NAME}=${newKeyValue}`);
+  dotEnv.populate(keyManager, newKeyObject, {override: true, debug: debugFlag});
+  let newEnvFile = '';
+  for (let key in keyManager) { newEnvFile += `${key}=${keyManager[key]}\n`; }
+  fs.writeFileSync(ENV_PATH, newEnvFile);
+  console.log('The new Key value has been changed correctly');
 };
 
 export {
