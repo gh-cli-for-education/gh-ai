@@ -39,28 +39,14 @@ const Object2Array = (object, isKeyArray = false) => {
   });
 };
 
-const DEFAULT_CONFIG_JSON = {
-  "type": "extension-Type",
-  "name": "extension-Name",
-  "script-language": "JavaScript",
-  "description": "Description",
-  "parameters": [
-    {
-     "name": "-p | --parameter-long-name",
-     "description": "parameter description"
-    }
-  ],
-  "examples": [
-    {
-      "example": "input",
-      "expected-output": "expected output"
-    }
-  ]
-};
+const CONFIG_FILES = Object.freeze({
+  extension: require('./default-config-files/extension.json')
+});
 
 // ENUMS 
 const APIS = Object.freeze({
-  OPENAI: 'OPENAI' 
+  OPENAI: 'OPENAI',
+  HUGGINFACE: 'HUGGINFACE'
 });
 const HELP_TYPES = Object.freeze({
   EXTENSION: 'extension' 
@@ -70,12 +56,15 @@ const PACKAGE_DATA = Object.freeze({
   version: require('../package.json').version,
   description: require('../package.json').description
 });
-
+const SCHEMAS = Object.freeze({
+  extension: require('./schemas/extension-schema.json')
+});
 export { 
   isEmptyObject,
   Object2Array,
   APIS,
   HELP_TYPES,
-  DEFAULT_CONFIG_JSON,
-  PACKAGE_DATA
+  CONFIG_FILES,
+  PACKAGE_DATA,
+  SCHEMAS
 };

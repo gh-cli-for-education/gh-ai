@@ -1,0 +1,81 @@
+{
+ "$schema": "http://json-schema.org/draft-07/schema#",
+ "title": "Proposal",
+ "description": "A json file to send a proposal to an llm",
+ "type": "object",
+ "properties": {
+    "type": {
+      "description": "The type of proposal, it depends on what you want",
+      "type": "string"
+    },
+    "description": {
+      "description": "The description of the proposal, put as much info as you can think",
+      "type": "string"
+    },
+    "name": {
+      "description": "The extension name",
+      "type": "string"
+    },
+    "scriptLanguage": {
+      "description": "Language of the expected extension",
+      "type": "string"      
+    },
+    "parameters": {
+      "description": "An Array with all the extension parameters",
+      "type": "array",
+      "items": [
+        {
+          "description": "An extension parameter, it has to describe the option",
+          "type": "object",
+          "properties" : {
+            "description": {
+              "description": "Parameter description, put useful info about the option function",
+              "type": "string"
+            },
+            "name": {
+              "description": "Parameter name use the format -p | --long-parameter-name",
+              "type": "string"
+            }
+          },
+          "additionalProperties":false,
+          "required": [
+            "description",
+            "name"
+          ]
+        }
+      ]
+    },
+    "examples": {
+      "description": "An Array with all the usage examples of the extension",
+      "type": "array",
+      "items": [
+        {
+          "description": "Usage example of the expected extension",
+          "type": "object",
+          "properties": {
+            "input": {
+              "description": "The example input",
+              "type": "string"              
+            },
+            "expectedOutput": {
+              "description": "The expected example output",
+              "type": "string"              
+            }
+          },
+          "additionalProperties":false,
+          "required": [
+            "input",
+            "expectedOutput"
+          ]    
+        }
+      ]
+    }
+  },
+  "additionalProperties":false,
+  "required": [
+    "type",
+    "description",
+    "name",
+    "scriptLanguage"
+  ]
+}

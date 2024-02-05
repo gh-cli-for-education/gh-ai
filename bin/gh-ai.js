@@ -13,6 +13,7 @@
 
 import { Command, Option } from 'commander'; 
 import { createRequire } from 'module';
+import dotEnv from 'dotenv';
 const require = createRequire(import.meta.url);
 
 import { 
@@ -24,7 +25,6 @@ import {
 } from '../src/utils.js';
 import { generateDefaultConfigFile, setNewAPIKey } from '../src/command-actions.js';
 
-const dotEnv = require('dotenv');
 const KEY_MANAGER = {};
 dotEnv.config({ processEnv: KEY_MANAGER });
 const SHELL = require('shelljs');

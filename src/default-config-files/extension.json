@@ -1,0 +1,18 @@
+{
+  "type": "The type of proposal, it depends on what you want",
+  "name": "The extension name",
+  "scriptLanguage": "Language of the expected extension",
+  "description": "The description of the proposal, put as much info as you can think",
+  "parameters": [
+    {
+      "name": "Parameter name use the format -p | --long-parameter-name",
+      "description": "Parameter description, put useful info about the option function"
+    }
+  ],
+  "examples": [
+    {
+      "input": "The example input",
+      "expectedOutput": "The expected output"
+    }
+  ]
+}

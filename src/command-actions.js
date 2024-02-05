@@ -11,7 +11,10 @@
  */
 import * as fs from 'fs';
 import readline from 'readline';
-import { DEFAULT_CONFIG_JSON } from './utils.js';
+import validator from 'json-schema-library';
+
+import { CONFIG_FILES } from './utils.js';
+'use strict';
 
 const ENV_PATH = './.env';
 
@@ -20,17 +23,16 @@ const checkJsonFileFormat = (sourceFile, debugFlag) => {
 };
 
 const readJsonFile = (sourceFile, debugFlag) => {
-  const JSON_REGEX = /(.*)\.json/;
-  if (JSON_REGEX.exec(sourceFile)) {
-    try {
-      let configFile = JSON.parse(fs.readFileSync(sourceFile));
+  const JSON_REGEX = /^(.*)\.json$/;
+  if (!JSON_REGEX.exec(sourceFile)) {
+    console.log(`${sourceFile} isn't a .json file`);
+    process.exit(1); // Poner un throw
+  }
+  try {
+    let configJson = JSON.parse(fs.readFileSync(sourceFile));
 
-    } catch (error) {
-      console.log('Ocurrio un error durante la lectura del fichero.');
-    }
-  } else {
-    console.log(`${sourceFile} no es un fichero con extensión .json`);
-    process.exit(1);
+  } catch (error) {
+    console.log('An error has occurred while reading the json file.');
   }
 };
 
@@ -44,6 +46,7 @@ const readJsonFile = (sourceFile, debugFlag) => {
  * @TODO (Mantener los comentarios al sobreescribir el fichero .env)
  * En caso de tener comentarios en el fichero .env estos no se guardan al 
  * sobreescribir una key. 
+ * @TODO Comprobar si la key es correcta
  */
 const setNewAPIKey = (dotEnv, keyManager, selectedAPI, newKeyValue, debugFlag) => {
   if (!selectedAPI) { 
@@ -60,7 +63,6 @@ const setNewAPIKey = (dotEnv, keyManager, selectedAPI, newKeyValue, debugFlag) =
     newEnvFile += `${key}=${keyManager[key]}\n`; 
   }
   fs.writeFileSync(ENV_PATH, newEnvFile);
-  
 };
 
 /**
@@ -77,9 +79,10 @@ const generateDefaultConfigFile = (helpType, filePath, debugFlag) => {
     console.log(`Generating the ${helpType} configuration file in ${PATH}`);
   }
   if (fs.existsSync(PATH)) {
-    // Preguntar si se quiere sobrescribir el fichero 
+    console.log(`File ${PATH} already exists, it's going to be overwritten...`);
+    // Preguntar si se quiere sobrescribir el fichero
   }
-  fs.writeFileSync(PATH, JSON.stringify(DEFAULT_CONFIG_JSON, null, 1));
+  fs.writeFileSync(PATH, JSON.stringify(CONFIG_FILES.extension, null, 2));
 };
 
 export {
