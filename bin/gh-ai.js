@@ -11,17 +11,18 @@
  */
 'use strict';
 
-import { Command } from 'commander'; 
+import { Command, Option } from 'commander'; 
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
 import { 
-  isEmptyObject, 
-  APIS, 
+  isEmptyObject,
+  Object2Array,
+  APIS,
   HELP_TYPES,
   PACKAGE_DATA
 } from '../src/utils.js';
-import { setNewAPIKey } from '../src/command-actions.js';
+import { generateDefaultConfigFile, setNewAPIKey } from '../src/command-actions.js';
 
 const dotEnv = require('dotenv');
 const KEY_MANAGER = {};
@@ -38,25 +39,35 @@ PROGRAM
 
 // Program options 
 PROGRAM
-  .allowUnknownOption() // Obvia las opciones incorrectas
+  .allowUnknownOption()
   .version(PACKAGE_DATA.version, '-V | --version', 'Print the current version of the program')
   .option('-d | --debug', 'output extra information about the execution') 
-  .option('-l | --llm <API>', 'Select the llm <API> to use'/*, 'openAI'*/) // Utilizar las opciones de commander para acotar los posibles argumentos 
+  .addOption(new Option('-l | --llm <API>', 'Select the llm <API> to use').choices(Object2Array(APIS)).default(APIS.OPENAI))
   .option('-k | --api-key <KEY>', 'Input the <KEY> needed to use the llm <API>')
-  .option('-t | --command-type <TYPE>', 'TODO'/*, 'extension'*/) // Utilizar las opciones de commander para acotar los posibles argumentos 
-  .option('-f | --source-file <PATH>', 'TODO')
-  .option('-g | --generate-file <PATH>', 'TODO'); // Añadir una variable PATH para indicar donde generarlo
-
+  .addOption(new Option('-t | --command-type <TYPE>', 'Select the command needed').choices(Object2Array(HELP_TYPES)).default(HELP_TYPES.EXTENSION))
+  .option('-s | --source <PATH>', '<PATH> of the config file to use')
+  .option('-g | --generate-file [PATH]', 'Make the program generate a config file in [PATH]')
+  
 PROGRAM.parse(process.argv);
 
 const executeProgram = () => {
   const OPTIONS = PROGRAM.opts();
   if (!isEmptyObject(OPTIONS)) {
-    let llm = OPTIONS.llm || 'OPENAI'; // Se podría aprovechar el .env para guardar valores por defecto
-    if (OPTIONS.apiKey) { // Por ahora ejecutar esto solamente 
-      setNewAPIKey(dotEnv, KEY_MANAGER, llm, OPTIONS.apiKey, OPTIONS.debug);
-      process.exit(0);
+    if (OPTIONS.apiKey) {
+      setNewAPIKey(dotEnv, KEY_MANAGER, OPTIONS.llm, OPTIONS.apiKey, OPTIONS.debug);
+      console.log('The new Key value has been changed correctly!');
     }
+    else if (OPTIONS.generateFile) {
+      if (typeof OPTIONS.generateFile === 'boolean') {
+        OPTIONS.generateFile = undefined;
+      }
+      generateDefaultConfigFile(OPTIONS.commandType, OPTIONS.generateFile, OPTIONS.debug);
+      console.log("The default file has been created correctly!");
+    }
+    else if (OPTIONS.source) {
+      
+    }
+    process.exit(0);
   }
   // interactiveMode(OPTIONS); // En caso de que se ejecute sin parametros
 };

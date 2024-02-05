@@ -26,12 +26,44 @@ const isEmptyObject = (object) => {
   return true;
 };
 
+/**
+ * @description Convert an object into an Array of values(or keys if the
+ *  isKeyArray flag is activated)
+ * @param {object} object The object to convert to an Array
+ * @param {boolean} isKeyArray If activated returns the object keys instead of the values
+ * @returns {object} The new Array with the values or keys
+ */
+const Object2Array = (object, isKeyArray = false) => {
+  return Object.entries(object).map(([key, value]) => {
+    return ((isKeyArray)? key : value); 
+  });
+};
+
+const DEFAULT_CONFIG_JSON = {
+  "type": "extension-Type",
+  "name": "extension-Name",
+  "script-language": "JavaScript",
+  "description": "Description",
+  "parameters": [
+    {
+     "name": "-p | --parameter-long-name",
+     "description": "parameter description"
+    }
+  ],
+  "examples": [
+    {
+      "example": "input",
+      "expected-output": "expected output"
+    }
+  ]
+};
+
 // ENUMS 
 const APIS = Object.freeze({
   OPENAI: 'OPENAI' 
 });
 const HELP_TYPES = Object.freeze({
-  EXTENSION: 'EXTENSION' 
+  EXTENSION: 'extension' 
 });
 const PACKAGE_DATA = Object.freeze({
   name: require('../package.json').name,
@@ -41,7 +73,9 @@ const PACKAGE_DATA = Object.freeze({
 
 export { 
   isEmptyObject,
+  Object2Array,
   APIS,
   HELP_TYPES,
+  DEFAULT_CONFIG_JSON,
   PACKAGE_DATA
 };
