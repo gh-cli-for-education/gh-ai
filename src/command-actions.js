@@ -11,28 +11,37 @@
  */
 import * as fs from 'fs';
 import readline from 'readline';
-import validator from 'json-schema-library';
-
-import { CONFIG_FILES } from './utils.js';
+import { CONFIG_FILES, SCHEMAS } from './utils.js';
 'use strict';
 
 const ENV_PATH = './.env';
 
-const checkJsonFileFormat = (sourceFile, debugFlag) => {
+async function askAI(apiKey, selectedAPI, debugFlag) {
 
-};
+}
 
-const readJsonFile = (sourceFile, debugFlag) => {
+/**
+ * @description check if the source file is correct and returns an object 
+ * with all the readed data
+ * @param {string} sourceFile The PATH where the source file is located 
+ * @param {string} helpType Indicates what type of schema is used to validate
+ * @param {boolean} debugFlag Enable more output logs.
+ * @returns {object} Object with all the data from the readed json 
+ * @TODO Realizar multiples test-case
+ */
+const checkJsonFileSchema = (sourceFile, helpType, debugFlag) => {
   const JSON_REGEX = /^(.*)\.json$/;
   if (!JSON_REGEX.exec(sourceFile)) {
     console.log(`${sourceFile} isn't a .json file`);
     process.exit(1); // Poner un throw
   }
   try {
+    if (debugFlag) { console.log('DEBUG PROMPT>:\n', SCHEMAS[helpType]); }
     let configJson = JSON.parse(fs.readFileSync(sourceFile));
-
+    SCHEMAS[helpType].parse(configJson);
+    return configJson;
   } catch (error) {
-    console.log('An error has occurred while reading the json file.');
+    console.log(`An error has occurred while reading the json file.\n${error}`);
   }
 };
 
@@ -87,5 +96,6 @@ const generateDefaultConfigFile = (helpType, filePath, debugFlag) => {
 
 export {
   setNewAPIKey,
-  generateDefaultConfigFile
+  generateDefaultConfigFile,
+  checkJsonFileSchema
 };

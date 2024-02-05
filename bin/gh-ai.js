@@ -23,7 +23,11 @@ import {
   HELP_TYPES,
   PACKAGE_DATA
 } from '../src/utils.js';
-import { generateDefaultConfigFile, setNewAPIKey } from '../src/command-actions.js';
+import { 
+  generateDefaultConfigFile, 
+  setNewAPIKey,
+  checkJsonFileSchema
+} from '../src/command-actions.js';
 
 const KEY_MANAGER = {};
 dotEnv.config({ processEnv: KEY_MANAGER });
@@ -65,7 +69,7 @@ const executeProgram = () => {
       console.log("The default file has been created correctly!");
     }
     else if (OPTIONS.source) {
-      
+      checkJsonFileSchema(OPTIONS.source, OPTIONS.commandType, OPTIONS.debug);
     }
     process.exit(0);
   }

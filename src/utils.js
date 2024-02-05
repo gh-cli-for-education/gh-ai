@@ -10,6 +10,8 @@
  * @name utils.js
  * @desc store any utility function or object needed by the whole program @TODO mejorar la descripción
  */
+import { EXTENSION_SCHEMA } from './schemas/extension-schema.js';
+
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
@@ -46,7 +48,7 @@ const CONFIG_FILES = Object.freeze({
 // ENUMS 
 const APIS = Object.freeze({
   OPENAI: 'OPENAI',
-  HUGGINFACE: 'HUGGINFACE'
+  HUGGINGFACE: 'HUGGINGFACE'
 });
 const HELP_TYPES = Object.freeze({
   EXTENSION: 'extension' 
@@ -57,7 +59,7 @@ const PACKAGE_DATA = Object.freeze({
   description: require('../package.json').description
 });
 const SCHEMAS = Object.freeze({
-  extension: require('./schemas/extension-schema.json')
+  extension: EXTENSION_SCHEMA
 });
 export { 
   isEmptyObject,
