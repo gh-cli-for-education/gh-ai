@@ -29,8 +29,7 @@ import {
   checkJsonFileSchema
 } from '../src/command-actions.js';
 
-const KEY_MANAGER = {};
-dotEnv.config({ processEnv: KEY_MANAGER });
+dotEnv.config();
 const SHELL = require('shelljs');
 const PROGRAM = new Command();
 
@@ -47,21 +46,17 @@ PROGRAM
   .version(PACKAGE_DATA.version, '-V | --version', 'Print the current version of the program')
   .option('-d | --debug', 'output extra information about the execution') 
   .addOption(new Option('-l | --llm <API>', 'Select the llm <API> to use').choices(Object2Array(APIS)).default(APIS.OPENAI))
-  .option('-k | --api-key <KEY>', 'Input the <KEY> needed to use the llm <API>')
   .addOption(new Option('-t | --command-type <TYPE>', 'Select the command needed').choices(Object2Array(HELP_TYPES)).default(HELP_TYPES.EXTENSION))
-  .option('-s | --source <PATH>', '<PATH> of the config file to use')
+  .option('-s | --source <PATH>', '<PATH> to the output folder that will contain the extension')
   .option('-g | --generate-file [PATH]', 'Make the program generate a config file in [PATH]')
   
 PROGRAM.parse(process.argv);
 
+
 const executeProgram = () => {
   const OPTIONS = PROGRAM.opts();
   if (!isEmptyObject(OPTIONS)) {
-    if (OPTIONS.apiKey) {
-      setNewAPIKey(dotEnv, KEY_MANAGER, OPTIONS.llm, OPTIONS.apiKey, OPTIONS.debug);
-      console.log('The new Key value has been changed correctly!');
-    }
-    else if (OPTIONS.generateFile) {
+    if (OPTIONS.generateFile) {
       if (typeof OPTIONS.generateFile === 'boolean') {
         OPTIONS.generateFile = undefined;
       }
@@ -73,7 +68,7 @@ const executeProgram = () => {
     }
     process.exit(0);
   }
-  // interactiveMode(OPTIONS); // En caso de que se ejecute sin parametros
+  //interactiveMode(OPTIONS); // En caso de que se ejecute sin parametros
 };
 
 executeProgram();
