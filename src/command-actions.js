@@ -9,12 +9,29 @@
  * @date 01/02/2024
  * @desc @TODO hacer la descripción
  */
-import * as fs from 'fs';
+import * as fs from 'fs/promises';
 import readline from 'readline';
-import { CONFIG_FILES, SCHEMAS } from './utils.js';
+import nearley from 'nearley';
+
+import * as grammarModule from './grammar.js';
+import { SCHEMAS } from './utils.js';
 'use strict';
 
 const ENV_PATH = './.env';
+
+/**
+ * @descriptiong Parse the prompt file from the user and returns an object with
+ * the extracted values 
+ * @param {string} promptFile 
+ * @param {} options 
+ */
+async function parsePromptFile(promptFile, options) {
+  const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammarModule.grammar));
+  let input = await fs.readFile(promptFile, 'utf-8');
+  parser.feed(input);
+  console.log(parser.results[0]);
+  SCHEMAS['extension'].parse(parser.results[0]);  
+}
 
 async function askAI(apiKey, selectedAPI, debugFlag) {
 
@@ -38,40 +55,11 @@ const checkJsonFileSchema = (sourceFile, helpType, debugFlag) => {
   try {
     if (debugFlag) { console.log('DEBUG PROMPT>:\n', SCHEMAS[helpType]); }
     let configJson = JSON.parse(fs.readFileSync(sourceFile));
-    SCHEMAS[helpType].parse(configJson);
+    console.log(SCHEMAS[helpType].parse(configJson));
     return configJson;
   } catch (error) {
     console.log(`An error has occurred while reading the json file.\n${error}`);
   }
-};
-
-/**
- * @description change the current value of the selected API to the new key value @TODO mejorar esto
- * @param {Object} dotEnv Enviroment object needed to use DotEnv utils methods  
- * @param {Object} keyManager Object with all the APIkey=value pairs 
- * @param {string} selectedAPI The selected API key 
- * @param {string} newKeyValue The new value of the API key
- * @param {boolean} debugFlag Enable more output logs. 
- * @TODO (Mantener los comentarios al sobreescribir el fichero .env)
- * En caso de tener comentarios en el fichero .env estos no se guardan al 
- * sobreescribir una key. 
- * @TODO Comprobar si la key es correcta
- */
-const setNewAPIKey = (dotEnv, keyManager, selectedAPI, newKeyValue, debugFlag) => {
-  if (!selectedAPI) { 
-    throw Error('api is not defined'); /** @TODO Mejorar esto */ 
-  }
-  if (typeof newKeyValue !== 'string') {
-    throw Error('the value of the key is not a string'); /** @TODO Mejorar esto */
-  }
-  const KEY_NAME = `${selectedAPI}_API_KEY`;
-  let newKeyObject = dotEnv.parse(`${KEY_NAME}=${newKeyValue}`);
-  dotEnv.populate(keyManager, newKeyObject, {override: true, debug: debugFlag});
-  let newEnvFile = '';
-  for (let key in keyManager) { 
-    newEnvFile += `${key}=${keyManager[key]}\n`; 
-  }
-  fs.writeFileSync(ENV_PATH, newEnvFile);
 };
 
 /**
@@ -95,7 +83,6 @@ const generateDefaultConfigFile = (helpType, filePath, debugFlag) => {
 };
 
 export {
-  setNewAPIKey,
   generateDefaultConfigFile,
   checkJsonFileSchema
 };

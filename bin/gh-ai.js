@@ -24,51 +24,54 @@ import {
   PACKAGE_DATA
 } from '../src/utils.js';
 import { 
-  generateDefaultConfigFile, 
-  setNewAPIKey,
   checkJsonFileSchema
 } from '../src/command-actions.js';
 
-const KEY_MANAGER = {};
-dotEnv.config({ processEnv: KEY_MANAGER });
+dotEnv.config();
 const SHELL = require('shelljs');
 const PROGRAM = new Command();
 
 // Program data
 PROGRAM
   .name(PACKAGE_DATA.name)
-  .usage('[options]')
+  .usage('<prompt-file> <output-directory> [options]')
   .description(PACKAGE_DATA.description)
-  .addHelpText('after','Aditional help:\n  If no option is passed the program will execute in \'interactive mode\' asking the user different program options one by one');
+  .addHelpText('after','\nAditional help:\n  If no option is passed the program will execute in \'interactive mode\' asking the user different program options one by one');
 
-// Program options 
+// Program options and arguments 
 PROGRAM
   .allowUnknownOption()
-  .version(PACKAGE_DATA.version, '-V | --version', 'Print the current version of the program')
-  .option('-d | --debug', 'output extra information about the execution') 
-  .addOption(new Option('-l | --llm <API>', 'Select the llm <API> to use').choices(Object2Array(APIS)).default(APIS.OPENAI))
-  .option('-k | --api-key <KEY>', 'Input the <KEY> needed to use the llm <API>')
-  .addOption(new Option('-t | --command-type <TYPE>', 'Select the command needed').choices(Object2Array(HELP_TYPES)).default(HELP_TYPES.EXTENSION))
-  .option('-s | --source <PATH>', '<PATH> of the config file to use')
-  .option('-g | --generate-file [PATH]', 'Make the program generate a config file in [PATH]')
+  .version(PACKAGE_DATA.version, '-v, --version', 'Print the current version of the program')
+  .argument('<prompt-file>', 'The prompt file used to feed the llm')
+  .argument('<output-directory>', 'The directory path where all the files created by the llm will be stored')
+  .option('-d, --debug', 'output extra information about the execution process')
+  .option('-g, --generate-file', 'Make the program output a json file with the parsed prompt')  
+  .addOption(new Option('-l, --llm <API>', 'Select the llm <API> to use').choices(Object2Array(APIS)).default(APIS.OPENAI))
+  .addOption(new Option('-t, --command-type <TYPE>', 'Select the command needed').choices(Object2Array(HELP_TYPES)).default(HELP_TYPES.EXTENSION));
   
+  // Esto se puede cambiar para que en realidad genere el json del objeto creado por el parser del fichero txt
+
+  // Program actions to options values
+PROGRAM
+  .on('option:debug', function() { process.env.DEBUG = this.opts().debug; })
+  .on('option:generateFile', function() { process.env.GENERATE_FILE = this.opts().generateFile; })
+  .action((promptFile, outputDirectory) => { 
+    main(promptFile, outputDirectory);
+  });
 PROGRAM.parse(process.argv);
+
+/**
+ * 
+ */
+function main(promptFile, outputDirectory) {
+  const OPTIONS = PROGRAM.opts();
+  parsePromptFile()
+};
 
 const executeProgram = () => {
   const OPTIONS = PROGRAM.opts();
   if (!isEmptyObject(OPTIONS)) {
-    if (OPTIONS.apiKey) {
-      setNewAPIKey(dotEnv, KEY_MANAGER, OPTIONS.llm, OPTIONS.apiKey, OPTIONS.debug);
-      console.log('The new Key value has been changed correctly!');
-    }
-    else if (OPTIONS.generateFile) {
-      if (typeof OPTIONS.generateFile === 'boolean') {
-        OPTIONS.generateFile = undefined;
-      }
-      generateDefaultConfigFile(OPTIONS.commandType, OPTIONS.generateFile, OPTIONS.debug);
-      console.log("The default file has been created correctly!");
-    }
-    else if (OPTIONS.source) {
+    if (OPTIONS.source) {
       checkJsonFileSchema(OPTIONS.source, OPTIONS.commandType, OPTIONS.debug);
     }
     process.exit(0);
