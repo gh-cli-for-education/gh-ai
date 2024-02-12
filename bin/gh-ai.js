@@ -12,24 +12,23 @@
 'use strict';
 
 import { Command, Option } from 'commander'; 
-import { createRequire } from 'module';
+// import { createRequire } from 'module'; // No se esta usando por ahora
+// const require = createRequire(import.meta.url);
 import dotEnv from 'dotenv';
-const require = createRequire(import.meta.url);
 
 import { 
   isEmptyObject,
   Object2Array,
-  APIS,
   HELP_TYPES,
   PACKAGE_DATA
 } from '../src/utils.js';
-import { 
-  checkJsonFileSchema
-} from '../src/command-actions.js';
+import {
+  API
+} from '../src/api-calls.js';
 
 dotEnv.config();
-const SHELL = require('shelljs');
 const PROGRAM = new Command();
+const DEFAULT_LLM = 'OPENAI';
 
 // Program data
 PROGRAM
@@ -39,47 +38,33 @@ PROGRAM
   .addHelpText('after','\nAditional help:\n  If no option is passed the program will execute in \'interactive mode\' asking the user different program options one by one');
 
 // Program options and arguments 
+
 PROGRAM
   .allowUnknownOption()
   .version(PACKAGE_DATA.version, '-v, --version', 'Print the current version of the program')
   .argument('<prompt-file>', 'The prompt file used to feed the llm')
   .argument('<output-directory>', 'The directory path where all the files created by the llm will be stored')
-  .option('-d, --debug', 'output extra information about the execution process')
-  .option('-g, --generate-file', 'Make the program output a json file with the parsed prompt')  
-  .addOption(new Option('-l, --llm <API>', 'Select the llm <API> to use').choices(Object2Array(APIS)).default(APIS.OPENAI))
+  .option('-d, --debug', 'Output extra information about the execution process')
+  .option('--org <organization>', 'Specify which organization is used for an API request.')
+  .option('--tokens-verbose', 'Output the token usage information in each prompt')
+  .addOption(new Option('-l, --llm <API>', 'Select the llm <API> to use').choices(Object.keys(API)).default(DEFAULT_LLM))
   .addOption(new Option('-t, --command-type <TYPE>', 'Select the command needed').choices(Object2Array(HELP_TYPES)).default(HELP_TYPES.EXTENSION));
   
-  // Esto se puede cambiar para que en realidad genere el json del objeto creado por el parser del fichero txt
-
-  // Program actions to options values
+// Program actions to options values
 PROGRAM
-  .on('option:debug', function() { process.env.DEBUG = this.opts().debug; })
-  .on('option:generateFile', function() { process.env.GENERATE_FILE = this.opts().generateFile; })
-  .action((promptFile, outputDirectory) => { 
-    main(promptFile, outputDirectory);
+  // .on('option:debug', function() { process.env.DEBUG = this.opts().debug; })
+  // .on('option:generateFile', function() { process.env.GENERATE_FILE = this.opts().generateFile; })
+  .action((promptFile, outputDirectory, options) => { 
+    main(promptFile, outputDirectory, options);
   });
 PROGRAM.parse(process.argv);
 
 /**
  * 
  */
-function main(promptFile, outputDirectory) {
-  const OPTIONS = PROGRAM.opts();
-  parsePromptFile()
+function main(promptFile, outputDirectory, options) {
+  // const OPTIONS = PROGRAM.opts();
+  API[options.llm].apiCall(promptFile, outputDirectory, options); // Si se logra realizar de esta manera se puede obviar la función main
 };
-
-const executeProgram = () => {
-  const OPTIONS = PROGRAM.opts();
-  if (!isEmptyObject(OPTIONS)) {
-    if (OPTIONS.source) {
-      checkJsonFileSchema(OPTIONS.source, OPTIONS.commandType, OPTIONS.debug);
-    }
-    process.exit(0);
-  }
-  // interactiveMode(OPTIONS); // En caso de que se ejecute sin parametros
-};
-
-executeProgram();
-
 
 

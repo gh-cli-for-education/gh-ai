@@ -40,4 +40,25 @@ const EXTENSION_SCHEMA = z.object({
   description: true,
 }).strict(); 
 
+/**
+ * @description Allow zod package to produce custom error messages 
+ * @param {object} issue 
+ * @param {object} ctx 
+ */
+const customErrorMap = (issue, ctx) => {
+  if (issue.code === z.ZodIssueCode.invalid_type) {
+    if (issue.path.length === 0) { return { message: 'Expected a prompt file' }; }
+    let errorMsg = `Expected a #${issue.path[issue.path.length - 1].toUpperCase()} property `;
+    if (issue.path.length > 1) {
+      errorMsg += `in ${issue.path.map((path, index) => {
+        errorMsg += `#${path.toUpperCase()} ${(index < issue.path.length)? ' -> ' : ''}`;
+      })} `;
+    }
+    errorMsg += `with a ${issue.expected.toUpperCase()} value. Received ${(issue.received === 'undefined')? 'nothing' : `a(n) ${issue.received.toUpperCase()} value instead.`}`
+    return { message: errorMsg };
+  }
+  return { message: ctx.defaultError };
+};
+
+z.setErrorMap(customErrorMap);
 export { EXTENSION_SCHEMA }

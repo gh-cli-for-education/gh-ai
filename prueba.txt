@@ -1,12 +1,12 @@
 #NAME gh-ai
 #SCRIPTING LANGUAGE "JavaScript"
 /** #CHATLANGUAGE "English" */
-#DESCRIPTION "Descripción de la extension"
+#DESCRIPTION "123" 
 #PARAMETERS
   #NAME "-d, --debug"
   #DESCRIPTION "Descripción del parametro 1"
   #NAME "-t, --type"
-  #DESCRIPTION "Descripción del parametro 2"
+  #DESCRIPTION "ALOHA"
 #HELP "this is how i want the help function to appear" 
 #EXAMPLES
   #INPUT "Ejemplo01"
