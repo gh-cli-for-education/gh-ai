@@ -41,15 +41,7 @@ const Object2Array = (object, isKeyArray = false) => {
   });
 };
 
-const CONFIG_FILES = Object.freeze({
-  extension: require('./default-config-files/extension.json')
-});
-
 // ENUMS 
-const APIS = Object.freeze({
-  OPENAI: 'OPENAI',
-  HUGGINGFACE: 'HUGGINGFACE'
-});
 const HELP_TYPES = Object.freeze({
   EXTENSION: 'extension' 
 });
@@ -64,9 +56,7 @@ const SCHEMAS = Object.freeze({
 export { 
   isEmptyObject,
   Object2Array,
-  APIS,
   HELP_TYPES,
-  CONFIG_FILES,
   PACKAGE_DATA,
   SCHEMAS
 };

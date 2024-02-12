@@ -25,48 +25,22 @@ const ENV_PATH = './.env';
  * @param {string} inputFile 
  * @param {object} options
  * @returns {object} Returns the object with the the extracted values
- * @returns {undefined} If there was an error
+ * @throws {Error} If the parsed object doesn't fit the expected schema 
+ * @throws {Error} If there is an error while parsing the input file
  */
 async function parseInputFile(inputFile, options) {
   const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammarModule.grammar));
   let input = await fs.readFile(inputFile, 'utf-8');
-  try {
-    parser.feed(input);
-    let inputObject = parser.results[0];
-    SCHEMAS[options.commandType].parse(inputObject); 
-    if (options.debugFlag) {
-      console.log(
-        'DEBUG>: input File successfully readed!. input object:\n', 
-        inputObject
-      );
-    }
-    return inputObject;
-  } catch (error) { // La idea es generar un nuevo error 
-    if (error instanceof z.ZodError) { 
-      let amount = (zodError.errors.length > 1)? 'Mutiple' : 'An';
-      let errors = '';
-      zodError.errors.map((error, index) => {
-        errors += `\t${index + 1}.) ${error.message}\n`;
-      });
-      console.log(`${amount} error(s) ocurred while checking the input Object!.\n${errors}`);
-      return undefined;
-    }
-    if (Object.hasOwn(error, 'token')) { // Checks if the error object has an 'offset property
-      console.log('An error occured while reading the input file!');
-      const lineAndColRegex = /line (\d+) col (\d+):/;
-      const expectedTokenRegex = /A (.*) token based on:/g;
-      const line = lineAndColRegex.exec(error.message)[1]; // Mejorar esto al poner line y col en los tokens
-      const col = lineAndColRegex.exec(error.message)[2];
-      console.log(`In line ${line} at column ${col}:`);
-      if (error.token) {
-        console.log(`The parser found an unexpected ${error.token.type} token with value: ${error.token.value}`);
-      } else {
-        console.log('The parser found an invalid syntax');
-      }
-      console.log(`The expected tokens are: ${[...error.message.matchAll(expectedTokenRegex)].map((match) => match[1])} `);
-      return undefined;
-    }
+  parser.feed(input);
+  let inputObject = parser.results[0];
+  SCHEMAS[options.commandType].parse(inputObject); 
+  if (options.debug) {
+    console.log(
+      'DEBUG>: input File successfully readed!. input object:\n', 
+      inputObject
+    );
   }
+  return inputObject;
 }
 
 /**
@@ -75,10 +49,6 @@ async function parseInputFile(inputFile, options) {
  * @param {*} options 
  */
 function generatePrompt(inputObject, options) {
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-    organization: options.org
-  });
   // generar todos los mensajes del prompt 
   // llamar a la API con los mensajes 
 }
@@ -94,5 +64,5 @@ function responseActions(apiResponse, options) {
 
 
 export {
-
+  parseInputFile
 };

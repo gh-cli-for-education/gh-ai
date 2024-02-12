@@ -17,7 +17,7 @@ const PARAMETERS_SCHEMA = z.object({
   description: z.string().describe('Parameter description, put useful info about the option function')
 }).describe('An extension parameter, it has to describe the option').required().strict();
 
-const EXAMPLES_SCHEMA =     z.object({
+const EXAMPLES_SCHEMA = z.object({
   input: z.string().describe('The example input'),
   expectedOutput: z.string().describe('The expected example output')
 }).describe('Usage example of the expected extension').required().strict();
@@ -54,7 +54,7 @@ const customErrorMap = (issue, ctx) => {
         errorMsg += `#${path.toUpperCase()} ${(index < issue.path.length)? ' -> ' : ''}`;
       })} `;
     }
-    errorMsg += `with a ${issue.expected.toUpperCase()} value. Received ${(issue.received === 'undefined')? 'nothing' : `a(n) ${issue.received.toUpperCase()} value instead.`}`
+    errorMsg += `with a ${issue.expected.toUpperCase()} value. Received ${(issue.received === 'undefined')? 'nothing' : `a(n) ${issue.received.toUpperCase()} value instead`}.`
     return { message: errorMsg };
   }
   return { message: ctx.defaultError };

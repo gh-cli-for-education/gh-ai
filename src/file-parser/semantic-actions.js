@@ -98,8 +98,8 @@ function buildObject([properties, eof]) {
   let object = {};
   properties.map((property) => { // Deep merge of all property objects
     for (let key in property) {
-      if(object[key]) { // Check if there is more than one property per prompt file
-        throw new Error(`Duplicated properties are not allowed.\nExpected 1 #${key.toUpperCase()} property but received 2.`);
+      if(object[key]) { // Check if there is more than one property per prompt file  
+        throw new Error(`Duplicated properties are not allowed. Expected 1 #${key.toUpperCase()} property but received 2.`); /** @TODO mover esto al error handler */
       }
       object[key] = property[key];
     }

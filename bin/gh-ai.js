@@ -12,19 +12,15 @@
 'use strict';
 
 import { Command, Option } from 'commander'; 
+import { z } from 'zod';
 // import { createRequire } from 'module'; // No se esta usando por ahora
 // const require = createRequire(import.meta.url);
 import dotEnv from 'dotenv';
 
-import { 
-  isEmptyObject,
-  Object2Array,
-  HELP_TYPES,
-  PACKAGE_DATA
-} from '../src/utils.js';
-import {
-  API
-} from '../src/api-calls.js';
+import { HELP_TYPES, PACKAGE_DATA } from '../src/utils.js';
+import { API } from '../src/api-calls.js';
+import { parseInputFile } from '../src/command-actions.js';
+import { ERROR_HANDLER } from '../src/error-handlers.js';
 
 dotEnv.config();
 const PROGRAM = new Command();
@@ -48,23 +44,35 @@ PROGRAM
   .option('--org <organization>', 'Specify which organization is used for an API request.')
   .option('--tokens-verbose', 'Output the token usage information in each prompt')
   .addOption(new Option('-l, --llm <API>', 'Select the llm <API> to use').choices(Object.keys(API)).default(DEFAULT_LLM))
-  .addOption(new Option('-t, --command-type <TYPE>', 'Select the command needed').choices(Object2Array(HELP_TYPES)).default(HELP_TYPES.EXTENSION));
+  .addOption(new Option('-t, --command-type <TYPE>', 'Select the command needed').choices(Object.keys(HELP_TYPES)).default(HELP_TYPES.EXTENSION));
   
 // Program actions to options values
 PROGRAM
   // .on('option:debug', function() { process.env.DEBUG = this.opts().debug; })
   // .on('option:generateFile', function() { process.env.GENERATE_FILE = this.opts().generateFile; })
-  .action((promptFile, outputDirectory, options) => { 
-    main(promptFile, outputDirectory, options);
+  .action(async (promptFile, outputDirectory, options) => {
+    await main(promptFile, outputDirectory, options);
   });
 PROGRAM.parse(process.argv);
 
 /**
  * 
  */
-function main(promptFile, outputDirectory, options) {
-  // const OPTIONS = PROGRAM.opts();
-  API[options.llm].apiCall(promptFile, outputDirectory, options); // Si se logra realizar de esta manera se puede obviar la función main
+async function main(promptFile, outputDirectory, options) {
+  try {
+    await parseInputFile(promptFile, options);
+  } catch (error) {
+    console.error('\x1b[31mERROR>:\x1b[0m');
+    if (error instanceof z.ZodError) { 
+      ERROR_HANDLER.zodError(error);
+    }
+    else if (Object.hasOwn(error, 'token')) { // Checks if the error object has an 'offset property
+      ERROR_HANDLER.nearleyError(error);
+    } else {
+      console.error(`An unexpected error has ocurred\n ${error.message}`);
+    }
+  }
+  // API[options.llm].apiCall(promptFile, outputDirectory, options); // Si se logra realizar de esta manera se puede obviar la función main
 };
 
 

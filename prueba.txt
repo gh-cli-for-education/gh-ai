@@ -17,3 +17,4 @@
   #EXPECTED OUTPUT "Resultado 03"
   #INPUT "Ejemplo04"
   #EXPECTED OUTPUT "Resultado 04"
+#NAME gh-a
