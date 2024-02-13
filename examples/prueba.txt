@@ -1,9 +1,19 @@
-[name] "Hello"
-[language] "JavaScript"
-[description] ""
-[parameters] ó [parameter] "name" "description"
-[p-name] "-c | --command" [p-description] "-d description"
-[p-name] "-c | --command" [p-description] "-d description"
-[p-name] "-c | --command" [p-description] "-d description"
-[examples] ó [example] "input" "expected output"
-[input] "" [output] ""
+#NAME gh-ai
+#SCRIPTING LANGUAGE "JavaScript"
+/** #CHATLANGUAGE "English" */
+#DESCRIPTION "123" 
+#PARAMETERS
+  #NAME "-d, --debug"
+  #DESCRIPTION "Descripción del parametro 1"
+  #NAME "-t, --type"
+  #DESCRIPTION "ALOHA"
+#HELP "this is how i want the help function to appear" 
+#EXAMPLES
+  #INPUT "Ejemplo01"
+  #EXPECTED OUTPUT "Resultado 01"
+  #INPUT "Ejemplo02"
+  #EXPECTED OUTPUT "Resultado 02"
+  #INPUT "Ejemplo03"
+  #EXPECTED OUTPUT "Resultado 03"
+  #INPUT "Ejemplo04"
+  #EXPECTED OUTPUT "Resultado 04"

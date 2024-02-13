@@ -17,9 +17,8 @@ import { z } from 'zod';
 // const require = createRequire(import.meta.url);
 import dotEnv from 'dotenv';
 
-import { HELP_TYPES, PACKAGE_DATA } from '../src/utils.js';
-import { API } from '../src/api-calls.js';
-import { parseInputFile } from '../src/command-actions.js';
+import { HELP_TYPES, PACKAGE_DATA, parseInputFile } from '../src/utils.js';
+import { API } from '../src/openai-api-call.js';
 import { ERROR_HANDLER } from '../src/error-handlers.js';
 
 dotEnv.config();
@@ -47,12 +46,9 @@ PROGRAM
   .addOption(new Option('-t, --command-type <TYPE>', 'Select the command needed').choices(Object.keys(HELP_TYPES)).default(HELP_TYPES.EXTENSION));
   
 // Program actions to options values
-PROGRAM
-  // .on('option:debug', function() { process.env.DEBUG = this.opts().debug; })
-  // .on('option:generateFile', function() { process.env.GENERATE_FILE = this.opts().generateFile; })
-  .action(async (promptFile, outputDirectory, options) => {
-    await main(promptFile, outputDirectory, options);
-  });
+PROGRAM.action(async (promptFile, outputDirectory, options) => {
+  await main(promptFile, outputDirectory, options);
+});
 PROGRAM.parse(process.argv);
 
 /**

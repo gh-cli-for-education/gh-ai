@@ -103,7 +103,7 @@ function buildObject([properties, eof]) {
       }
       object[key] = property[key];
     }
-  })
+  });
   return object;
 }
 
