@@ -19,6 +19,8 @@ const require = createRequire(import.meta.url);
 import * as grammarModule from './grammar.js';
 'use strict';
 
+const API = Object.create(null);
+
 /**
  * @description Parse the input file from the user and returns an object with
  * the extracted values 
@@ -87,5 +89,6 @@ export {
   parseInputFile,
   HELP_TYPES,
   PACKAGE_DATA,
-  SCHEMAS
+  SCHEMAS,
+  API
 };

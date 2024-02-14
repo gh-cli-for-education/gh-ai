@@ -47,7 +47,7 @@ const EXTENSION_SCHEMA = z.object({
  */
 const customErrorMap = (issue, ctx) => {
   if (issue.code === z.ZodIssueCode.invalid_type) {
-    if (issue.path.length === 0) { return { message: 'Expected a prompt file' }; }
+    if (issue.path.length === 0) { return { message: 'Expected an object. Received nothing' }; }
     let errorMsg = `Expected a #${issue.path[issue.path.length - 1].toUpperCase()} property `;
     if (issue.path.length > 1) {
       errorMsg += `in ${issue.path.map((path, index) => {

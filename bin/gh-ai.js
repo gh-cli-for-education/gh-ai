@@ -17,7 +17,7 @@ import { z } from 'zod';
 // const require = createRequire(import.meta.url);
 import dotEnv from 'dotenv';
 
-import { HELP_TYPES, PACKAGE_DATA, parseInputFile } from '../src/utils.js';
+import { HELP_TYPES, PACKAGE_DATA } from '../src/utils.js';
 import { API } from '../src/openai-api-call.js';
 import { ERROR_HANDLER } from '../src/error-handlers.js';
 
@@ -56,7 +56,7 @@ PROGRAM.parse(process.argv);
  */
 async function main(promptFile, outputDirectory, options) {
   try {
-    await parseInputFile(promptFile, options);
+    await API[options.llm](promptFile, outputDirectory, options); // Si se logra realizar de esta manera se puede obviar la función main
   } catch (error) {
     console.error('\x1b[31mERROR>:\x1b[0m');
     if (error instanceof z.ZodError) { 
@@ -68,7 +68,7 @@ async function main(promptFile, outputDirectory, options) {
       console.error(`An unexpected error has ocurred\n ${error.message}`);
     }
   }
-  // API[options.llm].apiCall(promptFile, outputDirectory, options); // Si se logra realizar de esta manera se puede obviar la función main
+  
 };
 
 

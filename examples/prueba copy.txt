@@ -38,3 +38,7 @@ Options:
   -l, --llm <API>            Select the llm <API> to use (choices: "OPENAI", "HUGGINGFACE", default: "OPENAI")
   -t, --command-type <TYPE>  Select the command needed (choices: "EXTENSION", default: "extension")
   -h, --help                 display help for command
+
+
+
+
