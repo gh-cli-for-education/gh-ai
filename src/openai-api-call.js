@@ -54,19 +54,16 @@ remove any property from the json schema. Here is an example of the json output:
 
 {
   "advices": <Put here all the advices that are not code related like installation and usage>,
-  "files": <Put here an array of objects with the format: {
+  "files": <Put here an array of objects tha represent the files you will create to put the code in, with the format: {
      "filename": <Put here the file name>, 
      "content": <Put here the code and comments you generate. put a header comment with a short description of the file code> 
-    }, if no files are created leave an empty array>,
+    }>,
   "errors": <Put here an array of strings telling all the errors you found that can be from the user no putting any information to the user not asking about creating an extension, if no errors are found leave an empty array>
 }
   
 Here are some rules you must follow if you create code inside the content property
 
-1. Make sure to handle all the possible errors but instead of creating code you 
-have to put a comment explaining the user what should do there.
-
-2. You are able to use any library or package but make sure not to use an 
+1. You are able to use any library or package but make sure not to use an 
 excessive amount of them.
 `;
   return systemMsg;
@@ -84,12 +81,19 @@ function generateUserMessage(inputObject) {
     } else if (property === 'examples') {
       userMsg += '\n';
       inputObject[property].forEach((example, index) => {
-        userMsg += `${index + 1}. Given this input: ${example.input}\nThis should be the output:\n${example.expectedOutput}\n`;
+        userMsg += `${index + 1}. Given this input: ${example.input}\n\nThis should be the output:\n${example.expectedOutput}\n`;
       });
     } else {
       userMsg += `${inputObject[property]}\n`;
     }
   }
+  /*
+  userMsg +=
+`With all this information I want you to create some code that will help me start the extension, code as much as you think is needed 
+to acomplish what I asked for. Remember to put comments inside the code file to explain everything you generate.
+
+It is important that you generate code so even if you think that you won't be able to success in what the use is asking at least make enough code to start with.`;
+*/
   return userMsg;
 }
 
@@ -126,12 +130,16 @@ async function createFiles(prompt, apiResponse, outputDirectory, options) {
   apiResponse = JSON.parse(apiResponse);
   API_RESPONSE_SCHEMA.parse(apiResponse);
   let readmeContent = '## This file has been created to store the conversation you had with the llm\n\n';
-  readmeContent += `${prompt[0].content}\n${prompt[1].content}\n${apiResponse}`;
+  readmeContent += `${prompt[0].content}\n${prompt[1].content}\n`;
+  readmeContent += `## API RESPONSE\n\nAI advices:\n\n${apiResponse.advices}\n\n`;
+  readmeContent += `files created:\n\n`;
+  apiResponse.files.forEach(async (file) => {
+    await fs.writeFile(`${outputDirectory}/${file.filename}`, file.content);
+    readmeContent += `${file.filename}:\n${file.content}\n\n`;
+  });
+  readmeContent += `Errors encountered:\n\n${apiResponse.errors}`;
   await fs.writeFile(`${outputDirectory}/README.md`, readmeContent);
   console.log(`\x1b[33m${options.llm}>:\x1b[0m ${apiResponse.advices}`);
-  apiResponse.files.forEach(async (file) => {
-    await fs.writeFile(`${outputDirectory}/${file['filename']}`, file.content);
-  });
   if (apiResponse.length > 0) { console.log(`\x1b[31m${options.llm}>:\x1b[0m ${apiResponse.errors}`); }
   // console.log(Aqui iría el aviso de que no es buena idea utilizar esto sin revisar el código que ha relizado la IA)
   // Parsear las respuestas, dependerá del tipo de la ayuda y de como es el JSON generado por el LLM

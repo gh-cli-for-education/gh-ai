@@ -1,7 +1,7 @@
 #NAME gh-ai
 #SCRIPTING LANGUAGE "JavaScript"
 /** #CHATLANGUAGE "English" */
-#DESCRIPTION "The gh-ai extension consist in a JavaScript program that reads the user input by a txt file and is parsed using this rules: 
+#DESCRIPTION "I want you to create a gh extension that consist in a JavaScript program that reads the user input by a txt file and is parsed using this rules: 
 
 # The root of the prompt object it will search for a list of parameters
 prompt -> (%HASH_SYMBOL properties {% buildPropertyList %}):* %EOF {% buildObject %}
@@ -54,25 +54,3 @@ structured result."
   #DESCRIPTION "Allow the program to output more information of the program execution"
   #NAME "--generate-json"
   #DESCRIPTION "if active will output the resulting object from the parse function only if is accepted by the schema check function"
-
-#EXAMPLES
-  #INPUT "node gh-ai.js -h"
-  #EXPECTED OUTPUT "Usage: gh-ai <prompt-file> <output-directory> [options]
-
-gh-cli extension that provides help in the creation of other gh extensions using AI and prompt-engineering
-
-Arguments:
-  prompt-file                The prompt file used to feed the llm
-  output-directory           The directory path where all the files created by the llm will be stored
-
-Options:
-  -v, --version              Print the current version of the program
-  -d, --debug                Output extra information about the execution process
-  --org <organization>       Specify which organization is used for an API request.
-  --tokens-verbose           Output the token usage information in each prompt
-  -l, --llm <API>            Select the llm <API> to use (choices: 'OPENAI', default: 'OPENAI')
-  -t, --command-type <TYPE>  Select the command needed (choices: 'EXTENSION', default: 'extension')
-  -h, --help                 display help for command
-
-Aditional help:
-  If no option is passed the program will execute in 'interactive mode' asking the user different program options one by one"

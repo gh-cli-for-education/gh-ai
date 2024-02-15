@@ -1,0 +1,34 @@
+#NAME gh-ai
+#SCRIPT LANGUAGE "javascript"
+#DESCRIPTION "The gh-ai extension will consist in multiple javascript files with the main purpose of 
+creating an extension to help other people create more extension with the help of AI. So
+The program is separated into 3 main files that are: 
+
+make sure to go in order from the first file to the last one, so follow this instructions:
+Once the code has been generated make sure to handle the possible exceptions that may occur
+If you think you can add more than what I asked you are free to add as much code as you need. 
+
+1.) A file named grammar.ne that uses the nearley package to create a grammar that can parse 
+the following example: 
+
+#NAME <mandatory, here goes the name of the extension>
+#SCRIPTING LANGUAGE <mandatory, here goes the name of the scripting language>
+#DESCRIPTION <mandatory, a string that contains the description of the extension>
+#PARAMETERS <optional, a list of pairs #NAME and #DESCRIPTION, both accepting a string>
+#EXAMPLES <optional, a list of pairs #INPUT and #EXPECTED OUTPUT, both accepting a string>
+#HELP <optional, a string with the expected output of the help command>
+#CHAT LANGUAGE <optional, a string with the language expected for the ai to speak>
+
+make sure to create the regular expressions and rules to accept each tag and their expected inputs, then inside the file create a list of functions 
+used to create an object that contains the parsed input from the user, each 
+property will have the name of their respective tag and the content of the property is the input that follows the tag.
+
+2.) A file named api-call that will contains all the necessary functions to create an openai prompt and send it to the completions.create function of the 
+openai API, this file will have to contain 3 functions: the first one will parse the object created by the parser from the grammar.ne and 
+check if the object follows the specific schema that you can guess from the input file example shared before. To do that you can use zod package to validate the input object.
+the second function will create a prompt that has two messages, the first one by the system role and the second by the user role, the function will have to return the array with both prompts.
+Finally the last function will create an openai object and send the prompt using the completions.create function from the api.
+
+3.) A file with the name of the extension that will work as the main point of the program, this file will have to deal with the program parameters using the commander package, make sure to create the 
+common options like -v or -h. There can be more options that will be described in the parameters tag later on this prompt.
+"
