@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# GitHub CLI extension: gh-org-members
+
+# Define variables
+GH_CMD="gh"
+FZF_CMD="fzf"
+
+# Display help message
+help_message() {
+  cat <<EOF
+Usage: gh org-members [options] [organization]
+
+Options:
+  -V, --version             output the version number
+  -f, --fullname            show name of the user (if available)
+  -j, --json                returns the full json object
+  -r, --regexp <regexp>     Only members with some field matching <regexp> will be shown
+  -u, --url                 show github user url
+  -l, --login               show github user login
+  -w, --orgurl              show github user url as a member of the org
+  -s, --site                show url of the members github pages web sites
+  -o --org <org>            default organization
+     --default              Set selected "org" as default organization for future uses
+  -h, --help                display help for command
+
+  - If the organization is not explicitly specified or there is a default org, 
+    the selection will be done interactively among the list of your organizations using 'fzf'
+  - You can set the default organization through the "--default" option for future uses of this program
+  - When in 'fzf', use CTRL-A to select all, tab to select/deselect
+  - You can merge the results of the GitHub API info with info from info in a '.csv' file using the "-c" and "-p" options. For instance: "gh org-members -jr sara -c -p ./ULL-MFP-AET-2122.csv"
+  - If the option '-c' is used but the '.csv' file is not specified via the '-p' option, it will use the most recent '*.csv' file in your 'Downloads' folder mathching the regular expression pattern '/<org>.*.csv/' where 'org' refers to the specified or default organization  
+  - When using '-c' it can be followed by any list of field names in the '.csv' file. 
+  - The '.csv' file has to have a column named 'login' having the Github login of the members
+EOF
+}
+
+# Function to execute the GitHub CLI command
+gh_command() {
+  $GH_CMD "$@"
+}
+
+# Function to interactively select an organization using fzf
+select_organization() {
+  local org_list
+  org_list=$($GH_CMD org list -L 1000 -q login --json login --template "{{.login}}")
+  selected_org=$($FZF_CMD --header="Select Organization" --multi --cycle --ansi <<< "$org_list")
+  echo "$selected_org"
+}
+
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      help_message
+      exit 0
+      ;;
+    -o|--org)
+      shift
+      default_org="$1"
+      ;;
+    --default)
+      shift
+      default_org=$(select_organization)
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
+
+# If no organization is provided, and no default org is set, interactively select one
+if [[ -z "$1" && -z "$default_org" ]]; then
+  selected_org=$(select_organization)
+else
+  selected_org="$1"
+fi
+
+# Perform the GitHub CLI command with the selected organization
+gh_command org members --org "$selected_org" "$@"

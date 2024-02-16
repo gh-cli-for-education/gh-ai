@@ -15,6 +15,8 @@ import { makeLexer } from 'moo-ignore';
 
 const WHITES =          /(?:\s+|\/\*(?:.|\n)*?\*\/)+/; // ESTE WHITES ESTA PENSADO PARA EGG
 const STRING =          /"(?:[^"\\]|\\.)*"/;
+const PARAGRAPH =       /(?:\n\s*){2,}/;
+const SECTION =         /(?:\n\s*){2,}---\n/;
 const LANG_CASE_WORD =  /[a-z][a-z0-9]*(?:[-][a-z0-9]+)*/
 const HASH_SYMBOL =     /[#]/;
 const NAME =            /NAME/;
