@@ -1,6 +1,7 @@
-#NAME gh-ai
-#SCRIPT LANGUAGE "javascript"
-#DESCRIPTION "The gh-ai extension will consist in multiple javascript files with the main purpose of 
+#name gh-ai
+#scripting language "javascript"
+#PARAMETER ##NAME "-d | --debug" ##DESCRIPTION <ppp> Aquí va un parametro <ddd> 
+#Description <ppp> The gh-ai extension will consist in multiple javascript files with the main purpose of 
 creating an extension to help other people create more extension with the help of AI. So the first file you have to do generate is:
 
 1.) A file named api-call that will contains all the necessary functions to create an openai prompt and send it to the completions.create function of the 
@@ -8,5 +9,22 @@ openai API, this file will have to contain 3 functions: the first one will parse
 check if the object follows the specific schema that you can guess from the input file example shared before. To do that you can use zod package to validate the input object.
 the second function will create a prompt that has two messages, the first one by the system role and the second by the user role, the function will have to return the array with both prompts.
 Finally the last function will create an openai object and send the prompt using the completions.create function from the api.
+<ddd>
+#PARAMETER 
+  ##NAME "-e | --execute" ##DESCRIPTION <ppp> Aquí va otro parametro <ddd>
 
-"
+#EXAMPLE 
+  ## COMMAND "node .\bin\gh-ai.js .\examples\prueba.txt output -d --tokens-verbose"
+  ## OUTPUT <ppp> Aquí va el output del programa <ddd>
+#EXAMPLE 
+  ## command "node .\bin\gh-ai.js .\examples\prueba.txt output -d --tokens-verbose"
+  ## OUTPUT <ppp> Aquí va el output del programa <ddd>
+#EXAMPLE 
+  ## COMMAND "node .\bin\gh-ai.js .\examples\prueba.txt output -d --tokens-verbose"
+  ## output <ppp> Aquí va el output del programa <ddd>
+#Language "English"
+#Usage "gh-ai <prompt-file> <output-directory> [options]"
+##HELP <ppp> HELP <ddd>
+#FilE ##Name "nombre-.js"
+##Description <ppp> contenido del fichero <ddd>
+

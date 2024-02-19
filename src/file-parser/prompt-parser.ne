@@ -12,32 +12,54 @@
  */
 import { lexer } from './file-parser/lexer.js';
 import {
-  buildProperty,
-  buildPropertyList,
+  getProperty,
+  buildName,
+  buildDescription,
   buildObject,
+  buildScriptLanguage,
+  buildLlmLanguage,
+  buildUsage,
   buildParameter,
-  buildExample
+  buildExample,
+  buildFile
 } from './file-parser/semantic-actions.js'; 
 %}
 
 @lexer lexer
 
-# The root of the prompt object it will search for a list of parameters
-prompt -> (%HASH_SYMBOL properties {% buildPropertyList %}):* %EOF {% buildObject %}
+# Macros
+matchTwo[X] -> $X $X
 
-# All the different properties that the file can have, the order or appearance doesn't matter 
-# but only one property type per file 
-properties -> 
-    %NAME %LANG_CASE_WORD              {% buildProperty['name'] %}
-  | %SCRIPT_LANGUAGE %STRING           {% buildProperty['scriptLanguage'] %}
-  | %DESCRIPTION %STRING               {% buildProperty['description'] %}
-  | %HELP %STRING                      {% buildProperty['help'] %}
-  | %PARAMETERS (parameter {% id %}):+ {% buildProperty['parameters'] %}
-  | %EXAMPLES (example {% id %}):+     {% buildProperty['examples'] %}
-  | %CHAT_LANGUAGE %STRING             {% buildProperty['chatLanguage'] %}
+prompt -> (%HASH_SYMBOL property {% getProperty %}):* %EOF {% buildObject %}
 
-# parameter rule, indicates that each parameter contains a name and a description
-parameter -> %HASH_SYMBOL %NAME %STRING %HASH_SYMBOL %DESCRIPTION %STRING    {% buildParameter %}
+property -> 
+    %NAME %GH_NAME                               {% buildName %}
+  | %DESCRIPTION %PARAGRAPH                      {% buildDescription %}
+  | %SCRIPT_LANGUAGE %STRING specification style {% buildScriptLanguage %}
+  | %LANGUAGE %STRING                            {% buildLlmLanguage %}
+  | %USAGE %STRING help                          {% buildUsage %}
+  | %PARAMETER name description                  {% buildParameter %}
+  | %EXAMPLE command output                      {% buildExample %} 
+  | %FILE name description                       {% buildFile %}
 
-# example rule, indicates that each example contains an input and an output 
-example -> %HASH_SYMBOL %INPUT %STRING %HASH_SYMBOL %EXPECTED_OUTPUT %STRING {% buildExample %}
+## Specific parameters that each property can have 
+
+specification -> 
+    null {% id %}
+  | (matchTwo[%HASH_SYMBOL] %SPECIFICATION) %STRING {% getProperty %}
+
+style -> 
+    null {% id %}
+  | (matchTwo[%HASH_SYMBOL] %STYLE) %STRING {% getProperty %}
+
+name -> (matchTwo[%HASH_SYMBOL] %NAME) %STRING {% getProperty %}
+
+description -> (matchTwo[%HASH_SYMBOL] %DESCRIPTION) %PARAGRAPH {% getProperty %}
+
+command -> (matchTwo[%HASH_SYMBOL] %COMMAND) %STRING {% getProperty %}
+
+output -> (matchTwo[%HASH_SYMBOL] %OUTPUT) %PARAGRAPH {% getProperty %}
+
+help -> 
+    null {% id %}
+  | (matchTwo[%HASH_SYMBOL] %HELP):? %PARAGRAPH {% getProperty %}

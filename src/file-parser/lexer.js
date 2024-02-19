@@ -13,39 +13,101 @@
 import { makeLexer } from 'moo-ignore';
 'use strict';
 
-const WHITES =          /(?:\s+|\/\*(?:.|\n)*?\*\/)+/; // ESTE WHITES ESTA PENSADO PARA EGG
-const STRING =          /"(?:[^"\\]|\\.)*"/;
-const LANG_CASE_WORD =  /[a-z][a-z0-9]*(?:[-][a-z0-9]+)*/
-const HASH_SYMBOL =     /[#]/;
-const NAME =            /NAME/;
-const SCRIPT_LANGUAGE = /SCRIPT(?:ING)?\s*LANGUAGE/;
-const DESCRIPTION =     /DESCRIPTION/;
-const HELP =            /HELP/;
-const PARAMETERS =      /PARAMETERS/;
-const EXAMPLES =        /EXAMPLES/;
-const INPUT =           /INPUT/;
-const EXPECTED_OUTPUT = /(?:EXPECTED\s*)?OUTPUT/;
-const CHAT_LANGUAGE =   /CHAT\s*LANGUAGE/;
-const EOF = '__EOF__';
+/**
+ * @description Checks if a character is a letter or not given the RegExp /[a-zA-Z]/
+ * @param {string} char
+ * @returns {boolean} True - if the character is a letter
+ * @returns {boolean} False - if the character is not a letter
+ */
+const isCharLetter = (char) => {
+  const LETTER_REGEXP = /[a-zA-Z]/;
+  return LETTER_REGEXP.test(char);
+};
+
+/**
+ * @description Cut double quotation marks from a given string
+ * @param {string} string The string with the double quotation marks 
+ * @returns {string} The string without the double quotation marks
+ * @example console.log(sliceQuotationMarks('"hello!"')); // 'hello!'
+ */
+const sliceDoubleQuotationMarks = (string) => {
+  return string.slice(1, -1);
+};
+
+/**
+ * @description Extract the content of a paragraph removing both delimiters
+ * @param {string} paragraph 
+ * @returns {string} With the content of the paragraph
+ */
+const getParagraphContent = (paragraph) => {
+  const PARAGRAPH_WITH_GROUP = /<ppp>((?:[^\n][\n]*)*)<ddd>/;
+  return PARAGRAPH_WITH_GROUP.exec(paragraph)[1].trim();
+};
+
+/**
+ * @description Given a word it will create a string following a case insensitive RegExp
+ * @param {string} word The word that will be transformed into case insensitive 
+ * @returns {string} A string with the case insensitive format
+ * @example console.log(toCaseInsensive('name')); // Result -> '[nN][aA][mM][eE]'
+ */
+function toCaseInsensive(word) {
+  const regexSource = word.split('').map((char) => {
+    if (isCharLetter(char)) {
+      return `[${char.toLowerCase()}${char.toUpperCase()}]`;
+    }
+    return char;
+  });
+  return regexSource.join('');
+};
+
+const HASH_SYMBOL     = /[#]/;
+const WHITES          = /(?:\s+|\/\*(?:.|\n)*?\*\/)+/; // ESTE WHITES ESTA PENSADO PARA EGG
+const STRING          = /"(?:[^"\\]|\\.)*"/;
+const PARAGRAPH       = /<ppp>(?:.|\n)*?<ddd>/;
+const GH_NAME         = /[a-z][a-z0-9]*(?:[-][a-z0-9]+)*/
+const NAME            = new RegExp(toCaseInsensive('name'));                                                                             // /name/i
+const SCRIPT_LANGUAGE = new RegExp(toCaseInsensive('script') + '(?:' + toCaseInsensive('ing') + ')?\\s*' + toCaseInsensive('language')); // /script(?:ing)?\s*language/i
+const SPECIFICATION   = new RegExp(toCaseInsensive('specification'));                                                                    // /specification/i
+const STYLE           = new RegExp(toCaseInsensive('style'));                                                                            // /style/i
+const DESCRIPTION     = new RegExp(toCaseInsensive('description'));                                                                      // /description/i
+const USAGE           = new RegExp(toCaseInsensive('usage'));                                                                            // /usage/i
+const HELP            = new RegExp(toCaseInsensive('help'));                                                                             // /help/i
+const PARAMETER       = new RegExp(toCaseInsensive('parameter'));                                                                        // /parameter/i
+const EXAMPLE         = new RegExp(toCaseInsensive('example'));                                                                          // /example/i
+const COMMAND         = new RegExp(toCaseInsensive('command'));                                                                          // /command/i
+const OUTPUT          = new RegExp(toCaseInsensive('output'));                                                                           // /output/i
+const LANGUAGE        = new RegExp(toCaseInsensive('language'));                                                                         // /language/i
+const FILE            = new RegExp(toCaseInsensive('file'));                                                                             // /file/i
+const EOF             = '__EOF__';
 
 const TOKENS = {
-  WHITES: { match: WHITES, lineBreaks: true},
-  STRING: { match: STRING, value: (value) => { return value.slice(1, -1); }},
   HASH_SYMBOL,
+  WHITES: { match: WHITES, lineBreaks: true },
+  STRING: { match: STRING, value: sliceDoubleQuotationMarks },
+  PARAGRAPH: { match: PARAGRAPH, value: getParagraphContent },
   NAME,
   SCRIPT_LANGUAGE,
+  SPECIFICATION,
+  STYLE,
   DESCRIPTION,
+  USAGE,
   HELP,
-  PARAMETERS,
-  EXAMPLES,
-  INPUT,
-  EXPECTED_OUTPUT,
-  CHAT_LANGUAGE,
-  LANG_CASE_WORD,
+  PARAMETER,
+  EXAMPLE,
+  COMMAND,
+  OUTPUT,
+  LANGUAGE,
+  FILE,
+  GH_NAME,
   EOF
 };
 
+// console.log(TOKENS, '\n');
+
 /** @description moo-ignore lexer with all the tokens needed for the parser */
-let lexer = makeLexer(TOKENS, ['WHITES'], { eof: true});
+let lexer = makeLexer(TOKENS, ['WHITES'], { eof: true });
+
+// lexer.reset('#NAME gh-ai\n#scripting language "JavaScript" #Description <ppp> alkdjaldkjasldkajdlaskjdalkdjal<ppp>kdjasldkajdlakjdalskdjaldkasldk <ddd>');
+// console.log(Array.from(lexer));
 
 export { lexer };

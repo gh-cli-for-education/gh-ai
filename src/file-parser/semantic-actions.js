@@ -12,79 +12,79 @@
  */
 'use strict';
 
-/**
- * @TODO mejorar esto, se puede hacer mejor?
- */
-const buildProperty = {
-  name:           (d) => buildPropertyFunc(d, 'name'),
-  scriptLanguage: (d) => buildPropertyFunc(d, 'scriptLanguage'),
-  description:    (d) => buildPropertyFunc(d, 'description'),
-  help:           (d) => buildPropertyFunc(d, 'help'),
-  parameters:     (d) => buildPropertyFunc(d, 'parameters'),
-  examples:       (d) => buildPropertyFunc(d, 'examples'),
-  chatLanguage:   (d) => buildPropertyFunc(d, 'chatLanguage'),
-};
-
-/**
- * @description Convert two tokens into a key:value pair wrapped inside an object
- * @param {object} tokensArray Array with the matched tokens 
- * @param {string} propertyName tokensArray Array with the matched tokens 
- * @returns {object} A new Object with the property content value 
- */
-function buildPropertyFunc([hashSymbol, propertyContent], propertyName) {
-  let property = {};
-  let isArray = propertyName === 'parameters' || propertyName === 'examples';
-  property[propertyName] = (isArray)? propertyContent : propertyContent.value;
+function getProperty([hashSymbol, property]) {
   return property;
 }
 
-/**
- * @description extract the property for the parameter match in the grammar
- * @param {object} tokensArray Array with the matched tokens 
- * @returns {object} Returns the property element from the array
- */
-function buildPropertyList([hashSymbol, property]) {
-  return property;
+function buildName([tag, name]) {
+  const GH_NAME = /(gh-)?[a-z][a-z0-9]*(?:[-][a-z0-9]+)*/;
+  if (!GH_NAME.exec(name.value)[1]) {
+    name.value = 'gh-' + name.value;
+  }
+  return { name: name.value };
 }
 
-/**
- * @description build the parameter object by combining the values of the name 
- * and description
- * @param {object} tokensArray Array with the matched tokens 
- * @returns {object} Returns a new parameter object
- */
-function buildParameter([
-  hashSymbol1, 
-  nameToken, 
-  stringToken1, 
-  hashSymbol2, 
-  descriptionToken, 
-  stringToken2
-]) {
+function buildDescription([tag, paragraph]) {
+  return { description: paragraph.value };
+}
+
+function buildScriptLanguage([tag, scriptLanguage, specification, style]) {
   return {
-    name: stringToken1.value,
-    description: stringToken2.value
+    scriptLanguage: {
+      language: scriptLanguage.value,
+      specification: specification?.value,
+      style: style?.value
+    }
   };
 }
 
-/**
- * @description build the example object by combining the values of the name 
- * and description
- * @param {object} tokensArray Array with the matched tokens 
- * @returns {object} Returns a new example object
- */
-function buildExample([
-  hashSymbol1, 
-  input, 
-  stringToken1, 
-  hashSymbol2, 
-  outputToken, 
-  stringToken2
-]) {
+function buildLlmLanguage([tag, language]) {
+  return { chatLanguage: language.value };
+}
+
+function buildUsage([tag, usage, help]) {
   return {
-    input: stringToken1.value,
-    expectedOutput: stringToken2.value
+    usage: {
+      text: usage.value,
+      help: help?.value
+    }
   };
+}
+
+function buildParameter([tag, name, description]) {
+  return {
+    parameter: {
+      name: name.value,
+      description: description.value
+    }
+  };
+}
+
+function buildExample([tag, command, output]) {
+  return {
+    example: {
+      command: command.value,
+      output: output.value
+    }
+  };
+}
+
+function buildFile([tag, name, description]) {
+  return {
+    filename: name.value,
+    description: description.value
+  };
+}
+
+function buildArray(properties, targetTag) {
+  let result = [];
+  const checkProperty = (property) => property.hasOwnProperty(targetTag);
+  while(properties.some(checkProperty)) {
+    let index = properties.findIndex(checkProperty);
+    result.push(properties[index][targetTag]);
+    properties.splice(index, 1);
+  }
+  return result;
 }
 
 /**
@@ -96,6 +96,8 @@ function buildExample([
  */
 function buildObject([properties, eof]) {
   let object = {};
+  object.parameters = buildArray(properties, 'parameter');
+  object.examples = buildArray(properties, 'example');
   properties.map((property) => { // Deep merge of all property objects
     for (let key in property) {
       if(object[key]) { // Check if there is more than one property per prompt file  
@@ -104,13 +106,19 @@ function buildObject([properties, eof]) {
       object[key] = property[key];
     }
   });
+  console.log(object);
   return object;
 }
 
 export {
-  buildProperty,
-  buildExample,
+  getProperty,
+  buildName,
+  buildDescription,
+  buildObject,
+  buildScriptLanguage,
+  buildLlmLanguage,
+  buildUsage,
   buildParameter,
-  buildPropertyList,
-  buildObject
+  buildExample,
+  buildFile
 };
