@@ -21,6 +21,7 @@ import {
   buildLlmLanguage,
   buildUsage,
   buildParameter,
+  buildArgument,
   buildExample,
   buildFile,
 } from './file-parser/semantic-actions.js'; 
@@ -51,6 +52,7 @@ property ->
   | %LANGUAGE %STRING                            {% buildLlmLanguage %}
   | %USAGE %STRING help                          {% buildUsage %}
   | %PARAMETER name description                  {% buildParameter %}
+  | %ARGUMENT name description                   {% buildArgument %}
   | %EXAMPLE command output                      {% buildExample %} 
   | %FILE name description                       {% buildFile %}
   | %NAME %GH_NAME                               {% buildName %}

@@ -24,6 +24,7 @@ import {
   buildLlmLanguage,
   buildUsage,
   buildParameter,
+  buildArgument,
   buildExample,
   buildFile,
 } from './file-parser/semantic-actions.js'; 
@@ -39,6 +40,7 @@ var grammar = {
     {"name": "property", "symbols": [(lexer.has("LANGUAGE") ? {type: "LANGUAGE"} : LANGUAGE), (lexer.has("STRING") ? {type: "STRING"} : STRING)], "postprocess": buildLlmLanguage},
     {"name": "property", "symbols": [(lexer.has("USAGE") ? {type: "USAGE"} : USAGE), (lexer.has("STRING") ? {type: "STRING"} : STRING), "help"], "postprocess": buildUsage},
     {"name": "property", "symbols": [(lexer.has("PARAMETER") ? {type: "PARAMETER"} : PARAMETER), "name", "description"], "postprocess": buildParameter},
+    {"name": "property", "symbols": [(lexer.has("ARGUMENT") ? {type: "ARGUMENT"} : ARGUMENT), "name", "description"], "postprocess": buildArgument},
     {"name": "property", "symbols": [(lexer.has("EXAMPLE") ? {type: "EXAMPLE"} : EXAMPLE), "command", "output"], "postprocess": buildExample},
     {"name": "property", "symbols": [(lexer.has("FILE") ? {type: "FILE"} : FILE), "name", "description"], "postprocess": buildFile},
     {"name": "property", "symbols": [(lexer.has("NAME") ? {type: "NAME"} : NAME), (lexer.has("GH_NAME") ? {type: "GH_NAME"} : GH_NAME)], "postprocess": buildName},
@@ -107,4 +109,5 @@ var grammar = {
 ]
   , ParserStart: "prompt"
 }
+
 export {grammar};

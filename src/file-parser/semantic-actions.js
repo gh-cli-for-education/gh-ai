@@ -76,6 +76,17 @@ function buildParameter([tag, name, description]) {
   };
 }
 
+function buildArgument([tag, name, description]) {
+  return {
+    type: 'argument',
+    content: {
+      name: name.value,
+      description: description.value
+    }
+  };
+}
+
+
 function buildExample([tag, command, output]) {
   return {
     type: 'example',
@@ -117,6 +128,7 @@ function buildArray(properties, targetTag) {
  */
 function buildObject([properties, eof]) {
   let object = {};
+  object.arguments = buildArray(properties, 'argument');
   object.parameters = buildArray(properties, 'parameter');
   object.examples = buildArray(properties, 'example');
   object.files = buildArray(properties, 'file');
@@ -141,6 +153,7 @@ export {
   buildLlmLanguage,
   buildUsage,
   buildParameter,
+  buildArgument,
   buildExample,
   buildFile,
 };

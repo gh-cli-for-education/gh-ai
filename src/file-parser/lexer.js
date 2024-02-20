@@ -19,7 +19,7 @@ import { makeLexer, moo } from 'moo-ignore';
  * @returns {boolean} True - if the character is a letter
  * @returns {boolean} False - if the character is not a letter
  */
-const isCharLetter = (char) => {
+const isLetter = (char) => {
   const LETTER_REGEXP = /[a-zA-Z]/;
   return LETTER_REGEXP.test(char);
 };
@@ -52,7 +52,7 @@ const getParagraphContent = (paragraph) => {
  */
 function toCaseInsensive(word) {
   const regexSource = word.split('').map((char) => {
-    if (isCharLetter(char)) {
+    if (isLetter(char)) {
       return `[${char.toLowerCase()}${char.toUpperCase()}]`;
     }
     return char;
@@ -78,12 +78,13 @@ const COMMAND         = new RegExp(toCaseInsensive('command'));                 
 const OUTPUT          = new RegExp(toCaseInsensive('output'));                                                                           // /output/i
 const LANGUAGE        = new RegExp(toCaseInsensive('language'));                                                                         // /language/i
 const FILE            = new RegExp(toCaseInsensive('file'));                                                                             // /file/i
+const ARGUMENT        = new RegExp(toCaseInsensive('argument'));                                                                         // /argument/i
 const EOF             = '__EOF__';
 
 const TOKENS = {
   HASH_SYMBOL,
-  WHITES: { match: WHITES, lineBreaks: true },
-  STRING: { match: STRING, value: sliceDoubleQuotationMarks },
+  WHITES:    { match: WHITES, lineBreaks: true },
+  STRING:    { match: STRING, value: sliceDoubleQuotationMarks, lineBreaks: true },
   PARAGRAPH: { match: PARAGRAPH, value: getParagraphContent, lineBreaks: true },
   NAME,
   SCRIPT_LANGUAGE,
@@ -98,6 +99,7 @@ const TOKENS = {
   OUTPUT,
   LANGUAGE,
   FILE,
+  ARGUMENT,
   GH_NAME,
   EOF,
   ERROR: moo.error
