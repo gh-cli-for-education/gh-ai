@@ -1,30 +1,47 @@
 #name gh-ai
-#scripting language "javascript"
-#PARAMETER ##NAME "-d | --debug" ##DESCRIPTION <ppp> Aquí va un parametro <ddd> 
-#Description <ppp> The gh-ai extension will consist in multiple javascript files with the main purpose of 
-creating an extension to help other people create more extension with the help of AI. So the first file you have to do generate is:
-
-1.) A file named api-call that will contains all the necessary functions to create an openai prompt and send it to the completions.create function of the 
-openai API, this file will have to contain 3 functions: the first one will parse the object created by the parser from the grammar.ne and 
-check if the object follows the specific schema that you can guess from the input file example shared before. To do that you can use zod package to validate the input object.
-the second function will create a prompt that has two messages, the first one by the system role and the second by the user role, the function will have to return the array with both prompts.
-Finally the last function will create an openai object and send the prompt using the completions.create function from the api.
-<ddd>
+#scripting language "javascript" ##specification "Especificación técnica" ##style "Estilo" 
+#PARAMETER ##NAME "-d | --debug"##DESCRIPTION <p> Aquí va un parametro ^^^adasdasdadasd </p>
+#Description <p>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. "" ## <> ```` ¿?!"·$%&/()=
+</p>
 #PARAMETER 
-  ##NAME "-e | --execute" ##DESCRIPTION <ppp> Aquí va otro parametro <ddd>
-
+  ##NAME "-e | --execute" 
+  ##DESCRIPTION <p> Aquí va otro parametro </p>
 #EXAMPLE 
-  ## COMMAND "node .\bin\gh-ai.js .\examples\prueba.txt output -d --tokens-verbose"
-  ## OUTPUT <ppp> Aquí va el output del programa <ddd>
+  ## COMMAND "node ./bin/gh-ai.js ./examples/prueba1.txt output -d --tokens-verbose"
+  ## OUTPUT <p> Aquí va el output del programa </p>
 #EXAMPLE 
-  ## command "node .\bin\gh-ai.js .\examples\prueba.txt output -d --tokens-verbose"
-  ## OUTPUT <ppp> Aquí va el output del programa <ddd>
+  ## command "node ./bin/gh-ai.js ./examples/prueba2.txt output -d --tokens-verbose"
+  ## OUTPUT <p> Aquí va el output del programa </p>
 #EXAMPLE 
-  ## COMMAND "node .\bin\gh-ai.js .\examples\prueba.txt output -d --tokens-verbose"
-  ## output <ppp> Aquí va el output del programa <ddd>
+  ## COMMAND "node ./bin/gh-ai.js ./examples/prueba3.txt output -d --tokens-verbose"
+  ## output <p> Aquí va el output del programa </p>
 #Language "English"
 #Usage "gh-ai <prompt-file> <output-directory> [options]"
-##HELP <ppp> HELP <ddd>
-#FilE ##Name "nombre-.js"
-##Description <ppp> contenido del fichero <ddd>
 
+##HELP <p> 
+Usage: gh-ai <prompt-file> <output-directory> [options]
+
+gh-cli extension that provides help in the creation of other gh extensions using AI and prompt-engineering
+
+Arguments:
+  prompt-file                The prompt file used to feed the llm
+  output-directory           The directory path where all the files created by the llm will be stored     
+
+Options:
+  -v, --version              Print the current version of the program
+  -d, --debug                Output extra information about the execution process
+  --org <organization>       Specify which organization is used for an API request.
+  --tokens-verbose           Output the token usage information in each prompt
+  -l, --llm <API>            Select the llm <API> to use (choices: "OPENAI", default: "OPENAI")
+  -t, --command-type <TYPE>  Select the command needed (choices: "EXTENSION", default: "extension")
+  -h, --help                 display help for command
+
+Aditional help:
+  If no option is passed the program will execute in 'interactive mode' asking the user different program options one by one 
+</p>
+
+#FilE ##Name "nombre-as.js" ##Description <p> contenido del fichero </p>

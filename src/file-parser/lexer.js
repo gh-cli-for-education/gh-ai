@@ -10,7 +10,7 @@
  * @desc Contains all the tokens used by the Lexer
  * @external Grammar
  */
-import { makeLexer } from 'moo-ignore';
+import { makeLexer, moo } from 'moo-ignore';
 'use strict';
 
 /**
@@ -40,7 +40,7 @@ const sliceDoubleQuotationMarks = (string) => {
  * @returns {string} With the content of the paragraph
  */
 const getParagraphContent = (paragraph) => {
-  const PARAGRAPH_WITH_GROUP = /<ppp>((?:[^\n][\n]*)*)<ddd>/;
+  const PARAGRAPH_WITH_GROUP = /<p>((?:.|\s)*?)<\/p>/;
   return PARAGRAPH_WITH_GROUP.exec(paragraph)[1].trim();
 };
 
@@ -63,7 +63,7 @@ function toCaseInsensive(word) {
 const HASH_SYMBOL     = /[#]/;
 const WHITES          = /(?:\s+|\/\*(?:.|\n)*?\*\/)+/; // ESTE WHITES ESTA PENSADO PARA EGG
 const STRING          = /"(?:[^"\\]|\\.)*"/;
-const PARAGRAPH       = /<ppp>(?:.|\n)*?<ddd>/;
+const PARAGRAPH       = /<p>(?:.|\s)*?<\/p>/;
 const GH_NAME         = /[a-z][a-z0-9]*(?:[-][a-z0-9]+)*/
 const NAME            = new RegExp(toCaseInsensive('name'));                                                                             // /name/i
 const SCRIPT_LANGUAGE = new RegExp(toCaseInsensive('script') + '(?:' + toCaseInsensive('ing') + ')?\\s*' + toCaseInsensive('language')); // /script(?:ing)?\s*language/i
@@ -84,7 +84,7 @@ const TOKENS = {
   HASH_SYMBOL,
   WHITES: { match: WHITES, lineBreaks: true },
   STRING: { match: STRING, value: sliceDoubleQuotationMarks },
-  PARAGRAPH: { match: PARAGRAPH, value: getParagraphContent },
+  PARAGRAPH: { match: PARAGRAPH, value: getParagraphContent, lineBreaks: true },
   NAME,
   SCRIPT_LANGUAGE,
   SPECIFICATION,
@@ -99,15 +99,13 @@ const TOKENS = {
   LANGUAGE,
   FILE,
   GH_NAME,
-  EOF
+  EOF,
+  ERROR: moo.error
 };
 
 // console.log(TOKENS, '\n');
 
 /** @description moo-ignore lexer with all the tokens needed for the parser */
 let lexer = makeLexer(TOKENS, ['WHITES'], { eof: true });
-
-// lexer.reset('#NAME gh-ai\n#scripting language "JavaScript" #Description <ppp> alkdjaldkjasldkajdlaskjdalkdjal<ppp>kdjasldkajdlakjdalskdjaldkasldk <ddd>');
-// console.log(Array.from(lexer));
 
 export { lexer };

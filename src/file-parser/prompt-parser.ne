@@ -13,6 +13,7 @@
 import { lexer } from './file-parser/lexer.js';
 import {
   getProperty,
+  getParameterValue,
   buildName,
   buildDescription,
   buildObject,
@@ -21,45 +22,51 @@ import {
   buildUsage,
   buildParameter,
   buildExample,
-  buildFile
+  buildFile,
 } from './file-parser/semantic-actions.js'; 
 %}
 
 @lexer lexer
 
-# Macros
+############### Macros ############### 
+
+# Given a token it will match two of the same token in a row
 matchTwo[X] -> $X $X
 
+# Given a name and a value tokens it will match the following pattern ##<name> <value> and return what it is in value 
+parameter[NAME, VALUE] -> (matchTwo[%HASH_SYMBOL] $NAME) $VALUE {% getProperty %}
+
+# Add an aditional rule to the parameter[NAME, VALUE] to make it optional
+optionalParameter[NAME, VALUE] -> null {% id %} | parameter[$NAME, $VALUE] {% id => id[0].flat() %}
+
+############### rules ############### 
+
+# Starting rule expect a list of properties and an end of file 
 prompt -> (%HASH_SYMBOL property {% getProperty %}):* %EOF {% buildObject %}
 
+# The program expect properties
 property -> 
-    %NAME %GH_NAME                               {% buildName %}
-  | %DESCRIPTION %PARAGRAPH                      {% buildDescription %}
+    null
   | %SCRIPT_LANGUAGE %STRING specification style {% buildScriptLanguage %}
   | %LANGUAGE %STRING                            {% buildLlmLanguage %}
   | %USAGE %STRING help                          {% buildUsage %}
   | %PARAMETER name description                  {% buildParameter %}
   | %EXAMPLE command output                      {% buildExample %} 
   | %FILE name description                       {% buildFile %}
+  | %NAME %GH_NAME                               {% buildName %}
+  | %DESCRIPTION %PARAGRAPH                      {% buildDescription %}
 
-## Specific parameters that each property can have 
+## SCRIPT_LANGUAGE parameters 
+specification -> optionalParameter[%SPECIFICATION, %STRING] {% getParameterValue %}
+style         -> optionalParameter[%STYLE, %STRING]         {% getParameterValue %}
 
-specification -> 
-    null {% id %}
-  | (matchTwo[%HASH_SYMBOL] %SPECIFICATION) %STRING {% getProperty %}
+## EXAMPLE parameters
+command -> parameter[%COMMAND, %STRING]   {% getParameterValue %}
+output ->  parameter[%OUTPUT, %PARAGRAPH] {% getParameterValue %}
 
-style -> 
-    null {% id %}
-  | (matchTwo[%HASH_SYMBOL] %STYLE) %STRING {% getProperty %}
+## USAGE parameters 
+help -> optionalParameter[%HELP, %PARAGRAPH] {% getParameterValue %}
 
-name -> (matchTwo[%HASH_SYMBOL] %NAME) %STRING {% getProperty %}
-
-description -> (matchTwo[%HASH_SYMBOL] %DESCRIPTION) %PARAGRAPH {% getProperty %}
-
-command -> (matchTwo[%HASH_SYMBOL] %COMMAND) %STRING {% getProperty %}
-
-output -> (matchTwo[%HASH_SYMBOL] %OUTPUT) %PARAGRAPH {% getProperty %}
-
-help -> 
-    null {% id %}
-  | (matchTwo[%HASH_SYMBOL] %HELP):? %PARAGRAPH {% getProperty %}
+## Generic parameters used to ask a name or a description
+name        -> parameter[%NAME, %STRING]           {% getParameterValue %}
+description -> parameter[%DESCRIPTION, %PARAGRAPH] {% getParameterValue %}

@@ -16,21 +16,32 @@ function getProperty([hashSymbol, property]) {
   return property;
 }
 
+function getParameterValue([value]) {
+  return (value)? value[0] : value;
+}
+
 function buildName([tag, name]) {
   const GH_NAME = /(gh-)?[a-z][a-z0-9]*(?:[-][a-z0-9]+)*/;
   if (!GH_NAME.exec(name.value)[1]) {
     name.value = 'gh-' + name.value;
   }
-  return { name: name.value };
+  return { 
+    type: 'name',
+    content: name.value 
+  };
 }
 
 function buildDescription([tag, paragraph]) {
-  return { description: paragraph.value };
+  return { 
+    type: 'description',
+    content: paragraph.value 
+  };
 }
 
 function buildScriptLanguage([tag, scriptLanguage, specification, style]) {
   return {
-    scriptLanguage: {
+    type: 'scriptLanguage',
+    content: {
       language: scriptLanguage.value,
       specification: specification?.value,
       style: style?.value
@@ -39,12 +50,16 @@ function buildScriptLanguage([tag, scriptLanguage, specification, style]) {
 }
 
 function buildLlmLanguage([tag, language]) {
-  return { chatLanguage: language.value };
+  return { 
+    type: 'chatLanguage',
+    content: language.value 
+  };
 }
 
 function buildUsage([tag, usage, help]) {
   return {
-    usage: {
+    type: 'usage',
+    content: {
       text: usage.value,
       help: help?.value
     }
@@ -53,7 +68,8 @@ function buildUsage([tag, usage, help]) {
 
 function buildParameter([tag, name, description]) {
   return {
-    parameter: {
+    type: 'parameter',
+    content: {
       name: name.value,
       description: description.value
     }
@@ -62,7 +78,8 @@ function buildParameter([tag, name, description]) {
 
 function buildExample([tag, command, output]) {
   return {
-    example: {
+    type: 'example',
+    content: {
       command: command.value,
       output: output.value
     }
@@ -71,18 +88,22 @@ function buildExample([tag, command, output]) {
 
 function buildFile([tag, name, description]) {
   return {
-    filename: name.value,
-    description: description.value
+    type: 'file',
+    content: {
+      filename: name.value,
+      description: description.value
+    }
   };
 }
 
 function buildArray(properties, targetTag) {
   let result = [];
-  const checkProperty = (property) => property.hasOwnProperty(targetTag);
-  while(properties.some(checkProperty)) {
-    let index = properties.findIndex(checkProperty);
-    result.push(properties[index][targetTag]);
-    properties.splice(index, 1);
+  for (let i = 0; i < properties.length; i++) {
+    if (properties[i].type === targetTag) {
+      result.push(properties[i].content);
+      properties.splice(i, 1);
+      i--;
+    }
   }
   return result;
 }
@@ -98,20 +119,21 @@ function buildObject([properties, eof]) {
   let object = {};
   object.parameters = buildArray(properties, 'parameter');
   object.examples = buildArray(properties, 'example');
+  object.files = buildArray(properties, 'file');
   properties.map((property) => { // Deep merge of all property objects
-    for (let key in property) {
-      if(object[key]) { // Check if there is more than one property per prompt file  
-        throw new Error(`Duplicated properties are not allowed. Expected 1 #${key.toUpperCase()} property but received 2.`); /** @TODO mover esto al error handler */
-      }
-      object[key] = property[key];
+    if(object[property.type]) { // Check if there is more than one property per prompt file  
+      throw new Error(`Duplicated Tags are not allowed. Expected one #${property.type.toUpperCase()} property but received 2.`); /** @TODO mover esto al error handler */
     }
-  });
+    object[property.type] = property.content;
+    }
+  );
   console.log(object);
   return object;
 }
 
 export {
   getProperty,
+  getParameterValue,
   buildName,
   buildDescription,
   buildObject,
@@ -120,5 +142,5 @@ export {
   buildUsage,
   buildParameter,
   buildExample,
-  buildFile
+  buildFile,
 };

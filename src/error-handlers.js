@@ -21,17 +21,16 @@ ERROR_HANDLER['zodError'] = (error) => {
  * @param {object} error An error with a token property
  */
 ERROR_HANDLER['nearleyError'] = (error) => {
-  const lineAndColRegex = /line (\d+) col (\d+):/;
-  const expectedTokenRegex = /A (.*) token based on:/g;
-  let positionMsg = `In line ${lineAndColRegex.exec(error.message)[1]} at column ${lineAndColRegex.exec(error.message)[2]}:`; // Mejorar esto al poner line y col en los tokens
-  let errorMsg = '';
+  let errorMsg = 'The parser found an error while reading the input file!\n';
   if (error.token) {
-    errorMsg = `The parser found an unexpected ${error.token.type} token with value: ${error.token.value}. `;
+    errorMsg += `Unexpected ${error.token.type} token`;
   } else {
-    errorMsg = 'The parser found an invalid syntax. ';
+    errorMsg += 'Invalid syntax';
   }
-  errorMsg += `The expected tokens are: ${[...error.message.matchAll(expectedTokenRegex)].map((match) => match[1])}`;
-  console.error(`An error occured while reading the input file!\n ${positionMsg}\n  ${errorMsg}`);  
+  console.error(parser.lexer.formatError(error.token, errorMsg));
+  const expectedTokenRegex = /A (.*) token based on:/g;
+  const expectedTokens = [...error.message.matchAll(expectedTokenRegex)];
+  console.error(`\nThe expected tokens are: ${expectedTokens.map((match) => match[1])}`);  
 };
 
 export { ERROR_HANDLER };
