@@ -20,6 +20,12 @@ import * as grammarModule from './grammar.js';
 'use strict';
 
 const API = Object.create(null);
+let TEMPLATES = Object.create(null);
+
+TEMPLATES = {
+  USER: {},
+  SYSTEM: {},
+}
 
 /**
  * @description Parse the input file from the user and returns an object with
@@ -90,5 +96,6 @@ export {
   HELP_TYPES,
   PACKAGE_DATA,
   SCHEMAS,
-  API
+  API,
+  TEMPLATES
 };

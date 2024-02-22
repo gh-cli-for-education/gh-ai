@@ -12,15 +12,27 @@
 import { z } from "zod";
 'use strict';
 
-const PARAMETERS_SCHEMA = z.object({
-  name: z.string().describe('Parameter name use the format -p | --long-parameter-name'),
-  description: z.string().describe('Parameter description, put useful info about the option function')
-}).describe('An extension parameter, it has to describe the option').required().strict();
+const NAME_DESCRIPTION_SCHEMA = z.object({
+  name: z.string().describe('The expected name of the object'),
+  description: z.string().describe('The description of the object')
+}).describe('A generic schema for any object that has a name and a description').required().strict();
 
 const EXAMPLES_SCHEMA = z.object({
-  input: z.string().describe('The example input'),
-  expectedOutput: z.string().describe('The expected example output')
+  command: z.string().describe('The example command to execute'),
+  output: z.string().describe('The expected example output')
 }).describe('Usage example of the expected extension').required().strict();
+
+
+const SCRIPT_LANGUAGE_SCHEMA = z.object({
+  language: z.string().describe('The specified language used by the extension'),
+  specification: z.string().describe('The language specification').optional(),
+  style: z.string().describe('The coding style for the language').optional()
+}).describe('Script language configuration').required({ language: true }).strict();
+
+const USAGE_SCHEMA = z.object({
+  usage: z.string().describe('The string containing the usage'),
+  help: z.string().describe('An expected help output from the help function').optional()
+}).describe('Usage expected by the extension').required({ usage: true }).strict();
 
 /**
  * @TODO poner descripción del objeto
@@ -28,12 +40,14 @@ const EXAMPLES_SCHEMA = z.object({
  */
 const EXTENSION_SCHEMA = z.object({
   name: z.string().describe('The extension name'),
-  scriptLanguage: z.string().describe('Language of the expected extension'),
-  chatLanguage: z.string().describe('The Language used by the llm in the response').optional(),
-  help: z.string().describe('An optional usage representation, can be used to tell the llm how you want the help function').optional(),
+  scriptLanguage: SCRIPT_LANGUAGE_SCHEMA,
   description: z.string().describe('The description of the proposal, put as much info as you can think'),
-  parameters: z.array(PARAMETERS_SCHEMA).describe('An Array with all the extension parameters').optional(),
-  examples: z.array(EXAMPLES_SCHEMA).describe('An Array with all the usage examples of the extension').optional()
+  usage: USAGE_SCHEMA.optional(),
+  chatLanguage: z.string().describe('The Language used by the llm in the response').optional(),
+  parameters: z.array(NAME_DESCRIPTION_SCHEMA).describe('An Array with all the extension parameters').optional(),
+  examples: z.array(EXAMPLES_SCHEMA).describe('An Array with all the usage examples of the extension').optional(),
+  arguments: z.array(NAME_DESCRIPTION_SCHEMA).describe('An Array with all the arguments expected by the extension').optional(),
+  files: z.array(NAME_DESCRIPTION_SCHEMA).describe('An Array with all the files expected by the extension').optional()
 }).describe('The extension proposal, fill all the parameters for a better result').required({
   name: true,
   scriptLanguage: true,
@@ -48,17 +62,29 @@ const EXTENSION_SCHEMA = z.object({
 const customErrorMap = (issue, ctx) => {
   if (issue.code === z.ZodIssueCode.invalid_type) {
     if (issue.path.length === 0) { return { message: 'Expected an object. Received nothing' }; }
-    let errorMsg = `Expected a #${issue.path[issue.path.length - 1].toUpperCase()} property `;
+    let amountOfHashs = 0;
+    issue.path.map((path) => amountOfHashs += isNaN(path));
+    let errorMsg = `Expected a ${'#'.repeat(amountOfHashs)}${issue.path[issue.path.length - 1].toUpperCase()} property `;
+    console.log(issue);
     if (issue.path.length > 1) {
-      errorMsg += `in ${issue.path.map((path, index) => {
-        errorMsg += `#${path.toUpperCase()} ${(index < issue.path.length)? ' -> ' : ''}`;
-      })} `;
+      amountOfHashs = 1;
+      errorMsg += 'in ';
+      issue.path.map((path, index) => {
+        if (isNaN(path)) {
+          errorMsg += `${'#'.repeat(amountOfHashs)}${path.toUpperCase()}${(index < issue.path.length)? ' -> ' : ''}`;
+          amountOfHashs++;
+        } else {
+          errorMsg += `at index ${path} inside the array -> `;
+        }
+      })
     }
-    errorMsg += `with a ${issue.expected.toUpperCase()} value. Received ${(issue.received === 'undefined')? 'nothing' : `a(n) ${issue.received.toUpperCase()} value instead`}.`
+    errorMsg += `with a ${issue.expected.toUpperCase()} value. Received `;
+    errorMsg += `${(issue.received === 'undefined')? 'nothing' : `a(n) ${issue.received.toUpperCase()} value instead`}.`;
     return { message: errorMsg };
   }
   return { message: ctx.defaultError };
 };
 
 z.setErrorMap(customErrorMap);
+
 export { EXTENSION_SCHEMA }

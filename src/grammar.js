@@ -13,7 +13,7 @@ function id(x) { return x[0]; }
  * @desc Contains all the parser rules and the corresponding semantic actions
  * @external Grammar
  */
-import { lexer } from './file-parser/lexer.js';
+import { lexer } from './parser/lexer.js';
 import {
   getProperty,
   getParameterValue,
@@ -27,7 +27,7 @@ import {
   buildArgument,
   buildExample,
   buildFile,
-} from './file-parser/semantic-actions.js'; 
+} from './parser/semantic-actions.js'; 
 var grammar = {
     Lexer: lexer,
     ParserRules: [

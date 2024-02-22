@@ -11,9 +11,12 @@
  */
 import * as fs from 'fs/promises';
 import OpenAI from 'openai';
+import Mustache from 'mustache';
 
-import { parseInputFile, HELP_TYPES, API} from './utils.js';
+import { parseInputFile, HELP_TYPES, API, TEMPLATES} from './utils.js';
 import { API_RESPONSE_SCHEMA } from './schemas/api-response-schema.js';
+import { USER_EXTENSION } from './templates/extension-user-prompts.js';
+import { SYSTEM_EXTENSION } from './templates/extension-system-messages.js';
 'use strict';
 
 /**
@@ -23,50 +26,7 @@ import { API_RESPONSE_SCHEMA } from './schemas/api-response-schema.js';
  * @returns 
  */
 function generateSystemMessage(inputObject, commandType) {
-  let systemMsg = 
-`You are a Github CLI and a ${inputObject.scriptLanguage} professional, you always use the 
-${inputObject.scriptLanguage} Google's coding style and you know everything from the Github CLI 
-and ${inputObject.scriptLanguage} documentation.\n`;
-  switch (commandType) {
-    case HELP_TYPES.EXTENSION:
-      systemMsg += 
-`Your job consist in helping the user make an extension by guiding and mainly
-generating quality code. The user will prompt the input in an specific format.
-Here is an example of a user prompt following the correct format, the tags
-could be in different places:
 
-#NAME <mandatory>
-#SCRIPTING LANGUAGE <mandatory>
-#DESCRIPTION <mandatory>
-#PARAMETERS <optional>
-#EXAMPLES <optional>
-#HELP <optional>
-#CHAT LANGUAGE <optional>
-`;
-      break;
-    default: 
-      throw new Error('Unexpected Help type');
-  }
-  systemMsg +=
-`No matter the user input you will respond in a JSON format complaying the 
-following format. Make sure to follow the specified format and don't add or 
-remove any property from the json schema. Here is an example of the json output:
-
-{
-  "advices": <Put here all the advices that are not code related like installation and usage>,
-  "files": <Put here an array of objects tha represent the files you will create to put the code in, with the format: {
-     "filename": <Put here the file name>, 
-     "content": <Put here the code and comments you generate. put a header comment with a short description of the file code> 
-    }>,
-  "errors": <Put here an array of strings telling all the errors you found that can be from the user no putting any information to the user not asking about creating an extension, if no errors are found leave an empty array>
-}
-  
-Here are some rules you must follow if you create code inside the content property
-
-1. You are able to use any library or package but make sure not to use an 
-excessive amount of them.
-`;
-  return systemMsg;
 }
 
 function generateUserMessage(inputObject) {
@@ -104,10 +64,13 @@ It is important that you generate code so even if you think that you won't be ab
  */
 function generatePrompt(inputObject, options) {
   let prompts = [];
+  let type = options.commandType.toUpperCase();
   prompts.push({
     role: 'system',
-    content: generateSystemMessage(inputObject, options.commandType)
+    content:TEMPLATES.SYSTEM[type](inputObject)
   });
+  console.log(prompts[0].content);
+  return;
   prompts.push({ // Aquí se podría ver si se realiza un mensaje completo o se separa por tareas
     role: 'user',
     content: generateUserMessage(inputObject)
@@ -172,7 +135,6 @@ async function call(prompts, options) {
 
   // Realizar check de los posibles errores
   const response = completions.choices[0]; // Solo existe una posible respuesta
-  const usage = completions.usage; /** @TODO comprobar que --tokens-verbose esta activado */
   let finishReason = response.finish_reason;
 
   if (options.debug) { console.log('Finish reason of the openAI response:', finishReason); }
@@ -201,6 +163,7 @@ API['OPENAI'] = async function (inputfile, outputdirectory, options) {
   try {
     let inputObject = await parseInputFile(inputfile, options);
     let prompts = generatePrompt(inputObject, options);
+    return;
     if (options.debug) { console.log(prompts); }
     let response = await call(prompts, options);
     if (options.debug) { console.log(response); }
