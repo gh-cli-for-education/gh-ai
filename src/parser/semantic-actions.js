@@ -139,7 +139,6 @@ function buildObject([properties, eof]) {
     object[property.type] = property.content;
     }
   );
-  console.log(object);
   return object;
 }
 

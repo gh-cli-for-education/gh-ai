@@ -22,58 +22,16 @@ import { SYSTEM_EXTENSION } from './templates/extension-system-messages.js';
 /**
  * 
  * @param {*} inputObject 
- * @param {*} helpType 
- * @returns 
- */
-function generateSystemMessage(inputObject, commandType) {
-
-}
-
-function generateUserMessage(inputObject) {
-  let userMsg = '';
-  for (let property in inputObject) {
-    userMsg += `#${property.toUpperCase()} `;
-    if (property === 'parameters') {
-      userMsg += '\n';
-      inputObject[property].forEach((parameter, index) => {
-        userMsg += `${index + 1}. ${parameter.name} "${parameter.description}"\n`;
-      });
-    } else if (property === 'examples') {
-      userMsg += '\n';
-      inputObject[property].forEach((example, index) => {
-        userMsg += `${index + 1}. Given this input: ${example.input}\n\nThis should be the output:\n${example.expectedOutput}\n`;
-      });
-    } else {
-      userMsg += `${inputObject[property]}\n`;
-    }
-  }
-  /*
-  userMsg +=
-`With all this information I want you to create some code that will help me start the extension, code as much as you think is needed 
-to acomplish what I asked for. Remember to put comments inside the code file to explain everything you generate.
-
-It is important that you generate code so even if you think that you won't be able to success in what the use is asking at least make enough code to start with.`;
-*/
-  return userMsg;
-}
-
-/**
- * 
- * @param {*} inputObject 
  * @param {*} options 
  */
 function generatePrompt(inputObject, options) {
-  let prompts = [];
+  let prompts = {};
   let type = options.commandType.toUpperCase();
-  prompts.push({
-    role: 'system',
-    content:TEMPLATES.SYSTEM[type](inputObject)
-  });
-  console.log(prompts[0].content);
-  return;
-  prompts.push({ // Aquí se podría ver si se realiza un mensaje completo o se separa por tareas
-    role: 'user',
-    content: generateUserMessage(inputObject)
+  prompts.system = TEMPLATES.SYSTEM[type](inputObject);;
+  let userPrompts = TEMPLATES.USER[type](inputObject);
+  prompts.user = [];
+  userPrompts.map((prompt) => {
+    prompts.user.push({ role: 'user', content: prompt });
   });
   return prompts;
 }
@@ -84,7 +42,7 @@ function generatePrompt(inputObject, options) {
  * @param {*} options 
  */
 async function createFiles(prompt, apiResponse, outputDirectory, options) {
-  // Comrprobar con anterioridad que apiResponse sigue el formato correcto
+  // Comprobar con anterioridad que apiResponse sigue el formato correcto
   try {
     await fs.mkdir(outputDirectory, { recursive: true });
   } catch(error) {
@@ -120,6 +78,34 @@ async function call(prompts, options) {
     organization: options.org
   });
   const DEFAULT_MODEL = 'gpt-3.5-turbo-0125';
+  const assistant = await openai.beta.assistants.create({
+    instructions: prompts.system,
+    model: DEFAULT_MODEL,
+  });
+  const thread = await openai.beta.threads.create();
+  prompts.user.map(async (prompt) => {
+    await openai.beta.threads.messages.create(thread.id, prompt);
+    let run = await openai.beta.threads.runs.create(
+      thread.id,
+      { assistant_id: assistant.id }
+    );
+    while (run.status !== 'completed') {
+      if (run.status === 'failed' || run.status === 'cancelled') { break; }
+      run = await openai.beta.threads.runs.retrieve(
+        thread.id,
+        run.id
+      );
+    }
+    const messages = await openai.beta.threads.messages.list(
+      thread.id
+    );
+    console.log(messages.data[0].content);
+  });
+
+
+  // console.log(run);
+  // console.log(messages.data[0].content);
+  /*
   const completions = await openai.chat.completions.create({
     messages: prompts, // Aquí va el Array de los mensajes espeficicados de la siguiente manera:
                        // { role: ('assistant', 'user', 'system'), content: (Contenido del mensaje)} *-> Investigar más acerca del significado del rol
@@ -132,7 +118,7 @@ async function call(prompts, options) {
     temperature: 0.2,                         // Tambien esta top_p: Ambos controlan la aleatoriedad de las respuestas. No modificar ambos a la vez.
     tools: undefined                          // Permite a ChatGPT llamar a funciones pasandoles directamente el JSON generado por el mismo. (investigar más).
   });
-
+  
   // Realizar check de los posibles errores
   const response = completions.choices[0]; // Solo existe una posible respuesta
   let finishReason = response.finish_reason;
@@ -148,9 +134,10 @@ async function call(prompts, options) {
       errorMsg += 'The prompt was omitted due to a flag in content filter.';
     }
     throw new Error(errorMsg);
+    
   } // Realizar parsing de las respuestas para devolver un array de respuestas 
-  /** @TODO SEGUIR POR AQUI  */
-  return response.message.content; 
+  /** @TODO SEGUIR POR AQUI  
+  return response.message.content; */
 }
 
 /**
@@ -163,9 +150,9 @@ API['OPENAI'] = async function (inputfile, outputdirectory, options) {
   try {
     let inputObject = await parseInputFile(inputfile, options);
     let prompts = generatePrompt(inputObject, options);
-    return;
     if (options.debug) { console.log(prompts); }
     let response = await call(prompts, options);
+    return;
     if (options.debug) { console.log(response); }
     await createFiles(prompts, response, outputdirectory, options);
   } catch (error) {
