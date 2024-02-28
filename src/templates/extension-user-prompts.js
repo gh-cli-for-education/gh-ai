@@ -15,7 +15,7 @@ import { TEMPLATES } from '../utils.js';
 'use strict';
 
 const parseNameDescription = function () {
-  return `${this.name}\n\n${this.description}\n\n`;
+  return `${this.name}: ${this.description}\n\n`;
 };
 
 const USER_EXTENSION = {
@@ -28,9 +28,10 @@ const USER_EXTENSION = {
 {{description}}
 
   {{#arguments.length}}##ARGUMENTS{{/arguments.length}}
+
   {{#arguments}}  ###ARGUMENT {{nameDescription}}{{/arguments}} {{#parameters.length}}##PARAMETERS{{/parameters.length}}
 
-  {{#parameters}} ###PARAMETER {{nameDescription}}{{/parameters}}{{#usage}}##USAGE {{usage.usage}} 
+  {{#parameters}}   ###PARAMETER {{nameDescription}}{{/parameters}}{{#usage}} ##USAGE {{usage.usage}} 
   {{#usage.help}}###HELP
 
   {{usage.help}}

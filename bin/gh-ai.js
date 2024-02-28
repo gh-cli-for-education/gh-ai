@@ -64,9 +64,13 @@ async function main(promptFile, outputDirectory, options) {
     }
     else if (Object.hasOwn(error, 'token')) { // Checks if the error object has an 'offset property
       ERROR_HANDLER.nearleyError(error);
-    } else {
-      console.error(error);
+    }
+    else if (Object.hasOwn(error, 'reason')) {
+      ERROR_HANDLER.apiCallError(error);
+    } 
+    else {
       console.error(`An unexpected error has ocurred\n ${error.message}`);
+      console.error(error);
     }
   }
   

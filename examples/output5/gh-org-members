@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# Default organization
+DEFAULT_ORG=""
+VERSION="1.0.0"
+
+# Function to display the usage
+usage() {
+  echo "Usage: gh org-members [options] [organization]"
+  echo "Options:"
+  echo "  -V, --version: Output the version number"
+  echo "  -f, --fullname: Show name of the user (if available)"
+  echo "  -j, --json: returns the full json object"
+  echo "  -r, --regexp <regexp>: Only members with some field matching <regexp> will be shown"
+  echo "  -u, --url: Show github user url"
+  echo "  -l, --login: Show github user login"
+  echo "  -w, --orgurl: Show github user url as a member of the org"
+  echo "  -s, --site: Show url of the members github pages web sites"
+  echo "  -o --org <org>: Default organization"
+  echo "  --default: Set selected \"org\" as default organization for future uses"
+  echo "  -h, --help: Display help for command"
+  exit 1
+}
+
+# Check if 'jq' is installed for JSON parsing
+if ! [ -x "$(command -v jq)" ]; then
+  echo "Error: 'jq' command not found. Please install jq (https://stedolan.github.io/jq/)"
+  exit 1
+fi
+
+# Process command line arguments
+while [ "$1" != "" ]; do
+  case $1 in
+    -V|--version)
+      echo "gh-org-members version $VERSION"
+      ;;
+    -f|--fullname)
+      SHOW_FULLNAME=true
+      ;;
+    -j|--json)
+      RETURN_JSON=true
+      ;;
+    -r|--regexp)
+      if [ -n "$2" ]; then
+        REGEXP="$2"
+        shift
+      else
+        echo "Error: Regexp not provided."
+        exit 1
+      fi
+      ;;
+    -u|--url)
+      SHOW_URL=true
+      ;;
+    -l|--login)
+      SHOW_LOGIN=true
+      ;;
+    -w|--orgurl)
+      SHOW_ORG_URL=true
+      ;;
+    -s|--site)
+      SHOW_SITE=true
+      ;;
+    -o|--org)
+      if [ -n "$2" ]; then
+        DEFAULT_ORG="$2"
+        shift
+      else
+        echo "Error: Organization not provided."
+        exit 1
+      fi
+      ;;
+    --default)
+      echo "$DEFAULT_ORG" > ~/.default_org
+      ;;
+    -h|--help)
+      usage
+      ;;
+    *)
+      ORGANIZATION="$1"
+      ;;
+  esac
+  shift
+done
+
+# Main logic for fetching organization members
+# You can start implementing the logic here
+# The following variables will be available: SHOW_FULLNAME, RETURN_JSON, REGEXP, SHOW_URL, SHOW_LOGIN, SHOW_ORG_URL, SHOW_SITE, DEFAULT_ORG, ORGANIZATION
