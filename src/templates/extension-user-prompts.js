@@ -37,6 +37,7 @@ const USER_EXTENSION = {
   {{usage.help}}
   
   {{/usage.help}}{{/usage}}
+
 #END_MAIN_FILE`,
 
   FILE:
@@ -45,16 +46,35 @@ const USER_EXTENSION = {
   ##DESCRIPTION {{description}}  
 #END_FILE`,
 
+  USE_EXAMPLES:
+`
+#EXAMPLE
+
+Given the command: {{command}}
+The expected output of the program is: 
+
+{{output}}
+
+#END_EXAMPLE
+`,
+
 };
 
 TEMPLATES.USER['EXTENSION'] = (inputObject) => {
-  let result = [];
   inputObject.nameDescription = parseNameDescription;
-  result.push(Mustache.render(USER_EXTENSION.MAIN_FILE, inputObject));
-  inputObject.files.map((file) => {
-    result.push(Mustache.render(USER_EXTENSION.FILE, file));
-  });
-  return result;
+  return {
+    mainFile: Mustache.render(USER_EXTENSION.MAIN_FILE, inputObject),
+    files: inputObject.files.map((file) => {
+      return Mustache.render(USER_EXTENSION.FILE, file);
+    }),
+    examples: inputObject.examples.map((example) => {
+      return Mustache.render(USER_EXTENSION.USE_EXAMPLES, example);
+    }),
+    userPrompts: function () {
+      // let mainFile = `${this.mainFile}\n Now there is a list of `
+      return [this.mainFile].concat(this.files).flat();
+    }
+  };
 };
 
 export { USER_EXTENSION };

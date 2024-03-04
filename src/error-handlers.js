@@ -13,7 +13,7 @@ ERROR_HANDLER['zodError'] = (error) => {
   error.errors.map((error, index) => {
     errors += `\t${index + 1}.) ${error.message}\n`;
   });
-  console.error(`${amount} error(s) ocurred while checking the input Object!.\n${errors}`);
+  console.error(`${amount} error(s) ocurred while checking the input Object!\n${errors}`);
 };
 
 /**
@@ -32,5 +32,11 @@ ERROR_HANDLER['nearleyError'] = (error) => {
   const expectedTokens = [...error.message.matchAll(expectedTokenRegex)];
   console.error(`\nThe expected tokens are: ${expectedTokens.map((match) => match[1])}`);  
 };
+
+ERROR_HANDLER['apiCallError'] = (error) => {
+  let errorMsg = 'An error ocurred while making the API request!';
+  errorMsg += `\n\t${error.message} ${error.reason}`;
+  console.error(errorMsg);
+}
 
 export { ERROR_HANDLER };

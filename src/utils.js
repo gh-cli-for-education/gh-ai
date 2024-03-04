@@ -52,6 +52,22 @@ async function parseInputFile(inputFile, options) {
 }
 
 /**
+ * @description
+ * @param {*} apiResponse 
+ * @param {*} options 
+ */
+async function createReadme(prompt, apiResponse, outputDirectory, options) {
+  try {
+    await fs.mkdir(outputDirectory, { recursive: true });
+  } catch(error) {
+    console.log('DIRECTIORIO YA EXISTE: ', error.message);
+    if (error.code === 'EEXIT') { console.log(`El directorio ya existe`); }
+  }
+  let readmeContent = TEMPLATES.SYSTEM['README'](prompt, apiResponse, options);
+  await fs.writeFile(`${outputDirectory}/README.md`, readmeContent);
+}
+
+/**
  * @description Check if an object literal is empty
  * @param {*} object 
  * @returns true if the object literal is empty
@@ -89,10 +105,12 @@ const PACKAGE_DATA = Object.freeze({
 const SCHEMAS = Object.freeze({
   extension: EXTENSION_SCHEMA
 });
+
 export { 
   isEmptyObject,
   Object2Array,
   parseInputFile,
+  createReadme,
   HELP_TYPES,
   PACKAGE_DATA,
   SCHEMAS,

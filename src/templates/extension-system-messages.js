@@ -47,19 +47,15 @@ Then every other file needed by the user will follow the following format:
 To help in the making of the extension the user provide you with some examples of use:
 {{/examples.length}}`,
 
-  USER_EXAMPLES_FORMAT: // Pasar esto al user prompt
-`
-#EXAMPLE
-
-Given the command: {{command}}
-The expected output of the program is: 
-
-{{output}}
-
-#END_EXAMPLE
-`,
-
   OUTPUT:
+`You have to use the tool create_file for each file the user ask to generate.
+Make sure to follow the schema of the function's input object.
+Try different approaches before giving an output. Write the best code you can make and
+then wait for the user's reply.
+`
+
+/*
+  OUTPUT: // Ver si se puede transformar el zod en string
 `You have to respond to the user using a JSON format following the schema:
 
 {
@@ -76,18 +72,19 @@ write an error describing what happened.
 
 Try different approaches before giving an output. Write the best code you can make and
 then wait for the user's reply.`
+*/
 };
 
 TEMPLATES.SYSTEM['EXTENSION'] = (inputObject) => {
-  let result = `
-  ${Mustache.render(SYSTEM_EXTENSION.PERSONA, inputObject.scriptLanguage)}
-  ${Mustache.render(SYSTEM_EXTENSION.USER_INPUT_FORMAT, inputObject)}
-  ${SYSTEM_EXTENSION.OUTPUT}
-  `;
-  inputObject.examples.map((example) => {
-    result += Mustache.render(SYSTEM_EXTENSION.USER_EXAMPLES_FORMAT, example)
-  })
-  return result;
+  return {
+    persona: Mustache.render(SYSTEM_EXTENSION.PERSONA, inputObject.scriptLanguage),
+    input: Mustache.render(SYSTEM_EXTENSION.USER_INPUT_FORMAT, inputObject),
+    output: SYSTEM_EXTENSION.OUTPUT,
+    instruction: function() {
+      return `${this.persona}\n${this.input}\n${this.output}`;
+    }
+  };
 };
+
 export { SYSTEM_EXTENSION };
 

@@ -20,7 +20,7 @@ import dotEnv from 'dotenv';
 import { HELP_TYPES, PACKAGE_DATA } from '../src/utils.js';
 import { API } from '../src/openai-api-call.js';
 import { ERROR_HANDLER } from '../src/error-handlers.js';
-
+import { COLORS } from '../src/colors.js';
 dotEnv.config();
 const PROGRAM = new Command();
 const DEFAULT_LLM = 'OPENAI';
@@ -47,18 +47,10 @@ PROGRAM
   
 // Program actions to options values
 PROGRAM.action(async (promptFile, outputDirectory, options) => {
-  await main(promptFile, outputDirectory, options);
-});
-PROGRAM.parse(process.argv);
-
-/**
- * 
- */
-async function main(promptFile, outputDirectory, options) {
   try {
     await API[options.llm](promptFile, outputDirectory, options); // Si se logra realizar de esta manera se puede obviar la función main
   } catch (error) {
-    console.error('\x1b[31mERROR>:\x1b[0m');
+    console.error(`${COLORS.red('ERROR>: ')}`);
     if (error instanceof z.ZodError) { 
       ERROR_HANDLER.zodError(error);
     }
@@ -73,7 +65,16 @@ async function main(promptFile, outputDirectory, options) {
       console.error(error);
     }
   }
-  
-};
+});
+
+PROGRAM.parse(process.argv);
+
+/**
+ * 
+ */
+// async function main(promptFile, outputDirectory, options) {
+// 
+//   
+// };
 
 
