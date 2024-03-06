@@ -48,11 +48,24 @@ To help in the making of the extension the user provide you with some examples o
 {{/examples.length}}`,
 
   OUTPUT:
-`You have to use the tool create_file for each file the user ask to generate.
-Make sure to follow the schema of the function's input object.
-Try different approaches before giving an output. Write the best code you can make and
-then wait for the user's reply.
-`
+`For each file expected for the user you must call the user provided function '''generate_file''', 
+make sure to follow the expected input schema and guide you by looking at the function description.
+
+For each file you can generate a maximum of 1 possible idea, list it as: <filename>.<extension>.`
+};
+
+TEMPLATES.SYSTEM['EXTENSION'] = (inputObject) => {
+  return {
+    persona: Mustache.render(SYSTEM_EXTENSION.PERSONA, inputObject.scriptLanguage),
+    input: Mustache.render(SYSTEM_EXTENSION.USER_INPUT_FORMAT, inputObject),
+    output: SYSTEM_EXTENSION.OUTPUT,
+    instruction: function() {
+      return `${this.persona}\n${this.input}\n${this.output}`;
+    }
+  };
+};
+
+export { SYSTEM_EXTENSION };
 
 /*
   OUTPUT: // Ver si se puede transformar el zod en string
@@ -73,18 +86,3 @@ write an error describing what happened.
 Try different approaches before giving an output. Write the best code you can make and
 then wait for the user's reply.`
 */
-};
-
-TEMPLATES.SYSTEM['EXTENSION'] = (inputObject) => {
-  return {
-    persona: Mustache.render(SYSTEM_EXTENSION.PERSONA, inputObject.scriptLanguage),
-    input: Mustache.render(SYSTEM_EXTENSION.USER_INPUT_FORMAT, inputObject),
-    output: SYSTEM_EXTENSION.OUTPUT,
-    instruction: function() {
-      return `${this.persona}\n${this.input}\n${this.output}`;
-    }
-  };
-};
-
-export { SYSTEM_EXTENSION };
-

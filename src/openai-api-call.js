@@ -41,7 +41,8 @@ const TOOLS = {
       type: 'function',
       function: {
         name: 'create_file',
-        description: `Use this function whenever you are going to create a new file with the current content you have from that file.`,
+        description: `Use this function whenever you are going to create a new file with the current content you have from that file. 
+        In case there is no errors leave an empty array in the errors property`,
         parameters: {
           type: 'object',
           properties: {
@@ -53,15 +54,8 @@ const TOOLS = {
               },
               required: ['name', 'content']
             },
-            errors: {
-              type: 'array',
-              description: 'Array with the encountered errors',
-              items: {
-                type: 'string'
-              }
-            }
           },
-          required: ['file', 'errors']
+          required: ['file']
         }
       }
     }
@@ -173,10 +167,12 @@ async function call(prompts, options, outputDirectory) {
           break; 
         };
       } catch(error) {
-        await openai.beta.threads.runs.cancel(
-          thread.id,
-          run.id
-        );
+        if (run.status !== 'failed') {
+          await openai.beta.threads.runs.cancel(
+            thread.id,
+            run.id
+          );
+        }
         await openai.beta.assistants.del(assistant.id);
         throw error;
       }
@@ -189,10 +185,12 @@ async function call(prompts, options, outputDirectory) {
         return content.text.value;
       }); 
     })
-    console.log(response);
+    // console.log(response);
     apiReponse.response.push(...response.flat());
     apiReponse.usage = run.usage;
+    
   }
+  apiReponse.llm = options.llm;
   await openai.beta.assistants.del(assistant.id);
   return apiReponse;
 }
@@ -231,10 +229,11 @@ async function CheckRunStatus(run, verbose, options, outputDirectory, threadID, 
   
     case 'requires_action':
       console.log(`${prompt}The run requires an action from a function. Waiting for the result.`);
+      let outputs = await manageToolActions(run, options, outputDirectory);
       run = await openai.beta.threads.runs.submitToolOutputs(
         threadID,
         run.id,
-        manageToolActions(run, options, outputDirectory)
+        { tool_outputs: outputs }
       )  
       return false;
 
@@ -254,17 +253,17 @@ async function CheckRunStatus(run, verbose, options, outputDirectory, threadID, 
 }
 
 async function manageToolActions(run, options, outputDirectory) {
-  console.log('TOOL');
+  console.log('Executing tool');
   if (run.required_action.type === 'submit_tool_outputs') {
     let requiredActions = run.required_action.submit_tool_outputs;
-    return {
-      tool_outputs: requiredActions.tool_calls.map((call) => {
-        return {
-          tool_call_id: call.id,
-          output: TOOLS[call.function.name](call.function.arguments, options, outputDirectory)
-        }
-      })
-    }
+    let outputs = await Promise.all(requiredActions.tool_calls.map(async (call) => {
+      return {
+        tool_call_id: call.id,
+        output: await TOOLS[call.function.name](call.function.arguments, options, outputDirectory)
+      }
+    }));
+    // console.log(outputs);
+    return outputs;
   }
   throw new Error('The required action was not a function.');
 }

@@ -35,8 +35,8 @@ ERROR_HANDLER['nearleyError'] = (error) => {
 
 ERROR_HANDLER['apiCallError'] = (error) => {
   let errorMsg = 'An error ocurred while making the API request!';
-  errorMsg += `\n\t${error.message} ${error.reason}`;
-  console.error(errorMsg);
+  errorMsg += `\n\t${error.message} ${error.code}`; // Esto no esta del todo correcto, diseñar un mejor tipo de error
+  console.error(errorMsg, error);
 }
 
 export { ERROR_HANDLER };
