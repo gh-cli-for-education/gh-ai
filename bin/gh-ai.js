@@ -13,14 +13,17 @@
 
 import { Command, Option } from 'commander'; 
 import { z } from 'zod';
+import OpenAI from 'openai';
 // import { createRequire } from 'module'; // No se esta usando por ahora
 // const require = createRequire(import.meta.url);
 import dotEnv from 'dotenv';
 
+import { parseInputFile, createReadme } from '../src/utils.js';
 import { HELP_TYPES, PACKAGE_DATA } from '../src/utils.js';
 import { API } from '../src/openai-api-call.js';
 import { ERROR_HANDLER } from '../src/error-handlers.js';
 import { COLORS } from '../src/colors.js';
+
 dotEnv.config();
 const PROGRAM = new Command();
 const DEFAULT_LLM = 'OPENAI';
@@ -37,7 +40,7 @@ PROGRAM
 PROGRAM
   .allowUnknownOption()
   .version(PACKAGE_DATA.version, '-v, --version', 'Print the current version of the program')
-  .argument('<prompt-file>', 'The prompt file used to feed the llm')
+  .argument('<input-file>', 'The input file used to feed the llm')
   .argument('<output-directory>', 'The directory path where all the files created by the llm will be stored')
   .option('-d, --debug', 'Output extra information about the execution process')
   .option('--org <organization>', 'Specify which organization is used for an API request.')
@@ -46,19 +49,28 @@ PROGRAM
   .addOption(new Option('-t, --command-type <TYPE>', 'Select the command needed').choices(Object.keys(HELP_TYPES)).default(HELP_TYPES.EXTENSION));
   
 // Program actions to options values
-PROGRAM.action(async (promptFile, outputDirectory, options) => {
+PROGRAM.action(async (inputFile, outputDirectory, options) => {
   try {
-    await API[options.llm](promptFile, outputDirectory, options); // Si se logra realizar de esta manera se puede obviar la función main
+    const PROMPT = COLORS.yellow(`${options.llm}-API>: `);
+
+    console.log(`${PROMPT}Parsing the user input.`)
+    let inputObject = await parseInputFile(inputFile, options);
+
+    console.log(`${PROMPT}Starting API call. This process may take a few seconds.`);
+    let [ prompts, apiResponse ] = await API[options.llm](inputObject, outputDirectory, options);
+
+    await createReadme(prompts, apiResponse, outputDirectory, options);
+    console.log(`${PROMPT}Generated README.md file inside ${outputDirectory}/`); 
+
   } catch (error) {
-    console.error(`${COLORS.red('ERROR>: ')}`);
     if (error instanceof z.ZodError) { 
       ERROR_HANDLER.zodError(error);
     }
     else if (Object.hasOwn(error, 'token')) { // Checks if the error object has an 'offset property
       ERROR_HANDLER.nearleyError(error);
     }
-    else if (Object.hasOwn(error, 'reason')) {
-      ERROR_HANDLER.apiCallError(error);
+    else if (error instanceof OpenAI.APIError) {
+      ERROR_HANDLER.openaiError(error);
     } 
     else {
       console.error(`An unexpected error has ocurred\n ${error.message}`);

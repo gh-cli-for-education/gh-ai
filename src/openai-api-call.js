@@ -9,264 +9,15 @@
  * @date 12/02/2024
  * @desc @TODO hacer la descripción
  */
-import * as fs from 'fs/promises';
 import OpenAI from 'openai';
-import z from 'zod';
+import { sleep } from 'openai/core.js';
 
-import { parseInputFile, createReadme, API, TEMPLATES} from './utils.js';
-import { API_RESPONSE_SCHEMA } from './schemas/api-response-schema.js';
-import { USER_EXTENSION } from './templates/extension-user-prompts.js';
-import { SYSTEM_EXTENSION } from './templates/extension-system-messages.js';
-import { README } from './templates/readme-content.js';
+import { API, TEMPLATES } from './utils.js';
+import './templates/templates.js';
 import { COLORS } from './colors.js';
+import { TOOLS, TOOLS_DESCRIPTIONS } from './openai-api-tools.js';
+
 'use strict';
-
-const TOOLS = {
-  apiInput: [
-    {
-      type: 'function',
-      function: {
-        name: 'get_gh_api_documentation',
-        description: 'Retreive information from the gh api documentation',
-        parameters: {
-          type: 'object',
-          properties: {
-            // poner aquí las properties 
-          }
-        },
-        required: [] 
-      }
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'create_file',
-        description: `Use this function whenever you are going to create a new file with the current content you have from that file. 
-        In case there is no errors leave an empty array in the errors property`,
-        parameters: {
-          type: 'object',
-          properties: {
-            file: {
-              type: 'object',
-              properties: {
-                name: { type: 'string', description: 'The file\'s name' },
-                content: { type: 'string', description: 'The file\'s content' }      
-              },
-              required: ['name', 'content']
-            },
-          },
-          required: ['file']
-        }
-      }
-    }
-  ],
-  create_file: async (input, options, outputDirectory) => {    
-    try {
-      await fs.mkdir(outputDirectory, { recursive: true });
-      input = JSON.parse(input);
-      API_RESPONSE_SCHEMA.parse(input);
-      let file = input.file;
-      await fs.writeFile(`${outputDirectory}/${file.name}`, file.content);
-      if (input.errors) { 
-        input.errors.map((error) => {
-          console.log(`${COLORS.red(`${options.llm}>: `)} ${error}`); 
-        });
-      }
-      return 'Function executed successfully. Do not respond this output and wait for the user input.';      
-    } catch (error) {
-      let warning = COLORS.magenta('WARNING>: ');
-      let errorMsg = '';
-      if (error instanceof SyntaxError) {
-        errorMsg = 'The input object doens\'t have a valid JSON Syntax. ';
-        console.error(`${warning}${errorMsg}`);
-        return errorMsg + 'Try calling the function again with a valid Syntax.';
-      }
-      else if (error instanceof z.ZodError) {
-        errorMsg = 'The input JSON doesn\'t follow the expected Schema. ';
-        console.error(`${warning}${errorMsg}`)
-        return errorMsg + 'Try calling the function again with a valid JSON Schema.';
-      } 
-      else {
-        throw error;
-      }
-    }
-  },
-  get_gh_api_documentation: (input, options) => {
-
-  }
-}
-
-/**
- * 
- * @param {*} inputObject 
- * @param {*} options 
- */
-function generatePrompt(inputObject, options) {
-  let type = options.commandType.toUpperCase();
-  return {
-    system: TEMPLATES.SYSTEM[type](inputObject),
-    user: TEMPLATES.USER[type](inputObject)
-  }; 
-}
-
-/**
- * 
- * @param {*} prompts 
- * @param {*} options 
- * @returns 
- */
-async function call(prompts, options, outputDirectory) {
-  const openai = new OpenAI({ // Crear un formato de error para que el programa pueda parsear el error sin tener que estar pendiente de los paquetes de las API 
-    apiKey: process.env.OPENAI_API_KEY,
-    organization: options.org
-  });
-  const DEFAULT_MODEL = 'gpt-3.5-turbo-0125';
-  const assistant = await openai.beta.assistants.create({
-    name: 'gh-ai-assistant',
-    instructions: prompts.system.instruction(),
-    model: DEFAULT_MODEL,
-    tools: [TOOLS.apiInput[1]]
-  });
-  const thread = await openai.beta.threads.create();
-  let apiReponse = {
-    response: []
-  };
-  let files = prompts.user.userPrompts();
-  for (let index in files) {
-    await openai.beta.threads.messages.create(thread.id, {
-      role: 'user',
-      content: files[index]
-    });
-    let run = await openai.beta.threads.runs.create(
-      thread.id,
-      { 
-        assistant_id: assistant.id, 
-        instructions: prompts.system.instruction() 
-      }
-    );
-    let attempts = 0;
-    const MAX_AMOUNT_OF_ATTEMPTS = 3600;
-    while (true) {
-      console.log(attempts);
-      if (attempts > MAX_AMOUNT_OF_ATTEMPTS) {
-        await openai.beta.threads.runs.cancel(
-          thread.id,
-          run.id
-        );
-        let error = new Error('The run spent all the attempts for completions.');
-        error.reason = run.status;
-        throw error;
-      }
-      run = await openai.beta.threads.runs.retrieve(
-        thread.id,
-        run.id
-      );
-      let verbose = (attempts % 500 ===  0);
-      try {
-        if (await CheckRunStatus(run, verbose, options, outputDirectory, thread.id, openai)) {
-          break; 
-        };
-      } catch(error) {
-        if (run.status !== 'failed') {
-          await openai.beta.threads.runs.cancel(
-            thread.id,
-            run.id
-          );
-        }
-        await openai.beta.assistants.del(assistant.id);
-        throw error;
-      }
-      attempts++;
-    }
-    const messages = await openai.beta.threads.messages.list(thread.id);
-    let response = messages.data.filter(message => message.role === 'assistant');
-    response = response.map((message) => {
-      return message.content.map((content) => {
-        return content.text.value;
-      }); 
-    })
-    // console.log(response);
-    apiReponse.response.push(...response.flat());
-    apiReponse.usage = run.usage;
-    
-  }
-  apiReponse.llm = options.llm;
-  await openai.beta.assistants.del(assistant.id);
-  return apiReponse;
-}
-
-/**
- * 
- * @param {*} run 
- */
-async function CheckRunStatus(run, verbose, options, outputDirectory, threadID, openai) {
-  let message = '';
-  let error = new Error();
-  let prompt = `${COLORS.blue(`${options.llm}-RUN>: `)}`;
-  switch (run.status) {
-    case 'failed':
-      error.message = 'The run failed while attempting to talk with the AI.';
-      error.reason = run.last_error;
-      throw error;
-
-    case 'cancelled':
-      error.message = 'The run was cancelled by the user or the API.';
-      error.reason = run.cancelled_at;
-      throw error;
-
-    case 'expired':
-      error.message = 'The run expired before the thread ending.';
-      error.reason = run.last_error;
-      throw error;
-    
-    case 'queued':
-      message = 'The run is still in queue. Waiting for the API to received.';
-      break;
-    
-    case 'in_progress':
-      message = 'The run is still active. Waiting for the API to response.';
-      break;
-  
-    case 'requires_action':
-      console.log(`${prompt}The run requires an action from a function. Waiting for the result.`);
-      let outputs = await manageToolActions(run, options, outputDirectory);
-      run = await openai.beta.threads.runs.submitToolOutputs(
-        threadID,
-        run.id,
-        { tool_outputs: outputs }
-      )  
-      return false;
-
-    case 'completed':
-      console.log(`${prompt}The run has been completed, extracting the AI response.`);
-      return true;
-    
-    default: 
-      error.message = 'The run has a not supported status.';
-      error.reason = run.status;
-      throw error;
-  }
-  if (verbose) {
-    console.log(`${prompt}${message}`);
-  }
-  return false; 
-}
-
-async function manageToolActions(run, options, outputDirectory) {
-  console.log('Executing tool');
-  if (run.required_action.type === 'submit_tool_outputs') {
-    let requiredActions = run.required_action.submit_tool_outputs;
-    let outputs = await Promise.all(requiredActions.tool_calls.map(async (call) => {
-      return {
-        tool_call_id: call.id,
-        output: await TOOLS[call.function.name](call.function.arguments, options, outputDirectory)
-      }
-    }));
-    // console.log(outputs);
-    return outputs;
-  }
-  throw new Error('The required action was not a function.');
-}
 
 /**
  * @description OpenAI specific implementation of the API call @TODO Mejorar esto
@@ -274,26 +25,241 @@ async function manageToolActions(run, options, outputDirectory) {
  * @param {*} options 
  * @returns 
  */
-API['OPENAI'] = async function (inputfile, outputDirectory, options) {
-  try {
-    let prompt = COLORS.yellow(`${options.llm}>: `);
-    console.log(`${prompt}Parsing the user input.`)
-    let inputObject = await parseInputFile(inputfile, options);
-    console.log(`${prompt}Generating prompts with the user input.`)
-    let prompts = generatePrompt(inputObject, options);
-    if (options.debug) { console.log(prompts); }
-    console.log(`${prompt}Starting API call. This process may take a few seconds.`);
-    let response = await call(prompts, options, outputDirectory);
-    if (options.debug) { console.log(response); }
-    console.log(`${prompt}Parsing the response data.`);
-    await createReadme(prompts, response, outputDirectory, options);
-    console.log(`${prompt}Generated README.md file inside ${outputDirectory}/`);
-  } catch (error) {
-    if (error instanceof OpenAI.AuthenticationError) {
-      throw new Error('The API key or the organization name is not valid');
-    }
-    throw error;
+API['OPENAI'] = async function(inputObject, outputDirectory, options) {
+
+  const OPENAI = new OpenAI({ // Crear un formato de error para que el programa pueda parsear el error sin tener que estar pendiente de los paquetes de las API 
+    apiKey: process.env.OPENAI_API_KEY,
+    organization: options.org
+  });
+  
+  const [ASSISTANT, THREAD] = await createAssistantAndThread(OPENAI, options);
+
+  const TYPE = options.commandType.toUpperCase();
+  const PROMPTS = {
+    system: TEMPLATES.SYSTEM[TYPE](inputObject),
+    user:   TEMPLATES.USER[TYPE](inputObject)
+  };   
+
+  let response = await CALL[TYPE](
+    OPENAI,
+    ASSISTANT, 
+    THREAD,
+    PROMPTS,
+    outputDirectory,
+    options
+  );
+
+  if (options.safeAssistant) {
+    response.assistant = ASSISTANT.id;
+  } else {
+    await OPENAI.beta.assistants.del(ASSISTANT.id);
   }
+
+  if (options.safeThread) {
+    response.thread = THREAD.id;
+  } else {
+    await OPENAI.beta.threads.del(THREAD.id);
+  }
+  
+  return [PROMPTS, response];
+}
+
+/**
+ * @description
+ * @todo 
+ *  1-) Comprobar las opciones
+ *  2-) Si Save-assistant esta activo guardar el assistant y el thread utilizado
+ *  3-) Si ASSISTANT_ID o THREAD_ID estan activados no generar los correspondientes objetos sino sacarlos de la API
+ *  3-1) Al sacarlos de la API modificarlos con los valores actuales del options
+ */
+async function createAssistantAndThread(openai, options) {
+  const MODEL = options.llmModel || 'gpt-3.5-turbo-0125';
+
+  let assistant;
+
+  if (process.env.ASSISTANT_ID) {
+    assistant = await openai.beta.assistants.retrieve(process.env.ASSISTANT_ID);
+  } else {
+    assistant = await openai.beta.assistants.create({ model: MODEL });
+  }
+  assistant = await openai.beta.assistants.update(
+    assistant.id,
+    {
+    name: 'gh-ai-assistant',
+    model: MODEL,
+    description: '',
+    tools: TOOLS_DESCRIPTIONS
+    }
+  );
+
+  let thread;
+  if (process.env.THREAD_ID) {
+    thread = await openai.beta.threads.retrieve(process.env.THREAD_ID);
+  } else {
+    thread = await openai.beta.threads.create();
+  }
+
+  return [assistant, thread];
+}
+
+const CALL = Object.create(null);
+
+/**
+ * 
+ * @param {*} openai 
+ * @param {*} inputObject 
+ * @param {*} outputDirectory 
+ * @param {*} options 
+ * @returns 
+ */
+CALL['EXTENSION'] = async function(
+  openai, 
+  assistant, 
+  thread, 
+  prompts, 
+  outputDirectory, 
+  options
+) {
+
+  // Declare the response object
+  let apiResponse = {
+    response: [],
+    usage: {},
+    llm: options.llm
+  };
+
+  await Promise.all(prompts.user.userPrompts().map(async (file) => {
+    // Poner un console.log como: Trabajando con: Fichero.name
+    await openai.beta.threads.messages.create(
+      thread.id,
+      {
+        role: 'user',
+        content: file
+      }
+    );
+    let run = await openai.beta.threads.runs.create(
+      thread.id,
+      {
+        assistant_id: assistant.id, 
+        instructions: prompts.system.instruction()
+      }
+    );
+    const COMPLETED = await checkRunStatus(
+      openai, 
+      thread.id,
+      run.id, 
+      outputDirectory, 
+      options
+    );
+
+    if (!COMPLETED) {
+      run = await openai.beta.threads.run.retreive(thread.id, run.id);
+      throw run.last_error;
+    }
+
+    const MESSAGES = await openai.beta.threads.messages.list(thread.id);
+    let response = MESSAGES.data.filter(message => message.role === 'assistant');
+
+    apiResponse.response.push(...response[0].content.map((content) => {
+      return content.text.value;
+    }));
+    apiResponse.usage = run.usage;
+  }));
+
+  return apiResponse;
+}
+
+/**
+ * 
+ * @param {*} run 
+ */
+async function checkRunStatus(openai, threadID, runID, outputDirectory, options) {
+  const SLEEP_TIME = 3600;
+  const PROMPT = `${COLORS.blue(`${options.llm}-RUN>: `)}`;
+  const ERROR_PROMPT = `${COLORS.red(`ERROR-RUN>: `)}`;
+  let completed = false;
+  let failure = false;
+  while(!completed) {
+    const RUN = await openai.beta.threads.runs.retrieve(threadID, runID);
+    let message = '';
+    switch(RUN.status) {
+      case 'failed':
+        message = 'The run failed while attempting to talk with the AI.';
+        failure = true;
+        break; 
+      
+      case 'expired':
+        message = 'The run reached the 10 minutes limit.';
+        failure = true;
+        break;
+      
+      case 'queued':
+        message = 'The run is still in queue. Waiting for the API to received.';
+        break;
+
+      case 'in_progress':
+        message = 'The run is still active. Waiting for the API to response.';
+        break;
+
+      case 'cancelling':
+        message = 'The run is being cancelled.';
+        break;
+
+      case 'cancelled':
+        message = 'The run has been cancelled successfully.';
+        failure = true;
+        break;
+
+      case 'requires_action':
+        message = 'The run requires an action from a function. Waiting for the result.';
+        RUN = await openai.beta.threads.runs.submitToolOutputs(
+          threadID,
+          runID,
+          await manageToolActions(RUN, outputDirectory, options)
+        )  
+        break;
+
+      case 'completed':
+        message = 'The run has been completed, extracting the AI response.';
+        completed = true;
+        break;
+        
+      default: 
+        throw new OpenAI.APIError(-1, {
+          type: 'no_status_support_error', 
+          message: 'The run is in a not supported status.'
+        });
+    }
+    if (failure) {
+      console.error(`${ERROR_PROMPT}${message}`);
+      return false; 
+    }
+    console.log(`${PROMPT}${message}`);
+    await sleep(SLEEP_TIME);
+  }
+  return true;
+}
+
+/**
+ * 
+ * @param {*} run 
+ * @param {*} outputDirectory 
+ * @param {*} options 
+ * @returns 
+ */
+async function manageToolActions(run, outputDirectory, options) {
+  if (run.required_action.type === 'submit_tool_outputs') {
+    let requiredActions = run.required_action.submit_tool_outputs;
+    let outputs = await Promise.all(requiredActions.tool_calls.map(async (call) => {
+      console.log(`   Executing ${call.function.name} tool.`);
+      return {
+        tool_call_id: call.id,
+        output: await TOOLS[call.function.name](call.function.arguments, options, outputDirectory)
+      }
+    }));
+    return { tool_outputs: outputs };
+  }
+  throw new Error('The required action was not a function.'); // Esto en teoria nunca ocurre
 }
 
 export { API };

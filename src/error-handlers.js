@@ -1,6 +1,9 @@
 /**
  * cabecera 
  */
+import { COLORS } from './colors.js';
+'use strict';
+
 const ERROR_HANDLER = Object.create(null);
 
 /**
@@ -33,10 +36,10 @@ ERROR_HANDLER['nearleyError'] = (error) => {
   console.error(`\nThe expected tokens are: ${expectedTokens.map((match) => match[1])}`);  
 };
 
-ERROR_HANDLER['apiCallError'] = (error) => {
-  let errorMsg = 'An error ocurred while making the API request!';
-  errorMsg += `\n\t${error.message} ${error.code}`; // Esto no esta del todo correcto, diseñar un mejor tipo de error
-  console.error(errorMsg, error);
+ERROR_HANDLER['openaiError'] = (error) => {
+  const PROMPT = `${COLORS.red('OPENAI-API-ERROR>: ')}`;
+  console.error(`${PROMPT}A(n) ${error.status} ${error.type} ocurred while making the API request.`);
+  console.error(`\t${error.message}`)
 }
 
 export { ERROR_HANDLER };
