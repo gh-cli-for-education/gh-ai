@@ -60,7 +60,7 @@ async function createReadme(prompt, apiResponse, outputDirectory, options) {
   try {
     await fs.mkdir(outputDirectory, { recursive: true });
   } catch(error) {
-    if (error.code === 'EEXIT') { console.log(`El directorio ya existe`); }
+    if (error.code === 'EEXIT') { console.log(`El directorio ya existe`); } // Esto nunca se llama 
   }
   let readmeContent = TEMPLATES.SYSTEM['README'](prompt, apiResponse, options);
   await fs.writeFile(`${outputDirectory}/README.md`, readmeContent);

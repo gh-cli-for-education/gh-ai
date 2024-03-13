@@ -45,22 +45,33 @@ PROGRAM
   .option('-d, --debug', 'Output extra information about the execution process')
   .option('--org <organization>', 'Specify which organization is used for an API request.')
   .option('--tokens-verbose', 'Output the token usage information in each prompt')
-  .addOption(new Option('-l, --llm <API>', 'Select the llm <API> to use').choices(Object.keys(API)).default(DEFAULT_LLM))
+  .option('--save-thread', 'Make the program not delete the used thread, instead it will save it inside the generated README file')
+  .option('--save-assistant', 'Make the program not delete the used assistant, instead it will save it inside the generated README file')
+  .option('-m --llm-model <model>', 'Specify which llm model would you want to use by the selected API')
+  .addOption(new Option('-l, --llm-api <API>', 'Select the llm <API> to use').choices(Object.keys(API)).default(DEFAULT_LLM))
   .addOption(new Option('-t, --command-type <TYPE>', 'Select the command needed').choices(Object.keys(HELP_TYPES)).default(HELP_TYPES.EXTENSION));
   
 // Program actions to options values
 PROGRAM.action(async (inputFile, outputDirectory, options) => {
   try {
-    const PROMPT = COLORS.yellow(`${options.llm}-API>: `);
+    const PROMPT = COLORS.yellow(`${options.llmApi}-API>: `);
 
     console.log(`${PROMPT}Parsing the user input.`)
     let inputObject = await parseInputFile(inputFile, options);
 
     console.log(`${PROMPT}Starting API call. This process may take a few seconds.`);
-    let [ prompts, apiResponse ] = await API[options.llm](inputObject, outputDirectory, options);
+    let [ prompts, apiResponse ] = await API[options.llmApi](inputObject, outputDirectory, options);
 
     await createReadme(prompts, apiResponse, outputDirectory, options);
     console.log(`${PROMPT}Generated README.md file inside ${outputDirectory}/`); 
+
+    if (options.safeAssistant) {
+      console.log(`${PROMPT}The assistant id has been successfully added to the README file in ${outputDirectory}`);
+    }
+
+    if (options.safeThread) {
+      console.log(`${PROMPT}The thread id has been successfully added to the README file in ${outputDirectory}`);
+    }
 
   } catch (error) {
     if (error instanceof z.ZodError) { 

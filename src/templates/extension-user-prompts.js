@@ -29,34 +29,36 @@ const USER_EXTENSION = {
 
   {{#arguments.length}}##ARGUMENTS{{/arguments.length}}
 
-  {{#arguments}}  ###ARGUMENT {{nameDescription}}{{/arguments}} {{#parameters.length}}##PARAMETERS{{/parameters.length}}
+  {{#arguments}}  ###ARGUMENT {{nameDescription}}{{/arguments}} {{#parameters.length}} ##PARAMETERS{{/parameters.length}}
 
-  {{#parameters}}   ###PARAMETER {{nameDescription}}{{/parameters}}{{#usage}} ##USAGE {{usage.usage}} 
+  {{#parameters}}  ###PARAMETER {{nameDescription}}{{/parameters}}{{#usage}} ##USAGE {{usage.usage}} 
   {{#usage.help}}###HELP
 
   {{usage.help}}
   
   {{/usage.help}}{{/usage}}
 
-#END_MAIN_FILE`,
+#END_MAIN_FILE
+
+Use the **create_file** tool.`,
 
   FILE:
 `#FILE
   ##NAME {{name}}
   ##DESCRIPTION {{description}}  
-#END_FILE`,
+#END_FILE
+
+Use the **create_file** tool.`,
 
   USE_EXAMPLES:
-`
-#EXAMPLE
+`#EXAMPLE
 
 Given the command: {{command}}
 The expected output of the program is: 
 
 {{output}}
 
-#END_EXAMPLE
-`,
+#END_EXAMPLE`,
 
 };
 

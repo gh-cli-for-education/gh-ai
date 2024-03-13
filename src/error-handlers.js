@@ -13,9 +13,11 @@ const ERROR_HANDLER = Object.create(null);
 ERROR_HANDLER['zodError'] = (error) => {
   let amount = (error.errors.length > 1)? 'Mutiple' : 'An';
   let errors = '';
+
   error.errors.map((error, index) => {
     errors += `\t${index + 1}.) ${error.message}\n`;
   });
+
   console.error(`${amount} error(s) ocurred while checking the input Object!\n${errors}`);
 };
 
@@ -25,14 +27,18 @@ ERROR_HANDLER['zodError'] = (error) => {
  */
 ERROR_HANDLER['nearleyError'] = (error) => {
   let errorMsg = 'The parser found an error while reading the input file!\n';
+
   if (error.token) {
     errorMsg += `Unexpected ${error.token.type} token`;
   } else {
     errorMsg += 'Invalid syntax';
   }
+
   console.error(parser.lexer.formatError(error.token, errorMsg));
+  
   const expectedTokenRegex = /A (.*) token based on:/g;
   const expectedTokens = [...error.message.matchAll(expectedTokenRegex)];
+
   console.error(`\nThe expected tokens are: ${expectedTokens.map((match) => match[1])}`);  
 };
 
