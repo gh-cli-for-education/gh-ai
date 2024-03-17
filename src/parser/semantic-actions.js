@@ -12,147 +12,172 @@
  */
 'use strict';
 
-function getProperty([hashSymbol, property]) {
-  return property;
+// Check if there is more than one property per prompt file
+function checkDuplicatedTags(object, tag, errorMsg = 'Found duplicated a Tag') {
+  if (object[tag]) { throw new Error(errorMsg); }
 }
 
-function getParameterValue([value]) {
-  return (value)? value[0] : value;
-}
-
-function buildName([tag, name]) {
-  const GH_NAME = /(gh-)?[a-z][a-z0-9]*(?:[-][a-z0-9]+)*/;
-  if (!GH_NAME.exec(name.value)[1]) {
-    name.value = 'gh-' + name.value;
-  }
-  return { 
-    type: 'name',
-    content: name.value 
-  };
-}
-
-function buildDescription([tag, paragraph]) {
-  return { 
-    type: 'description',
-    content: paragraph.value 
-  };
-}
-
-function buildScriptLanguage([tag, scriptLanguage, specification, style]) {
-  return {
-    type: 'scriptLanguage',
-    content: {
-      language: scriptLanguage.value,
-      specification: specification?.value,
-      style: style?.value
-    }
-  };
-}
-
-function buildLlmLanguage([tag, language]) {
-  return { 
-    type: 'chatLanguage',
-    content: language.value 
-  };
-}
-
-function buildUsage([tag, usage, help]) {
-  return {
-    type: 'usage',
-    content: {
-      usage: usage.value,
-      help: help?.value
-    }
-  };
-}
-
-function buildParameter([tag, name, description]) {
-  return {
-    type: 'parameter',
-    content: {
-      name: name.value,
-      description: description.value
-    }
-  };
-}
-
-function buildArgument([tag, name, description]) {
-  return {
-    type: 'argument',
-    content: {
-      name: name.value,
-      description: description.value
-    }
-  };
-}
-
-
-function buildExample([tag, command, output]) {
-  return {
-    type: 'example',
-    content: {
-      command: command.value,
-      output: output.value
-    }
-  };
-}
-
-function buildFile([tag, name, description]) {
-  return {
-    type: 'file',
-    content: {
-      name: name.value,
-      description: description.value
-    }
-  };
-}
-
-function buildArray(properties, targetTag) {
-  let result = [];
-  for (let i = 0; i < properties.length; i++) {
-    if (properties[i].type === targetTag) {
-      result.push(properties[i].content);
-      properties.splice(i, 1);
-      i--;
-    }
-  }
-  return result;
-}
-
-/**
- * @description Create the prompt object used by the gh-ai program to generate 
- * the prompt 
- * @param {object} tokensArray Array with the matched tokens
- * @returns {obj} Returns the entire prompt object
- * @TODO poner el valor de las apariciones y la linea/columna donde aparecen
- */
 function buildObject([properties, eof]) {
-  let object = {};
-  object.arguments = buildArray(properties, 'argument');
-  object.parameters = buildArray(properties, 'parameter');
-  object.examples = buildArray(properties, 'example');
-  object.files = buildArray(properties, 'file');
-  properties.map((property) => { // Deep merge of all property objects
-    if(object[property.type]) { // Check if there is more than one property per prompt file  
-      throw new Error(`Duplicated Tags are not allowed. Expected one #${property.type.toUpperCase()} property but received 2.`); /** @TODO mover esto al error handler */
-    }
+  let object = Object.create(null);
+  properties.forEach((property) => { // Deep merge of all property objects
+    checkDuplicatedTags(
+      object, 
+      property.type, 
+      `Duplicated Tags are not allowed. Expected one #${property.type.toUpperCase()} property but received 2.`
+    );
     object[property.type] = property.content;
     }
   );
   return object;
 }
 
+function getProperty([hashSymbol, property]) {
+  return property;
+}
+
+function buildExtension([tag, name, properties]) {
+  let extension = {
+    type: tag.type.toLowerCase(),
+    content: {
+      name: name.value
+    }
+  }
+  properties.forEach((property) => {
+    checkDuplicatedTags(
+      extension, 
+      property.type, 
+      `Duplicated Tags are not allowed. Expected one ##${property.type.toUpperCase()} but received 2.`
+    );
+    extension.content[property.type] = property.content;
+  });
+  return extension;
+}
+
+function buildMainFileProperty([tag, filename, description, properties]) {
+  let mainFile = {
+    type: 'mainFile',
+    content: {
+      name: filename.value,
+      description: description.value,
+    }
+  };
+  properties.forEach((property) => {
+    checkDuplicatedTags(
+      mainFile, 
+      property.type, 
+      `Duplicated Tags are not allowed. Expected one ##${property.type.toUpperCase()} but received 2.`
+    );
+    mainFile.content[property.type] = property.content;
+  });  
+  return mainFile;
+}
+
+function buildFunctionsProperty([tag, functions]) {
+  return {
+    type: tag.type.toLowerCase(),
+    content: functions
+  };
+}
+
+function buildFunction([hyphen, name, colon, description]) {
+  return { name: name.value,  description: description.value };
+}
+
+function buildParametersProperty([tag, parameters]) {
+  return {
+    type: tag.type.toLowerCase(),
+    content: parameters
+  };
+}
+
+function buildParameter([hyphen, parameter, description]) {
+  return { parameter: parameter.value, description: description.value };
+}
+
+function buildArgumentsProperty([tag, argument_s]) {
+  return {
+    type: tag.type.toLowerCase(),
+    content: argument_s
+  };
+}
+
+function buildArgument([hyphen, argument, description]) {
+  return { argument: argument.value, description: description.value };
+}
+
+function buildHelpProperty([tag, usage, help]) {
+  return {
+    type: tag.type.toLowerCase(),
+    content: {
+      usage: usage.value,
+      help: help.value
+    }
+  };
+}
+
+function buildFilesProperty([tag, files]) {
+  return {
+    type: tag.value.toLowerCase(),
+    content: files
+  }
+}
+
+function buildFileProperties([name, description, functions]) {
+  return {
+    name: name.value,
+    description: description.value,
+    functions: functions
+  };
+}
+
+function buildLanguageSettingsProperty([tag, mandatorySetting, optionalSettings]) {
+  return {
+    type: 'languageSettings',
+    content: [mandatorySetting, ...optionalSettings]
+  };
+}
+
+function buildSetting([hyphen, setting, colon, value]) {
+  let setting_ = {};
+  setting_[setting.value] = value.value;
+  return setting_;
+}
+
+function buildExamplesProperty([tag, examples]) {
+  return {
+    type: tag.type.toLowerCase(),
+    content: examples
+  };
+}
+
+function buildExample([hyphen, command, expectedOutput]) {
+  return { command: command.value, output: expectedOutput.value };
+}
+
+function buildChatSettings([tag, chatSettings]) {
+  return {
+    type: tag.type.toLowerCase(),
+    content: chatSettings
+  };
+}
+
 export {
-  getProperty,
-  getParameterValue,
-  buildName,
-  buildDescription,
   buildObject,
-  buildScriptLanguage,
-  buildLlmLanguage,
-  buildUsage,
+  getProperty,
+  buildExtension,
+  buildMainFileProperty,
+  buildParametersProperty,
   buildParameter,
+  buildArgumentsProperty,
   buildArgument,
+  buildFilesProperty,
+  buildFileProperties,
+  buildFunctionsProperty,
+  buildFunction,
+  buildLanguageSettingsProperty,
+  buildSetting,
+  buildExamplesProperty,
   buildExample,
-  buildFile,
+  buildHelpProperty,
+  buildChatSettings,
 };

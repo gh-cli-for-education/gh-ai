@@ -14,7 +14,7 @@
   },
   "scripts": {
     "test": "mocha",
-    "compile": "nearleyc src/file-parser/prompt-parser.ne -o src/grammar.js"
+    "compile": "nearleyc src/parser/parser.ne -o src/grammar.js"
   },
   "repository": {
     "type": "git",

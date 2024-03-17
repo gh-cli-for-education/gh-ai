@@ -14,8 +14,6 @@
 import { Command, Option } from 'commander'; 
 import { z } from 'zod';
 import OpenAI from 'openai';
-// import { createRequire } from 'module'; // No se esta usando por ahora
-// const require = createRequire(import.meta.url);
 import dotEnv from 'dotenv';
 
 import { parseInputFile, createReadme } from '../src/utils.js';
@@ -53,6 +51,12 @@ PROGRAM
   
 // Program actions to options values
 PROGRAM.action(async (inputFile, outputDirectory, options) => {
+
+  if (options.debug) {
+    let inputObject = await parseInputFile(inputFile, options);
+    return;
+  }
+
   try {
     const PROMPT = COLORS.yellow(`${options.llmApi}-API>: `);
 
@@ -77,7 +81,7 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     if (error instanceof z.ZodError) { 
       ERROR_HANDLER.zodError(error);
     }
-    else if (Object.hasOwn(error, 'token')) { // Checks if the error object has an 'offset property
+    else if (Object.hasOwn(error, 'token')) { // Checks if the error object has an 'offset property (It is better to create an specific Error Type)
       ERROR_HANDLER.nearleyError(error);
     }
     else if (error instanceof OpenAI.APIError) {
@@ -91,13 +95,5 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
 });
 
 PROGRAM.parse(process.argv);
-
-/**
- * 
- */
-// async function main(promptFile, outputDirectory, options) {
-// 
-//   
-// };
 
 

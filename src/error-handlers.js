@@ -1,6 +1,9 @@
 /**
  * cabecera 
  */
+import nearley from 'nearley';
+
+import * as grammarModule from './grammar.js';
 import { COLORS } from './colors.js';
 'use strict';
 
@@ -26,6 +29,7 @@ ERROR_HANDLER['zodError'] = (error) => {
  * @param {object} error An error with a token property
  */
 ERROR_HANDLER['nearleyError'] = (error) => {
+  const PARSER = new nearley.Parser(nearley.Grammar.fromCompiled(grammarModule.grammar));
   let errorMsg = 'The parser found an error while reading the input file!\n';
 
   if (error.token) {
@@ -34,7 +38,7 @@ ERROR_HANDLER['nearleyError'] = (error) => {
     errorMsg += 'Invalid syntax';
   }
 
-  console.error(parser.lexer.formatError(error.token, errorMsg));
+  console.error(PARSER.lexer.formatError(error.token, errorMsg));
   
   const expectedTokenRegex = /A (.*) token based on:/g;
   const expectedTokens = [...error.message.matchAll(expectedTokenRegex)];

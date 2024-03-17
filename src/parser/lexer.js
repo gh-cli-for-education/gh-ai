@@ -60,54 +60,44 @@ function toCaseInsensive(word) {
   return regexSource.join('');
 };
 
-const HASH_SYMBOL     = /[#]/;
-const WHITES          = /(?:\s+|\/\*(?:.|\n)*?\*\/)+/; // ESTE WHITES ESTA PENSADO PARA EGG
-const STRING          = /"(?:[^"\\]|\\.)*"/;
-const PARAGRAPH       = /<p>(?:.|\s)*?<\/p>/;
-const GH_NAME         = /[a-z][a-z0-9]*(?:[-][a-z0-9]+)*/
-const NAME            = new RegExp(toCaseInsensive('name'));                                                                             // /name/i
-const SCRIPT_LANGUAGE = new RegExp(toCaseInsensive('script') + '(?:' + toCaseInsensive('ing') + ')?\\s*' + toCaseInsensive('language')); // /script(?:ing)?\s*language/i
-const SPECIFICATION   = new RegExp(toCaseInsensive('specification'));                                                                    // /specification/i
-const STYLE           = new RegExp(toCaseInsensive('style'));                                                                            // /style/i
-const DESCRIPTION     = new RegExp(toCaseInsensive('description'));                                                                      // /description/i
-const USAGE           = new RegExp(toCaseInsensive('usage'));                                                                            // /usage/i
-const HELP            = new RegExp(toCaseInsensive('help'));                                                                             // /help/i
-const PARAMETER       = new RegExp(toCaseInsensive('parameter'));                                                                        // /parameter/i
-const EXAMPLE         = new RegExp(toCaseInsensive('example'));                                                                          // /example/i
-const COMMAND         = new RegExp(toCaseInsensive('command'));                                                                          // /command/i
-const OUTPUT          = new RegExp(toCaseInsensive('output'));                                                                           // /output/i
-const LANGUAGE        = new RegExp(toCaseInsensive('language'));                                                                         // /language/i
-const FILE            = new RegExp(toCaseInsensive('file'));                                                                             // /file/i
-const ARGUMENT        = new RegExp(toCaseInsensive('argument'));                                                                         // /argument/i
-const EOF             = '__EOF__';
+// Auxiliary regex 
+const ARG_NAME        = '\s*[a-z][a-z]*(?:[-][a-z][a-z]*)*\s*';
 
 const TOKENS = {
-  HASH_SYMBOL,
-  WHITES:    { match: WHITES, lineBreaks: true },
-  STRING:    { match: STRING, value: sliceDoubleQuotationMarks, lineBreaks: true },
-  PARAGRAPH: { match: PARAGRAPH, value: getParagraphContent, lineBreaks: true },
-  NAME,
-  SCRIPT_LANGUAGE,
-  SPECIFICATION,
-  STYLE,
-  DESCRIPTION,
-  USAGE,
-  HELP,
-  PARAMETER,
-  EXAMPLE,
-  COMMAND,
-  OUTPUT,
-  LANGUAGE,
-  FILE,
-  ARGUMENT,
-  GH_NAME,
-  EOF,
-  ERROR: moo.error
+  HASH_SYMBOL:       /[#]/,
+  PARAMETER:         /[-][a-zA-Z]|[-]{2}[a-zA-Z]{2,}/, // Esta incompleto
+  HYPHEN:            /[-]/,
+  COLON:             /[:]/,
+  WHITES:            { match: /\s+/, lineBreaks: true },
+  COMMENT:           new RegExp('[[]' + toCaseInsensive('comment') + '[]]:\\s*#\\s*[(][^\\n]+?[)]'),
+  STRING:            { match: /"(?:[^"\\]|\\.)*"/, value: sliceDoubleQuotationMarks, lineBreaks: true },
+  PARAGRAPH:         { match: /<p>(?:.|\s)*?<\/p>/, value: getParagraphContent, lineBreaks: true },
+  ARGUMENT:          new RegExp(`\<${ARG_NAME}\>|\[${ARG_NAME}\]`), // Hacer la función que parsee el valor
+  GH_NAME:           /gh-[a-z][a-z0-9]*(?:[-][a-z0-9]+)*/,
+  EXTENSION:         new RegExp(toCaseInsensive('extension')),
+  MAIN_FILE:         new RegExp(toCaseInsensive('main') + '\\s*' + toCaseInsensive('file')),
+  FUNCTIONS:         new RegExp(toCaseInsensive('functions')),
+  PARAMETERS:        new RegExp(toCaseInsensive('parameters')),
+  ARGUMENTS:         new RegExp(toCaseInsensive('arguments')),
+  LANGUAGE_SETTINGS: new RegExp(toCaseInsensive('language') + '\\s*' + toCaseInsensive('settings')),
+  CHAT_SETTINGS:     new RegExp(toCaseInsensive('chat') + '\\s*' + toCaseInsensive('settings')),
+  LANGUAGE:          new RegExp(toCaseInsensive('language')),
+  STYLE:             new RegExp(toCaseInsensive('style')),
+  SPECIFICATION:     new RegExp(toCaseInsensive('specification')),
+  EXAMPLES:          new RegExp(toCaseInsensive('examples')),
+  FILES:             new RegExp(toCaseInsensive('files')),
+  FILE:              new RegExp(toCaseInsensive('file')),
+  HELP:              new RegExp(toCaseInsensive('help')),
+  API_QUERY:         new RegExp(toCaseInsensive('api') + '\\s*' + toCaseInsensive('query')),
+  EOF:               '__EOF__',
+  WORD:              /[^-<>\.:\s\[\]{}(),"]+/, // Arreglar lo de los word y las keywords
+  ERROR:             moo.error
+
 };
 
 // console.log(TOKENS, '\n');
 
 /** @description moo-ignore lexer with all the tokens needed for the parser */
-let lexer = makeLexer(TOKENS, ['WHITES'], { eof: true });
+let lexer = makeLexer(TOKENS, ['WHITES', 'COMMENT'], { eof: true });
 
 export { lexer };
