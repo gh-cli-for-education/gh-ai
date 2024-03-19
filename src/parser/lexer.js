@@ -14,17 +14,6 @@ import { makeLexer, moo } from 'moo-ignore';
 'use strict';
 
 /**
- * @description Checks if a character is a letter or not given the RegExp /[a-zA-Z]/
- * @param {string} char
- * @returns {boolean} True - if the character is a letter
- * @returns {boolean} False - if the character is not a letter
- */
-const isLetter = (char) => {
-  const LETTER_REGEXP = /[a-zA-Z]/;
-  return LETTER_REGEXP.test(char);
-};
-
-/**
  * @description Cut double quotation marks from a given string
  * @param {string} string The string with the double quotation marks 
  * @returns {string} The string without the double quotation marks
@@ -45,6 +34,28 @@ const getParagraphContent = (paragraph) => {
 };
 
 /**
+ * @description Extract the content of an Argument removing both <> and [] delimiters
+ * @param {string} argument 
+ * @returns {string} With just the argument content
+ */
+const getArgumentContent = (argument) => {
+  const ARGUMENT_WITH_GROUP = new RegExp(`\<(${ARG_NAME})\>|\\[(${ARG_NAME})\\]`);
+  const RESULT = ARGUMENT_WITH_GROUP.exec(argument);
+  return (RESULT[1])? RESULT[1] : RESULT[2];
+}
+
+/**
+ * @description Checks if a character is a letter or not given the RegExp /[a-zA-Z]/
+ * @param {string} char
+ * @returns {boolean} True - if the character is a letter
+ * @returns {boolean} False - if the character is not a letter
+ */
+const isLetter = (char) => {
+  const LETTER_REGEXP = /[a-zA-Z]/;
+  return LETTER_REGEXP.test(char);
+};
+
+/**
  * @description Given a word it will create a string following a case insensitive RegExp
  * @param {string} word The word that will be transformed into case insensitive 
  * @returns {string} A string with the case insensitive format
@@ -60,39 +71,44 @@ function toCaseInsensive(word) {
   return regexSource.join('');
 };
 
+function caseInsensitiveKeywords(keywords) {
+  const KEYWORDS = moo.keywords(keywords);
+  return value => KEYWORDS(value.toLowerCase());
+}
+
 // Auxiliary regex 
-const ARG_NAME        = '\s*[a-z][a-z]*(?:[-][a-z][a-z]*)*\s*';
+const ARG_NAME = '\\s*[a-z][a-z]*(?:[-][a-z][a-z]*)*\\s*';
 
 const TOKENS = {
-  HASH_SYMBOL:       /[#]/,
-  PARAMETER:         /[-][a-zA-Z]|[-]{2}[a-zA-Z]{2,}/, // Esta incompleto
-  HYPHEN:            /[-]/,
-  COLON:             /[:]/,
-  WHITES:            { match: /\s+/, lineBreaks: true },
-  COMMENT:           new RegExp('[[]' + toCaseInsensive('comment') + '[]]:\\s*#\\s*[(][^\\n]+?[)]'),
-  STRING:            { match: /"(?:[^"\\]|\\.)*"/, value: sliceDoubleQuotationMarks, lineBreaks: true },
-  PARAGRAPH:         { match: /<p>(?:.|\s)*?<\/p>/, value: getParagraphContent, lineBreaks: true },
-  ARGUMENT:          new RegExp(`\<${ARG_NAME}\>|\[${ARG_NAME}\]`), // Hacer la función que parsee el valor
-  GH_NAME:           /gh-[a-z][a-z0-9]*(?:[-][a-z0-9]+)*/,
-  EXTENSION:         new RegExp(toCaseInsensive('extension')),
-  MAIN_FILE:         new RegExp(toCaseInsensive('main') + '\\s*' + toCaseInsensive('file')),
-  FUNCTIONS:         new RegExp(toCaseInsensive('functions')),
-  PARAMETERS:        new RegExp(toCaseInsensive('parameters')),
-  ARGUMENTS:         new RegExp(toCaseInsensive('arguments')),
-  LANGUAGE_SETTINGS: new RegExp(toCaseInsensive('language') + '\\s*' + toCaseInsensive('settings')),
-  CHAT_SETTINGS:     new RegExp(toCaseInsensive('chat') + '\\s*' + toCaseInsensive('settings')),
-  LANGUAGE:          new RegExp(toCaseInsensive('language')),
-  STYLE:             new RegExp(toCaseInsensive('style')),
-  SPECIFICATION:     new RegExp(toCaseInsensive('specification')),
-  EXAMPLES:          new RegExp(toCaseInsensive('examples')),
-  FILES:             new RegExp(toCaseInsensive('files')),
-  FILE:              new RegExp(toCaseInsensive('file')),
-  HELP:              new RegExp(toCaseInsensive('help')),
-  API_QUERY:         new RegExp(toCaseInsensive('api') + '\\s*' + toCaseInsensive('query')),
-  EOF:               '__EOF__',
-  WORD:              /[^-<>\.:\s\[\]{}(),"]+/, // Arreglar lo de los word y las keywords
+  HASH_SYMBOL:     /[#]/,
+  LARGE_PARAMETER: /[-]{2}[a-zA-Z]{2,}(?:[-][a-zA-Z]{2,})*/,
+  SHORT_PARAMETER: /[-][a-zA-Z]/,
+  HYPHEN:          /[-]/,
+  COLON:           /[:]/,
+  WHITES:          { match: /\s+/, lineBreaks: true },
+  COMMENT:         new RegExp('[[]' + toCaseInsensive('comment') + '[]]:\\s*#\\s*[(][^\\n]+?[)]'),
+  STRING:          { match: /"(?:[^"\\]|\\.)*"/, value: sliceDoubleQuotationMarks, lineBreaks: true },
+  PARAGRAPH:       { match: /<p>(?:.|\s)*?<\/p>/, value: getParagraphContent, lineBreaks: true },
+  ARGUMENT:        { match : new RegExp(`\<${ARG_NAME}\>|\\[${ARG_NAME}\\]`), value: getArgumentContent },
+  GH_NAME:         /gh-[a-z][a-z0-9]*(?:[-][a-z0-9]+)*/,
+  EOF:             '__EOF__',
+  WORD:            { match: /[^-<>\.:\s\[\]{}(),"]+/, type: caseInsensitiveKeywords({
+    EXTENSION:         'extension',
+    MAIN_FILE:         'mainfile',
+    FUNCTIONS:         'functions',
+    PARAMETERS:        'parameters',
+    ARGUMENTS:         'arguments',
+    LANGUAGE_SETTINGS: 'languagesettings',
+    CHAT_SETTINGS:     'chatsettings',
+    LANGUAGE:          'language',
+    STYLE:             'style',
+    SPECIFICATION:     'specification',
+    EXAMPLES:          'examples',
+    FILES:             'files',
+    HELP:              'help',
+    API:               'api',
+  })},
   ERROR:             moo.error
-
 };
 
 // console.log(TOKENS, '\n');

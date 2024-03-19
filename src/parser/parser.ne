@@ -14,12 +14,11 @@ import { lexer } from './parser/lexer.js';
 import {
   buildObject,
   getProperty,
-
-  // Extension Semantic actions 
   buildExtension,
   buildMainFileProperty,
   buildParametersProperty,
-  buildParameter,
+  buildLargeParameter,
+  buildShortParameter,
   buildArgumentsProperty,
   buildArgument,
   buildFilesProperty,
@@ -73,10 +72,16 @@ mainFileProperties ->
   | %ARGUMENTS  (argument  {% id %}):* {% buildArgumentsProperty %}
 
 file      -> %WORD %PARAGRAPH (function {% id %}):* {% buildFileProperties %}
-function  -> %HYPHEN %WORD %COLON paragraphOrString {% buildFunction %}
-parameter -> %HYPHEN %PARAMETER   paragraphOrString {% buildParameter %}
-argument  -> %HYPHEN %ARGUMENT    paragraphOrString {% buildArgument %}
-example   -> %HYPHEN %STRING %PARAGRAPH             {% buildExample %}
+
+function  -> %HYPHEN %WORD       %COLON       paragraphOrString {% buildFunction %}
+
+parameter -> 
+    %HYPHEN %LARGE_PARAMETER (%ARGUMENT {% id %}):? paragraphOrString {% buildLargeParameter %}
+  | %HYPHEN %SHORT_PARAMETER paragraphOrString                        {% buildShortParameter %}
+
+argument  -> %HYPHEN %ARGUMENT                paragraphOrString {% buildArgument %}
+
+example   -> %HYPHEN %STRING %PARAGRAPH {% buildExample %}
 
 mandatoryLanguageSetting -> %HYPHEN %LANGUAGE %COLON wordOrString {% buildSetting %}
 languageSettings -> 
@@ -86,7 +91,9 @@ languageSettings ->
 
 ############# API Query ##################
 
-apiQuery ->  %API_QUERY {% id %}
+apiQuery ->  %API {% id %}
+
+
 
 ############## Chat Settings ################
 
@@ -94,6 +101,8 @@ chatSettings -> %CHAT_SETTINGS (%HYPHEN chatSettingsProperties %COLON wordOrStri
 
 # Por ahora solo Language 
 chatSettingsProperties -> %LANGUAGE {% id %}
+
+
 
 ############ Auxiliary Rules ######################
 

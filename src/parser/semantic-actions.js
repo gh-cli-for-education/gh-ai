@@ -90,8 +90,27 @@ function buildParametersProperty([tag, parameters]) {
   };
 }
 
-function buildParameter([hyphen, parameter, description]) {
-  return { parameter: parameter.value, description: description.value };
+function buildLargeParameter([hyphen, parameter, argument, description]) {
+  let argumentObject = undefined;
+  if (argument !== null) {
+    argumentObject = {
+      name: argument.value,
+      mandatory: (argument.text[0] === '<')
+    };
+  }
+  return { 
+    parameter: parameter.value, 
+    argument: argumentObject,
+    description: description.value 
+  };
+}
+
+function buildShortParameter([hyphen, parameter, description]) {
+  return { 
+    parameter: parameter.value, 
+    argument: null,
+    description: description.value 
+  };
 }
 
 function buildArgumentsProperty([tag, argument_s]) {
@@ -102,7 +121,11 @@ function buildArgumentsProperty([tag, argument_s]) {
 }
 
 function buildArgument([hyphen, argument, description]) {
-  return { argument: argument.value, description: description.value };
+  return { 
+    argument: argument.value, 
+    description: description.value,
+    mandatory: (argument.text[0] === '<')
+  };
 }
 
 function buildHelpProperty([tag, usage, help]) {
@@ -167,7 +190,8 @@ export {
   buildExtension,
   buildMainFileProperty,
   buildParametersProperty,
-  buildParameter,
+  buildLargeParameter,
+  buildShortParameter,
   buildArgumentsProperty,
   buildArgument,
   buildFilesProperty,
