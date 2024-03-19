@@ -40,16 +40,14 @@ async function parseInputFile(inputFile, options) {
   const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammarModule.grammar));
   let input = await fs.readFile(inputFile, 'utf-8');
   parser.feed(input);
-  if (parser.results.length > 1) { throw Error('Gramatica Ambigua'); }
   let inputObject = parser.results[0];
-   
+  INPUT_SCHEMA.parse(inputObject);
   if (options.debug) {
     console.log(
       'DEBUG>: input File successfully readed!. input object:\n', 
       inputObject
     );
   }
-  INPUT_SCHEMA.parse(inputObject);
   return inputObject;
 }
 

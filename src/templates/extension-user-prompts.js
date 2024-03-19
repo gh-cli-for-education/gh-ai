@@ -14,8 +14,12 @@ import Mustache from 'mustache';
 import { TEMPLATES } from '../utils.js';
 'use strict';
 
-const parseNameDescription = function () {
-  return `${this.name}: ${this.description}\n\n`;
+const parseArgument = function () {
+  return `- **(${this.mandatory? 'Mandatory' : 'Optional'})** ${this.argument}: ${this.description}`;
+};
+
+const parseParameter = function () {
+  return `- ${this.parameter}: ${this.description}`;
 };
 
 const USER_EXTENSION = {
@@ -28,15 +32,21 @@ const USER_EXTENSION = {
 {{description}}
 
   {{#arguments.length}}##ARGUMENTS{{/arguments.length}}
+  {{#arguments}}
+    
+    {{parseArgument}}
+  {{/arguments}}
 
-  {{#arguments}}  ###ARGUMENT {{nameDescription}}{{/arguments}} {{#parameters.length}} ##PARAMETERS{{/parameters.length}}
-
-  {{#parameters}}  ###PARAMETER {{nameDescription}}{{/parameters}}{{#usage}} ##USAGE {{usage.usage}} 
-  {{#usage.help}}###HELP
-
-  {{usage.help}}
+  {{#parameters.length}}##PARAMETERS{{/parameters.length}}
+  {{#parameters}}
   
-  {{/usage.help}}{{/usage}}
+    {{parseParameter}}
+  {{/parameters}}
+
+  {{#help}}##HELP {{{help.usage}}}
+
+  {{{help.help}}}
+  {{/help}}
 
 #END_MAIN_FILE
 
@@ -62,18 +72,18 @@ The expected output of the program is:
 
 };
 
-TEMPLATES.USER['EXTENSION'] = (inputObject) => {
-  inputObject.nameDescription = parseNameDescription;
+TEMPLATES.USER['extension'] = (extension) => {
+  extension.parseArgument = parseArgument;
+  extension.parseParameter = parseParameter;
   return {
-    mainFile: Mustache.render(USER_EXTENSION.MAIN_FILE, inputObject),
-    files: inputObject.files.map((file) => {
+    mainFile: Mustache.render(USER_EXTENSION.MAIN_FILE, extension.mainFile),
+    files: extension.files.map((file) => {
       return Mustache.render(USER_EXTENSION.FILE, file);
     }),
-    examples: inputObject.examples.map((example) => {
+    examples: extension.examples.map((example) => {
       return Mustache.render(USER_EXTENSION.USE_EXAMPLES, example);
     }),
     userPrompts: function () {
-      // let mainFile = `${this.mainFile}\n Now there is a list of `
       return [this.mainFile].concat(this.files).flat();
     }
   };

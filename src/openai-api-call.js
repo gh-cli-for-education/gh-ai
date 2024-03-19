@@ -13,7 +13,7 @@ import OpenAI from 'openai';
 import { sleep } from 'openai/core.js';
 
 import { API, TEMPLATES } from './utils.js';
-import './templates/templates.js';
+import './templates/templates.js'; // update TEMPLATES object
 import { COLORS } from './colors.js';
 import { TOOLS, TOOLS_DESCRIPTIONS } from './openai-api-tools.js';
 
@@ -29,18 +29,18 @@ API['OPENAI'] = async function(inputObject, outputDirectory, options) {
 
   const OPENAI = new OpenAI({ 
     apiKey: process.env.OPENAI_API_KEY,
-    organization: options.org
+    organization: process.env.OPENAI_ORG
   });
-  
+
   const [ASSISTANT, THREAD] = await createAssistantAndThread(OPENAI, options);
 
-  const TYPE = options.commandType.toUpperCase();
+  const TYPE = options.commandType;
   const PROMPTS = {
-    system: TEMPLATES.SYSTEM[TYPE](inputObject),
-    user:   TEMPLATES.USER[TYPE](inputObject)
+    system: TEMPLATES.SYSTEM[TYPE](inputObject[TYPE]),
+    user:   TEMPLATES.USER[TYPE](inputObject[TYPE])
   };   
 
-  let response = await CALL[TYPE](
+  let response = await CALL[TYPE.toUpperCase()](
     OPENAI,
     ASSISTANT, 
     THREAD,
@@ -157,7 +157,7 @@ CALL['EXTENSION'] = async function(
     );
 
     if (!COMPLETED) {
-      run = await openai.beta.threads.run.retreive(thread.id, run.id);
+      run = await openai.beta.threads.run.retrieve(thread.id, run.id);
       throw run.last_error;
     }
 
@@ -194,9 +194,9 @@ async function checkRunStatus(openai, threadID, runID, outputDirectory, options)
   let failure = false;
 
   while(!completed) {
-    const RUN = await openai.beta.threads.runs.retrieve(threadID, runID);
+    let run = await openai.beta.threads.runs.retrieve(threadID, runID);
     let message = '';
-    switch(RUN.status) {
+    switch(run.status) {
       case 'failed':
         message = 'The run failed while attempting to talk with the AI.';
         failure = true;
@@ -226,10 +226,10 @@ async function checkRunStatus(openai, threadID, runID, outputDirectory, options)
 
       case 'requires_action':
         message = 'The run requires an action from a function. Waiting for the result.';
-        RUN = await openai.beta.threads.runs.submitToolOutputs(
+        run = await openai.beta.threads.runs.submitToolOutputs(
           threadID,
           runID,
-          await manageToolActions(RUN, outputDirectory, options)
+          await manageToolActions(run, outputDirectory, options)
         )  
         break;
 

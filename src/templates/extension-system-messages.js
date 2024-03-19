@@ -27,9 +27,9 @@ by guiding and mainly generating quality {{language}} code.`,
 #MAIN_FILE
   ##NAME <Here will be the name of the main program>
   ##DESCRIPTION <Here will be an overall description of what the entire program must do>
-  {{#arguments.length}}##ARGUMENTS [<Here will be an array of arguments with their respective descriptions>]{{/arguments.length}}
-  {{#parameters.length}}##PARAMETERS [<Here will be an array of optional parameters>]{{/parameters.length}}
-  {{#usage}}##USAGE EXAMPLE <Here will be an example of how the -h option of the program should looks like>{{/usage}}
+  {{#mainFile.arguments.length}}##ARGUMENTS [<Here will be an array of arguments with their respective descriptions>]{{/mainFile.arguments.length}}
+  {{#mainFile.parameters.length}}##PARAMETERS [<Here will be an array of optional parameters>]{{/mainFile.parameters.length}}
+  {{#mainFile.help.usage}}##USAGE EXAMPLE <Here will be an example of how the -h option of the program should looks like>{{/mainFile.help.usage}}
 #END_MAIN_FILE
 {{#files.length}}
 
@@ -51,10 +51,11 @@ For each user prompt you must call the system provided tools(make sure to follow
 
 };
 
-TEMPLATES.SYSTEM['EXTENSION'] = (inputObject) => {
+TEMPLATES.SYSTEM['extension'] = (extension) => {
+  console.log(extension)
   return {
-    persona: Mustache.render(SYSTEM_EXTENSION.PERSONA, inputObject.scriptLanguage),
-    input: Mustache.render(SYSTEM_EXTENSION.USER_INPUT_FORMAT, inputObject),
+    persona: Mustache.render(SYSTEM_EXTENSION.PERSONA, extension.languageSettings),
+    input: Mustache.render(SYSTEM_EXTENSION.USER_INPUT_FORMAT, extension),
     output: SYSTEM_EXTENSION.OUTPUT,
     instruction: function() {
       return `${this.persona}\n${this.input}\n${this.output}`;
