@@ -10,13 +10,13 @@
  * @name utils.js
  * @desc store any utility function or object needed by the whole program @TODO mejorar la descripción
  */
-import { EXTENSION_SCHEMA } from './schemas/extension-schema.js';
 import * as fs from 'fs/promises';
 import nearley from 'nearley';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
 import * as grammarModule from './grammar.js';
+import { INPUT_SCHEMA } from './schemas/input-schema.js';
 'use strict';
 
 const API = Object.create(null);
@@ -42,13 +42,14 @@ async function parseInputFile(inputFile, options) {
   parser.feed(input);
   if (parser.results.length > 1) { throw Error('Gramatica Ambigua'); }
   let inputObject = parser.results[0];
-  if (!options.debug) SCHEMAS[options.commandType].parse(inputObject); 
+   
   if (options.debug) {
     console.log(
       'DEBUG>: input File successfully readed!. input object:\n', 
       inputObject
     );
   }
+  INPUT_SCHEMA.parse(inputObject);
   return inputObject;
 }
 
@@ -102,9 +103,6 @@ const PACKAGE_DATA = Object.freeze({
   version: require('../package.json').version,
   description: require('../package.json').description
 });
-const SCHEMAS = Object.freeze({
-  extension: EXTENSION_SCHEMA
-});
 
 export { 
   isEmptyObject,
@@ -113,7 +111,6 @@ export {
   createReadme,
   HELP_TYPES,
   PACKAGE_DATA,
-  SCHEMAS,
   API,
   TEMPLATES
 };

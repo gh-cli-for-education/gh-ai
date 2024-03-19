@@ -91,7 +91,7 @@ function buildParametersProperty([tag, parameters]) {
 }
 
 function buildLargeParameter([hyphen, parameter, argument, description]) {
-  let argumentObject = undefined;
+  let argumentObject = null;
   if (argument !== null) {
     argumentObject = {
       name: argument.value,
@@ -154,15 +154,27 @@ function buildFileProperties([name, description, functions]) {
 }
 
 function buildLanguageSettingsProperty([tag, mandatorySetting, optionalSettings]) {
-  return {
+  let languageSettings = {
     type: 'languageSettings',
-    content: [mandatorySetting, ...optionalSettings]
+    content: {},
   };
+  languageSettings.content[mandatorySetting.type] = mandatorySetting.value;
+  optionalSettings.forEach((setting) => {
+    checkDuplicatedTags(
+      languageSettings, 
+      setting.type, 
+      `Duplicated Settings are not allowed. Expected one ${setting.type} but received 2.`
+    );
+    languageSettings.content[setting.type.toLowerCase()] = setting.value;    
+  });
+  return languageSettings;
 }
 
 function buildSetting([hyphen, setting, colon, value]) {
-  let setting_ = {};
-  setting_[setting.value] = value.value;
+  let setting_ = {
+    type: setting.value,
+    value: value.value
+  };
   return setting_;
 }
 
@@ -177,11 +189,21 @@ function buildExample([hyphen, command, expectedOutput]) {
   return { command: command.value, output: expectedOutput.value };
 }
 
-function buildChatSettings([tag, chatSettings]) {
-  return {
-    type: tag.type.toLowerCase(),
-    content: chatSettings
+
+function buildChatSettings([tag, settings]) {
+  let chatSettings = {
+    type: 'chatSettings',
+    content: {},
   };
+  settings.forEach((setting) => {
+    checkDuplicatedTags(
+      chatSettings, 
+      setting.type, 
+      `Duplicated Settings are not allowed. Expected one ${setting.type} but received 2.`
+    );
+    chatSettings.content[setting.type.toLowerCase()] = setting.value;    
+  });
+  return chatSettings;
 }
 
 export {
