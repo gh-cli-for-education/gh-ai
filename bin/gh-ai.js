@@ -50,12 +50,6 @@ PROGRAM
   
 // Program actions to options values
 PROGRAM.action(async (inputFile, outputDirectory, options) => {
-
-  if (options.debug) {
-    await parseInputFile(inputFile, options);
-    return;
-  }
-
   try {
     const PROMPT = COLORS.yellow(`GH-AI>: `);
 
@@ -67,14 +61,6 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
 
     await createReadme(inputObject, prompts, apiResponse, inputFile, outputDirectory, options);
     console.log(`${PROMPT}Generated README.md file inside ${outputDirectory}/`); 
-
-    if (options.safeAssistant) {
-      console.log(`${PROMPT}The assistant id has been successfully added to the README file in ${outputDirectory}`);
-    }
-
-    if (options.safeThread) {
-      console.log(`${PROMPT}The thread id has been successfully added to the README file in ${outputDirectory}`);
-    }
 
   } catch (error) {
     if (error instanceof z.ZodError) { 

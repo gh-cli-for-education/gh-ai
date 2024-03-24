@@ -59,21 +59,21 @@ API['OPENAI'] = async function(inputObject, outputDirectory, options) {
       options
     );
 
-    console.log(`\n${GH_AI_PROMPT} The ${options.llmApi} API call has been executed successfully!`);
+    console.log(`\n${GH_AI_PROMPT}The ${options.llmApi} API call has been executed successfully!`);
 
     return [PROMPTS, response];
   } finally {
     
     if (options.saveAssistant) {
       response.assistant = assistant.id;
-      console.log(`${GH_AI_PROMPT} The assistant ID has been saved.`);
+      console.log(`${GH_AI_PROMPT}The assistant ID has been saved.`);
     } else {
       await OPENAI.beta.assistants.del(assistant.id);
     }
   
     if (options.saveThread) {
       response.thread = thread.id;
-      console.log(`${GH_AI_PROMPT} The thread ID has been saved.`);
+      console.log(`${GH_AI_PROMPT}The thread ID has been saved.`);
     } else {
       await OPENAI.beta.threads.del(thread.id);
     }
@@ -295,7 +295,7 @@ async function manageToolActions(run, outputDirectory, options) {
     let requiredActions = run.required_action.submit_tool_outputs;
     let outputs = await Promise.all(requiredActions.tool_calls.map(async (call) => {
 
-      console.log(`\tExecuting ${call.function.name} tool.`);
+      console.log(`\tDEBGUG>: Executing ${call.function.name} tool.`);
       return {
         tool_call_id: call.id,
         output: await TOOLS[call.function.name](call.function.arguments, outputDirectory, options)

@@ -27,7 +27,7 @@ TEMPLATES.EXTENSION.SYSTEM = (inputObject) => {
 
 TEMPLATES.EXTENSION.USER = (inputObject) => {
   const EXTENSION = inputObject.extension;
-  
+
   let files = [EXTENSION.mainFile];
   if (EXTENSION.files) {
     files = files.concat(EXTENSION.files);
@@ -49,6 +49,9 @@ TEMPLATES.EXTENSION.USER = (inputObject) => {
     };
     return Mustache.render(EXTENSION_USER_TEMPLATE, file);
   });
+
+  PROMPTS.push('I request you to generate a README.md file containing: 1. A brief description of what the program does.\n 2. A installation guide for the generated gh extension. 3. An Usage section. 4. An examples section with 2 examples in it.')
+
   return PROMPTS;
 };
 

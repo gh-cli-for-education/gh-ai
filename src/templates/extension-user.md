@@ -4,7 +4,7 @@ The file *name* is **{{name}}**
 
 This is what the program has to do:
 
-**{{description}}**
+{{description}}
 
 {{#arguments.length}} 
 The program has to make use of the following arguments that are indicated through the command line:

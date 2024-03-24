@@ -1,4 +1,4 @@
-# Bash script for the gh-branch Github CLI extension
+# Github CLI extension: gh-branch
 
 #!/bin/bash
 
@@ -9,45 +9,39 @@ then
     exit 1
 fi
 
-# Function to display the help function
-function display_help() {
-    echo "Usage: gh branch [options]"
-    echo "-v       Output the program version number"
-    echo "-h       Execute the program help function"
-    echo "--static Print a non-interactive list of branches"
+# Function to display an interactive branch switcher
+switch_branch() {
+    # Implementation of branch switching logic
 }
 
-# Parse command line options
-while [[ "$1" == -* ]]; do
-    case "$1" in
-        -v)
-            echo "gh-branch version 1.0"
-            ;;
-        -h)
-            display_help
-            ;;
-        --static)
-            # Print non-interactive list of branches
-            # Add code here to print static list
-            ;;
-        *)
-            echo "Invalid option: $1"
-            display_help
-            exit 1
-            ;;
-    esac
-    shift
-done
+# Function to delete branches
+delete_branch() {
+    # Implementation of branch deletion logic
+}
 
-# Check if the user is in a git repository
-if ! git rev-parse --is-inside-work-tree &>/dev/null
-then
-    echo "Error: Not in a Git repository"
-    exit 1
-fi
+# Function to list all branches of a repository
+list_branches() {
+    # Implementation of listing all branches logic
+}
 
-# Make a GraphQL query to get pull requests
-# Add code here to make the GraphQL query with gh api command
+# Function to make a GraphQL query for pull requests
+graphql_query() {
+    # Implementation of making a GraphQL query for pull requests
+}
 
-# Display branches based on pull request information
-# Add code here to display branches
+# Main function to execute based on the command line parameters
+main() {
+    if [[ "$1" == "-v" ]]; then
+        echo "Version X.X.X" # Replace X.X.X with the actual version number
+    elif [[ "$1" == "-h" ]]; then
+        echo "Usage: gh branch [options]\n\n-v       Output the program version number\n-h       Execute the program help function\n--static Print a non-interactive list of branches"
+    elif [[ "$1" == "--static" ]]; then
+        # Print a non-interactive list of branches
+    else
+        # Default behavior to display interactive branch switcher
+        switch_branch
+    fi
+}
+
+# Execute the main function
+main "$@"
