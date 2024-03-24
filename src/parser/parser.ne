@@ -73,7 +73,7 @@ mainFileProperties ->
 
 file      -> %WORD %PARAGRAPH (function {% id %}):* {% buildFileProperties %}
 
-function  -> %HYPHEN %WORD       %COLON       paragraphOrString {% buildFunction %}
+function  -> %HYPHEN %WORD %COLON paragraphOrString {% buildFunction %}
 
 parameter -> 
     %HYPHEN %LARGE_PARAMETER (%ARGUMENT {% id %}):? paragraphOrString {% buildLargeParameter %}

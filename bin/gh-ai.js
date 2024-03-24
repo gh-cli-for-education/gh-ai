@@ -41,7 +41,6 @@ PROGRAM
   .argument('<input-file>', 'The input file used to feed the llm')
   .argument('<output-directory>', 'The directory path where all the files created by the llm will be stored')
   .option('-d, --debug', 'Output extra information about the execution process')
-  .option('--org <organization>', 'Specify which organization is used for an API request.') // Esto pasarlo al .ENV
   .option('--tokens-verbose', 'Output the token usage information in each prompt')
   .option('--save-thread', 'Make the program not delete the used thread, instead it will save it inside the generated README file')
   .option('--save-assistant', 'Make the program not delete the used assistant, instead it will save it inside the generated README file')
@@ -58,15 +57,15 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
   }
 
   try {
-    const PROMPT = COLORS.yellow(`${options.llmApi}-API>: `);
+    const PROMPT = COLORS.yellow(`GH-AI>: `);
 
     console.log(`${PROMPT}Parsing the user input.`)
     let inputObject = await parseInputFile(inputFile, options);
 
-    console.log(`${PROMPT}Starting API call. This process may take a few seconds.`);
+    console.log(`${PROMPT}Starting ${options.llmApi} API call. This process may take a few seconds.`);
     let [ prompts, apiResponse ] = await API[options.llmApi](inputObject, outputDirectory, options);
 
-    await createReadme(prompts, apiResponse, outputDirectory, options);
+    await createReadme(inputObject, prompts, apiResponse, inputFile, outputDirectory, options);
     console.log(`${PROMPT}Generated README.md file inside ${outputDirectory}/`); 
 
     if (options.safeAssistant) {

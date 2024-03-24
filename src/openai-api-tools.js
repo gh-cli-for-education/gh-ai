@@ -13,7 +13,7 @@ const TOOLS_DESCRIPTIONS = [
   {
     type: 'function',
     function: {
-      name: 'get_gh_api_documentation',
+      name: 'search_documentation',
       description: 'Call this function whenever you need help making a gh extension, specially when you need information from the Github Cli documentation',
       parameters: {
         type: 'object',
@@ -27,8 +27,8 @@ const TOOLS_DESCRIPTIONS = [
   {
     type: 'function',
     function: {
-      name: 'create_file',
-      description: `Call this function for each user prompt, creating the expected parameter using all the information provided by the user prompt.`,
+      name: 'generate_file',
+      description: 'This is the tool that you must use to send the user the generated code, for each user prompt you must call this function only once.',
       parameters: {
         type: 'object',
         properties: {
@@ -44,12 +44,27 @@ const TOOLS_DESCRIPTIONS = [
         required: ['file']
       }
     }
-  }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'talk_with_user',
+      description: 'This is the tool that you must use to communicate with the user.',
+      parameters: {
+        type: 'object',
+        properties: {
+          motive: { type: 'string', description: 'One of the three possible motives (chat, question or error) to talk with the user.' },
+          message: { type: 'string', description: 'The message you want to send to the user.'},
+        },
+        required: ['motive', 'message']
+      }
+    }
+  },
 ];
 
 const TOOLS = Object.create(null);
 
-TOOLS['create_file'] = async (input, options, outputDirectory) => {    
+TOOLS['generate_file'] = async (input, outputDirectory, options) => {    
   try {
     await fs.mkdir(outputDirectory, { recursive: true });
     input = JSON.parse(input);
@@ -67,18 +82,18 @@ TOOLS['create_file'] = async (input, options, outputDirectory) => {
     return 'Function executed successfully. Do not respond this output and wait for the user input.';     
   } 
   catch (error) {
-    let warning = COLORS.magenta('WARNING>: ');
+    const WARNING = COLORS.magenta('WARNING>: ');
     let errorMsg = '';
 
     if (error instanceof SyntaxError) {
       errorMsg = 'The input object doens\'t have a valid JSON Syntax. ';
-      console.error(`${warning}${errorMsg}`);
+      console.error(`${WARNING}${errorMsg}`);
       return errorMsg + 'Try calling the function again with a valid Syntax.';
     }
 
     else if (error instanceof z.ZodError) {
       errorMsg = 'The input JSON doesn\'t follow the expected Schema. ';
-      console.error(`${warning}${errorMsg}`)
+      console.error(`${WARNING}${errorMsg}`)
       return errorMsg + 'Try calling the function again with a valid JSON Schema.';
     } 
 
@@ -88,8 +103,34 @@ TOOLS['create_file'] = async (input, options, outputDirectory) => {
   }
 };
 
-TOOLS['get_gh_api_documentation'] = async () => {
+TOOLS['search_documentation'] = async (input, options) => {
   return 'function not implemented yet';
+};
+
+TOOLS['talk_with_user'] = async (input, options) => {
+  try {
+
+    const PROMPT = 'CHATGPT>: ';
+    const PROMPTS = {
+      chat: COLORS.yellow(PROMPT),
+      questions: COLORS.magenta(PROMPT),
+      error: COLORS.red(PROMPT)
+    };
+
+    input = JSON.parse(input);
+
+    console.log(`${PROMPTS[input.motive]}${input.message}`);
+
+    return '';
+
+  } catch (error) {
+
+    if (error instanceof SyntaxError) {
+      console.error('The input object doens\'t have a valid JSON Syntax.');
+      return 'Try calling the function again with a valid Syntax.';
+    }
+
+  }
 };
 
 export { TOOLS_DESCRIPTIONS, TOOLS };

@@ -19,11 +19,6 @@ Make sure to use the <tool>create_file</tool> tool to create the expected file!
 
 </p>
 
-### Functions 
-
-- delp: <p> help Function description paragraph </p>
-- foo:  <p> foo function description paragraph  </p>
-
 ### Parameters
 
 -  -v          <p> Output the version number </p>

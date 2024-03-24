@@ -6,7 +6,23 @@ gh extension that provides help in the creation of other gh extensions using AI 
 
 ## Installation
 
-**WRITE THIS** 
+
+## `.env` file
+
+To be able to use your llm api key you need to specify them in a .env file
+
+Here is an example of a .env file to fill with your own keys 
+
+```
+# openai env variables
+OPENAI_API_KEY= Put here you openai API key
+OPENAI_ORG= Put here your openai ORG
+
+# You can use --save-assistant or --save-tread to make the program input the assisant or thread ID into the README.MD file
+
+ASSISTANT_ID= put here your assistant ID if you want to use an existing one instead of creating a new one
+THREAD_ID= put here your thread ID if you want to use an existing one instead of creating a new one
+```
 
 ## Prompt File 
 

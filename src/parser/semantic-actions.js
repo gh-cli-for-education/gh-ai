@@ -18,7 +18,7 @@ function checkDuplicatedTags(object, tag, errorMsg = 'Found duplicated a Tag') {
 }
 
 function buildObject([properties, eof]) {
-  let object = Object.create(null);
+  let object = {};
   properties.forEach((property) => { // Deep merge of all property objects
     checkDuplicatedTags(
       object, 
@@ -173,7 +173,7 @@ function buildLanguageSettingsProperty([tag, mandatorySetting, optionalSettings]
 function buildSetting([hyphen, setting, colon, value]) {
   let setting_ = {
     type: setting.value,
-    value: value.value
+    value: value.value.toLowerCase()
   };
   return setting_;
 }
@@ -188,7 +188,6 @@ function buildExamplesProperty([tag, examples]) {
 function buildExample([hyphen, command, expectedOutput]) {
   return { command: command.value, output: expectedOutput.value };
 }
-
 
 function buildChatSettings([tag, settings]) {
   let chatSettings = {

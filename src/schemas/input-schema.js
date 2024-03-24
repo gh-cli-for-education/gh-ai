@@ -52,7 +52,7 @@ const MAIN_FILE_SCHEMA = z.object({
   parameters:  z.array(PARAMETER_SCHEMA).describe('The main file parameters').optional(),
   arguments:   z.array(ARGUMENT_SCHEMA).describe('The main file arguments').optional(),
   help:        HELP_SCHEMA.optional(),
-}).describe('The schema that a main file tag must follow ').required().strict();
+}).describe('The schema that a main file tag must follow ').required({ name: true, description: true }).strict();
 
 
 const EXTENSION_SCHEMA = z.object({

@@ -16,16 +16,11 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
 import * as grammarModule from './grammar.js';
+import { TEMPLATES } from './templates/templates.js';
 import { INPUT_SCHEMA } from './schemas/input-schema.js';
 'use strict';
 
 const API = Object.create(null);
-let TEMPLATES = Object.create(null);
-
-TEMPLATES = {
-  USER: {},
-  SYSTEM: {},
-}
 
 /**
  * @description Parse the input file from the user and returns an object with
@@ -56,14 +51,15 @@ async function parseInputFile(inputFile, options) {
  * @param {*} apiResponse 
  * @param {*} options 
  */
-async function createReadme(prompt, apiResponse, outputDirectory, options) {
+async function createReadme(inputObject, prompts, apiResponse, inputFile, outputDirectory, options) {
   try {
     await fs.mkdir(outputDirectory, { recursive: true });
   } catch(error) {
     if (error.code === 'EEXIT') { console.log(`El directorio ya existe`); } // Esto nunca se llama 
   }
-  let readmeContent = TEMPLATES.SYSTEM['README'](prompt, apiResponse, options);
-  await fs.writeFile(`${outputDirectory}/README.md`, readmeContent);
+  const TYPE = options.commandType.toUpperCase();
+  const LOG = TEMPLATES[TYPE].LOG(inputObject, inputFile, prompts, apiResponse, options);
+  await fs.writeFile(`${outputDirectory}/log.md`, LOG);
 }
 
 /**
@@ -110,5 +106,4 @@ export {
   HELP_TYPES,
   PACKAGE_DATA,
   API,
-  TEMPLATES
 };
