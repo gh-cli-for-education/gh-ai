@@ -51,15 +51,17 @@ async function parseInputFile(inputFile, options) {
  * @param {*} apiResponse 
  * @param {*} options 
  */
-async function createReadme(inputObject, prompts, apiResponse, inputFile, outputDirectory, options) {
+async function createReadme(inputObject, inputFile, outputDirectory, response, options) {
   try {
     await fs.mkdir(outputDirectory, { recursive: true });
   } catch(error) {
     if (error.code === 'EEXIT') { console.log(`El directorio ya existe`); } // Esto nunca se llama 
   }
   const TYPE = options.commandType.toUpperCase();
-  const LOG = TEMPLATES[TYPE].LOG(inputObject, inputFile, prompts, apiResponse, options);
-  await fs.writeFile(`${outputDirectory}/log.md`, LOG);
+  const USER_LOG = TEMPLATES[TYPE].USER_LOG(inputObject, inputFile, response, options);
+  await fs.writeFile(`${outputDirectory}/user-log.md`, USER_LOG);
+  const RESPONSE_LOG = TEMPLATES[TYPE].RESPONSE_LOG(response, options);
+  await fs.writeFile(`${outputDirectory}/response-log.md`, RESPONSE_LOG);  
 }
 
 /**

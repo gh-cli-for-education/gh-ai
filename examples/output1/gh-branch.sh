@@ -1,47 +1,52 @@
-# Github CLI extension: gh-branch
-
 #!/bin/bash
 
-# Check if fzf is installed
+# Check if fzf is installed, if not, exit the program
 if ! command -v fzf &> /dev/null
 then
     echo "Error: fzf is not installed. Please install fzf to use this extension."
     exit 1
 fi
 
-# Function to display an interactive branch switcher
-switch_branch() {
-    # Implementation of branch switching logic
+# Function to handle the help function
+function help_function() {
+    echo "Usage: gh branch [options]"
+    echo "
+-v       Output the program version number"
+    echo "-h       Execute the program help function"
+    echo "--static Print a non-interactive list of branches"
 }
 
-# Function to delete branches
-delete_branch() {
-    # Implementation of branch deletion logic
-}
+# Parse command-line parameters
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+    case $key in
+        -v)
+            # Output the program version number
+            echo "gh-branch v1.0"
+            ;;
+        -h)
+            # Execute the program help function
+            help_function
+            ;;
+        --static)
+            # Print a non-interactive list of branches
+            git branch
+            ;;
+        *)
+            echo "Invalid option: $1. Use -h for help."
+            exit 1
+            ;;
+    esac
+    shift
+done
 
-# Function to list all branches of a repository
-list_branches() {
-    # Implementation of listing all branches logic
-}
+# Using gh API command to make a GraphQL query for pull requests
+gh api graphql -f query='{repository(owner: "owner", name: "repo_name") {pullRequests(states: OPEN, first: 100) {nodes {number author {login} state headRefName}}}}'
 
-# Function to make a GraphQL query for pull requests
-graphql_query() {
-    # Implementation of making a GraphQL query for pull requests
-}
+# Parsing the GraphQL response to display branch information
+# Your code to parse the response and format the branch list goes here
 
-# Main function to execute based on the command line parameters
-main() {
-    if [[ "$1" == "-v" ]]; then
-        echo "Version X.X.X" # Replace X.X.X with the actual version number
-    elif [[ "$1" == "-h" ]]; then
-        echo "Usage: gh branch [options]\n\n-v       Output the program version number\n-h       Execute the program help function\n--static Print a non-interactive list of branches"
-    elif [[ "$1" == "--static" ]]; then
-        # Print a non-interactive list of branches
-    else
-        # Default behavior to display interactive branch switcher
-        switch_branch
-    fi
-}
+# Additional code for branch switching, deletion, and interactive branch listing can be added here
 
-# Execute the main function
-main "$@"
+# This is the basic structure of the gh-branch Github CLI extension

@@ -57,9 +57,9 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     let inputObject = await parseInputFile(inputFile, options);
 
     console.log(`${PROMPT}Starting ${options.llmApi} API call. This process may take a few seconds.`);
-    let [ prompts, apiResponse ] = await API[options.llmApi](inputObject, outputDirectory, options);
+    let apiResponse = await API[options.llmApi](inputObject, outputDirectory, options);
 
-    await createReadme(inputObject, prompts, apiResponse, inputFile, outputDirectory, options);
+    await createReadme(inputObject, inputFile, outputDirectory, apiResponse, options);
     console.log(`${PROMPT}Generated README.md file inside ${outputDirectory}/`); 
 
   } catch (error) {

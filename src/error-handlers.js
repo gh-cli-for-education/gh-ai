@@ -48,8 +48,8 @@ ERROR_HANDLER['nearleyError'] = (error) => {
 
 ERROR_HANDLER['openaiError'] = (error) => {
   const PROMPT = `${COLORS.red('OPENAI-API-ERROR>: ')}`;
-  console.error(`${PROMPT}A(n) ${error.status} ${error.type} ocurred while making the API request.`);
-  console.error(`\t${error.message}`)
+  console.error(`${PROMPT}A(n) ${error.status} ${error.type} ocurred while making the API request.\n`);
+  console.error(`\t${error.message}\n\n${error}`);
 }
 
 export { ERROR_HANDLER };

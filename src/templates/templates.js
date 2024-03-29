@@ -16,21 +16,21 @@ TEMPLATES = {
   EXTENSION: {},
 };
 
-const EXTENSION_SYSTEM_TEMPLATE = await fs.readFile('src/templates/extension-system.md', ENCODER);
-const EXTENSION_USER_TEMPLATE   = await fs.readFile('src/templates/extension-user.md', ENCODER);
-const EXTENSION_LOG_TEMPLATE    = await fs.readFile('src/templates/extension-log.md', ENCODER);
+const EXTENSION_SYSTEM_TEMPLATE       = await fs.readFile('src/templates/extension-system.md', ENCODER);
+const EXTENSION_USER_TEMPLATE         = await fs.readFile('src/templates/extension-user.md', ENCODER);
+const EXTENSION_USER_LOG_TEMPLATE     = await fs.readFile('src/templates/extension-user-log.md', ENCODER);
+const EXTENSION_RESPONSE_LOG_TEMPLATE = await fs.readFile('src/templates/extension-response-log.md', ENCODER);
 
 // EXTENSION TEMPLATES 
 TEMPLATES.EXTENSION.SYSTEM = (inputObject) => {
   return Mustache.render(EXTENSION_SYSTEM_TEMPLATE, inputObject);
 };
 
-TEMPLATES.EXTENSION.USER = (inputObject) => {
-  const EXTENSION = inputObject.extension;
+TEMPLATES.EXTENSION.USER = (extensionObject) => {
 
-  let files = [EXTENSION.mainFile];
-  if (EXTENSION.files) {
-    files = files.concat(EXTENSION.files);
+  let files = [extensionObject.mainFile];
+  if (extensionObject.files) {
+    files = files.concat(extensionObject.files);
   }
 
   const PROMPTS = files.map((file) => {
@@ -47,28 +47,39 @@ TEMPLATES.EXTENSION.USER = (inputObject) => {
     file.functionParser = function() {
       return `A function called *${this.name}*, that will do:\n\n${this.description}\n`;
     };
-    return Mustache.render(EXTENSION_USER_TEMPLATE, file);
+    return {
+      title: file.name, 
+      content: Mustache.render(EXTENSION_USER_TEMPLATE, file),
+    };
   });
 
-  PROMPTS.push('I request you to generate a README.md file containing: 1. A brief description of what the program does.\n 2. A installation guide for the generated gh extension. 3. An Usage section. 4. An examples section with 2 examples in it.')
-
+  // PROMPTS.push('I request you to generate a README.md file containing: 1. A brief description of what the program does.\n 2. A installation guide for the generated gh extension. 3. An Usage section. 4. An examples section with 2 examples in it.')
   return PROMPTS;
 };
 
-TEMPLATES.EXTENSION.LOG = (inputObject, inputFile, prompts, apiResponse, options) => {
+TEMPLATES.EXTENSION.USER_LOG = (inputObject, inputFile, response, options) => {
   const LOG = {
-    inputObject: inputObject,
-    inputFile: inputFile,
-    prompts: prompts,
-    apiResponse: apiResponse,
-    options: options,
+    inputObject,
+    inputFile, 
+    systemPrompt: response.systemPrompt,
+    usage: response.usage,
+    assistant: response.assistant,
+    thread: response.thread,
+    options,
     parseInputObject: function() { return JSON.stringify(this, null, 2); }
+  }
+  return Mustache.render(EXTENSION_USER_LOG_TEMPLATE, LOG);
+}
+
+TEMPLATES.EXTENSION.RESPONSE_LOG = (apiResponse, options) => {
+  console.log(apiResponse.messages);
+  const LOG = {
+    messages: apiResponse.messages,
+    config: apiResponse.config,
+    options: options,
   };
-  return Mustache.render(EXTENSION_LOG_TEMPLATE, LOG);
+  return Mustache.render(EXTENSION_RESPONSE_LOG_TEMPLATE, LOG);
 };
-
-
-
 
 TEMPLATES = Object.freeze(TEMPLATES);
 

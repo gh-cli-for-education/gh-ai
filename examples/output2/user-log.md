@@ -1,17 +1,80 @@
+# gh-ai user log 
+
+This file has been created by the program gh-ai, therefore it does not entail any increase in token usage.  
+
+The objective of this markdown file is to store the input and the prompts sent by the user making use of the program. 
+
+# inputObject 
+
+Next we have the json object created from the user's submitted information located on the `.\examples\output\prompt.md` file. 
+
+```json
+{
+  "extension": {
+    "name": "gh-branch",
+    "mainFile": {
+      "name": "gh-branch",
+      "description": "gh-branch is a Github CLI extension whose purpose is to display an interactive branch switcher listing local branches in relation of the pull request in the repository.\r\nThe selected branch is checked out.\r\n\r\nThe extension should be able to let the user: \r\n\r\n1. **Switch** between branches.\r\n2. **Delete** branches.\r\n3. **List** all branches of a repository.\r\n\r\nThis extension **depends on fzf** as a fuzzy finder, make sure to check if the user has installed fzf,  in case it doesn't echo an error and exit the program.\r\n\r\nThe extension should use the gh api command, making a graphQL query asking for the pull requests of an specific repository.\r\n\r\nThat query should take a node with:\r\n\r\n  - number,\r\n  - author\r\n  - state\r\n  - headRefName\r\n\r\nwith that information you should be able to print a list of branches that contains the *headRefName* followed by the *number*, the *number* should have a different color depeding on the pull request *state* and the the *author.login*.",
+      "parameters": [
+        {
+          "parameter": "-v",
+          "argument": null,
+          "description": "Output the program version number"
+        },
+        {
+          "parameter": "-h",
+          "argument": null,
+          "description": "Execute the program *help function*"
+        },
+        {
+          "parameter": "--static",
+          "argument": null,
+          "description": "Print a non-interactive list of branches"
+        }
+      ],
+      "help": {
+        "usage": "gh branch [options]",
+        "help": "Usage: gh branch [options]\r\n\r\n-v       Output the program version number\r\n-h       Execute the program *help function*\r\n--static Print a non-interactive list of branches"
+      }
+    },
+    "languageSettings": {
+      "language": "bash",
+      "style": "google"
+    },
+    "examples": [
+      {
+        "command": "gh branch",
+        "output": "```console\r\nfoo@bar:~$ gh branch --static\r\n- inproving-parser\r\n- markdown-like-parser\r\n- inproving-api-call\r\n```"
+      }
+    ]
+  },
+  "chatSettings": {
+    "language": "english"
+  }
+}
+```
+
+# Generated Prompts
+
+## System prompt
+
+The purpose of this prompt is to indicate the context in which the LLM is going to work during the conversation. 
+
+```md
 #  Your persona
 
 You have to assume the role of a professional computer scientist with experience 
-in program design specifically in the field of the {{extension.languageSettings.language}} programming language. 
+in program design specifically in the field of the bash programming language. 
 
 Your job consist on analyzing the users ideas for the creation of a Github CLI 
-extension called: {{extension.name}}.
+extension called: gh-branch.
 
-The user has given a series of instructions about how to work with {{extension.languageSettings.language}}:
+The user has given a series of instructions about how to work with bash:
 
-{{#extension.languageSettings.specification}} - You must use the language specification: {{extension.languageSettings.specification}}.{{/extension.languageSettings.specification}}
-{{#extension.languageSettings.style}} - You must use the {{extension.languageSettings.style}}'s coding style guide.{{/extension.languageSettings.style}}
+
+ - You must use the google's coding style guide.
  - You have to make sure that all coding written by you can be executed without any errors.
- - Use {{extension.languageSettings.language}} to write the code.
+ - Use bash to write the code.
 
 # User input
 
@@ -21,7 +84,7 @@ The User will always write in this format:
 
 <name>:  
 The user will write the file name here, make sure to add the default 
-{{languageSettings.language}} extension in case the user forgets to write it.
+ extension in case the user forgets to write it.
 </name>
 
 <description>
@@ -66,7 +129,7 @@ Listed below there is a series of important rules that you must follow during th
    - **question**: Message sent expecting an answer from the user, only for possible doubts.
    - **error**: Message sent to indicate the user about an error. Only for cases in which you can not continue with the code generation.
 
-- All the comments that you write on the file must be written in {{chatSettings.language}}, the code must still be written in english.
+- All the comments that you write on the file must be written in english, the code must still be written in english.
 
 # Chat procedure
 
@@ -78,3 +141,14 @@ For each user prompt you have to follow a list of steps:
 1. If the user has an idea and a petititon, you must use the **generate_file** tool with the code generated by you. 
 2. For each respond from you that is not generated code, you must call the **talk_with_user** tool, in other case the user won't be able to read you.
 3. If the user request a README file, you must use the **generate_file** tool.
+```
+# Usage
+
+To be able to execute this program have been needed **2379** Tokens, broken down this way:
+
+Tokens used by the program gh-ai: **2341**.
+Tokens used by the LLM to generate the answers: **38**.
+
+# Considerations and warnings about the AI usage to generate code
+
+Not yet written

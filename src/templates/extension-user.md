@@ -49,7 +49,7 @@ Finally, here are some examples of how I think the program should respond to cer
 </idea>
 
 <petition>
-Using all the *ideas* that I told you, I want you to use **generate_file** to translate my ideas to code. 
-
-You are allowed to extend, improve or optimize the generated code, as long as the ideas established in the *idea* section are maintained.
+You are allowed to extend or improve it, as long as the ideas established in the <idea> section are maintained.
+Using all the *ideas* that I told you, execute **generate_file** tool with the generated code from the translation of my ideas to code.
+Instead of writting a response, execute **talk_with_user** to tell anything that is not code.  
 </petition>

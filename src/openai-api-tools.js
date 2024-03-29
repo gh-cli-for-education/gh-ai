@@ -79,7 +79,7 @@ TOOLS['generate_file'] = async (input, outputDirectory, options) => {
       });
     }
 
-    return 'Function executed successfully. Do not respond this output and wait for the user input.';     
+    return 'Function executed successfully. Now use the tool **talk_with_user** to tell him that you are done generating the code.';     
   } 
   catch (error) {
     const WARNING = COLORS.magenta('WARNING>: ');
@@ -121,7 +121,7 @@ TOOLS['talk_with_user'] = async (input, options) => {
 
     console.log(`${PROMPTS[input.motive]}${input.message}`);
 
-    return '';
+    return 'Do not respond after executing this tool.';
 
   } catch (error) {
 
