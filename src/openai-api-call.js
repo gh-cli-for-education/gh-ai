@@ -58,12 +58,15 @@ API['OPENAI'] = async function(inputObject, outputDirectory, options) {
     thread: undefined,
   };
 
-  let assistant;
-  let thread;
+  let assistant = undefined;
+  let thread = undefined;
 
   try {
     [assistant, thread] = await createAssistantAndThread(OPENAI, SYSTEM_PROMPT, options);
     
+    if (options.saveAssistant) { apiCallResult.assistant = assistant.id; }
+    if (options.saveThread) { apiCallResult.thread = thread.id; }
+
     for (const PROMPT of PROMPTS) {
 
       console.log(`${GH_AI_PROMPT}Working with ${PROMPT.title} file`);
@@ -99,7 +102,7 @@ API['OPENAI'] = async function(inputObject, outputDirectory, options) {
       
       if (apiCallResult.failed || currentTry >= MAX_TRIES) {
 
-        console.log(`${ERROR_PROMPT} The API call couldn't be executed correctly, Generating Logs and stopping execution.`);
+        console.log(`${ERROR_PROMPT}The API call couldn't be executed correctly, Generating Logs and stopping execution.`);
 
         apiCallResult.messages.push({
           title: PROMPT.title,
@@ -128,6 +131,7 @@ API['OPENAI'] = async function(inputObject, outputDirectory, options) {
 
     console.log(`\n${GH_AI_PROMPT}The ${options.llmApi} API call has been executed successfully!`);
 
+    /** @TODO No tiene en cuenta los tokens usados por las tools */
     if (options.tokensVerbose) { // Calcular el total de tokens usados.
       for (const MESSAGE of apiCallResult.messages) {
         apiCallResult.usage.totalPromptTokens += MESSAGE.usage.prompt_tokens;
@@ -138,22 +142,14 @@ API['OPENAI'] = async function(inputObject, outputDirectory, options) {
 
     return apiCallResult;
   } 
-  finally { // Independientemente de lo que pase (Excepcion o ejecución correcta)
+  finally {
     
-    if (options.saveAssistant) {
-      apiCallResult.assistant = assistant.id;
-      console.log(`${GH_AI_PROMPT}The assistant ID has been saved.`);
-    } 
-    else {
+    if (!options.saveAssistant && assistant) {
       await OPENAI.beta.assistants.del(assistant.id);
     }
   
-    if (options.saveThread) {
-      apiCallResult.thread = thread.id;
-      console.log(`${GH_AI_PROMPT}The thread ID has been saved.`);
-    } 
-    else {
-      await OPENAI.beta.threads.del(thread.id);
+    if (!options.saveThread && thread) {
+      await OPENAI.beta.threads.del(thread?.id);
     }
 
   }
@@ -192,6 +188,7 @@ async function createAssistantAndThread(openai, systemPrompt, options) {
   let thread;
   if (process.env.THREAD_ID) {
     thread = await openai.beta.threads.retrieve(process.env.THREAD_ID);
+    console.log(thread);
   } 
   else {
     thread = await openai.beta.threads.create();

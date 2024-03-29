@@ -72,7 +72,6 @@ TEMPLATES.EXTENSION.USER_LOG = (inputObject, inputFile, response, options) => {
 }
 
 TEMPLATES.EXTENSION.RESPONSE_LOG = (apiResponse, options) => {
-  console.log(apiResponse.messages);
   const LOG = {
     messages: apiResponse.messages,
     config: apiResponse.config,

@@ -60,7 +60,7 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     let apiResponse = await API[options.llmApi](inputObject, outputDirectory, options);
 
     await createReadme(inputObject, inputFile, outputDirectory, apiResponse, options);
-    console.log(`${PROMPT}Generated README.md file inside ${outputDirectory}/`); 
+    console.log(`${PROMPT}Generated log files inside ${outputDirectory}/`); 
 
   } catch (error) {
     if (error instanceof z.ZodError) { 

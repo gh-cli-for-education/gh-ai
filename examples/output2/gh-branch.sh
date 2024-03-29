@@ -1,41 +1,69 @@
 #!/bin/bash
 
+# Function to check if fzf is installed
+check_fzf() {
+  if ! command -v fzf &> /dev/null; then
+    echo "Error: fzf is not installed. Please install fzf to use this extension."
+    exit 1
+  fi
+}
+
+# Function to display the interactive branch switcher
+switch_branches() {
+  gh api graphql -f query="
+    query {
+      repository(owner: \"owner_name\", name: \"repo_name\") {
+        pullRequests(first: 10) {
+          nodes {
+            number
+            author {
+              login
+            }
+            state
+            headRefName
+          }
+        }
+      }
+    }
+  " | jq -r '.data.repository.pullRequests.nodes[] | "\(.headRefName) \u001b[1;33mPR-\(.number) \u001b[0m(\(.state) - \(.author.login))"' | fzf
+}
+
+# Function to list all branches of a repository
+list_branches() {
+  gh api graphql -f query="
+    query {
+      repository(owner: \"owner_name\", name: \"repo_name\") {
+        pullRequests(first: 10) {
+          nodes {
+            number
+            author {
+              login
+            }
+            state
+            headRefName
+          }
+        }
+      }
+    }
+  " | jq -r '.data.repository.pullRequests.nodes[] | "\(.headRefName) \u001b[1;33mPR-\(.number) \u001b[0m \u001b[0m(\(.state) - \(.author.login))'
+}
+
+# Main function to handle different command line options
+main() {
+  case "$1" in
+    -v) echo "gh-branch version 1.0";;
+    -h) echo "Usage: gh branch [options]"
+        echo
+        echo "-v        Output the program version number"
+        echo "-h        Execute the program help function"
+        echo "--static  Print a non-interactive list of branches";;
+    --static) list_branches;;
+    *) switch_branches;;
+  esac
+}
+
 # Check if fzf is installed
-if [[ ! -x "$(command -v fzf)" ]]; then
-  echo "Error: fzf is not installed. Please install fzf to use this extension."
-  exit 1
-fi
+check_fzf
 
-# Function to display the help message
-function display_help() {
-  echo "Usage: gh branch [options]"
-  echo "-v       Output the program version number"
-  echo "-h       Execute the program help function"
-  echo "--static Print a non-interactive list of branches"
-}
-
-# Main function
-function gh_branch() {
-  # Parse command line options
-  while [[ "$1" != "" ]]; do
-    case "$1" in
-      -v)
-        echo "Version: 1.0"
-        ;;
-      -h)
-        display_help
-        ;;
-      --static)
-        # Print non-interactive list of branches
-        gh api graphql --paginate -f query='{\"query\": \"query { repository(owner:\"owner\", name:\"repo_name\") { pullRequests(first:100) { nodes { number author { login } state headRefName } } } }\"}' | jq '.data.repository.pullRequests.nodes[] | "Branch: \(.headRefName) Pull Request: \(.number) Author: \(.author.login) State: \(.state)"'
-        ;;
-      *)
-        echo "Invalid option: $1"
-        ;;
-    esac
-    shift
-  done
-}
-
-# Execute the gh_branch function
-gh_branch "$@"
+# Execute main function with command line arguments
+main "$@"

@@ -4,13 +4,13 @@ This file has been created by the program gh-ai, therefore it does not entail an
 
 The objective of this markdown file is to store the input and the prompts sent by the user making use of the program. 
 
-## User prompts 
+# User prompts 
 
 For each file requested by the user, its corresponding code has been generated. 
 
-### File gh-branch
+## File gh-branch
 
-#### Petition
+### Petition
 
 ```md
 <idea>
@@ -60,24 +60,26 @@ Usage: gh branch [options]
 -h       Execute the program *help function*
 --static Print a non-interactive list of branches
 
-</idea>
+</idea>  
 
 <petition>
+
 You are allowed to extend or improve it, as long as the ideas established in the <idea> section are maintained.
 Using all the *ideas* that I told you, execute **generate_file** tool with the generated code from the translation of my ideas to code.
 Instead of writting a response, execute **talk_with_user** to tell anything that is not code.  
+
 </petition>
 
 ```
 
-#### Response
+### Response
 
 ```bash
-I have successfully generated the code for the gh-branch Github CLI extension. It includes the functionalities you requested along with additional features. You can now review the code and test it.
+I have completed the generation of the code for the gh-branch Github CLI extension. You can find the code in the file gh-branch.sh.
 ```
-#### Usage
+### Usage
 
-Total tokens used by this file request: **2379** Tokens, broken down this way:
+Total tokens used by this file request: **10182** Tokens, broken down this way:
 
-Tokens used by the prompt: **2341**.  
-Tokens used by the LLM to generate the answer: **38**.
+Tokens used by the prompt: **9534**.  
+Tokens used by the LLM to generate the answer: **648**.
