@@ -76,6 +76,7 @@ const TOKENS = {
       const RESULT = LONG_PARAMETER_CAPTURING.exec(value);
       return {
         parameter: RESULT[1],
+        argument: null,
         description: RESULT[2]
       };
     } 
@@ -87,6 +88,7 @@ const TOKENS = {
       const RESULT = SHORT_PARAMETER_CAPTURING.exec(value);
       return {
         parameter: RESULT[1],
+        argument: null,
         description: RESULT[2]
       };
     } 

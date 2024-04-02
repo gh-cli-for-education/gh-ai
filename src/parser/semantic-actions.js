@@ -110,7 +110,6 @@ function buildSetting([type, settings]) {
     content: {},
   };
   settings.forEach((setting) => {
-    console.log(setting);
     checkDuplicatedTags(
       settingsObject, 
       setting.value.name, 

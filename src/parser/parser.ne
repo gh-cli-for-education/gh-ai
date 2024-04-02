@@ -10,7 +10,7 @@
  * @desc Contains all the parser rules and the corresponding semantic actions
  * @external Grammar
  */
-import { LEXER } from './tokens.js';
+import { LEXER } from './parser/lexer.js';
 import {
   buildPrompt,
   buildExtension,
@@ -21,7 +21,7 @@ import {
   buildExample,
   buildExamples,
   buildSettings,
-} from './semantic-actions.js';
+} from './parser/semantic-actions.js';
 %}
 
 @lexer LEXER
