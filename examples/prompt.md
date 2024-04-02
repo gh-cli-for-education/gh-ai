@@ -1,15 +1,15 @@
-# Extension gh-branch
+# Extension
 
-## MainFile gh-branch <p> 
+## MainFile gh-branch  
 
 gh-branch is a Github CLI extension whose purpose is to display an interactive branch switcher listing local branches in relation of the pull request in the repository.
 The selected branch is checked out.
 
 The extension should be able to let the user: 
 
-1. **Switch** between branches.
-2. **Delete** branches.
-3. **List** all branches of a repository.
++ **Switch** between branches.
++ **Delete** branches.
++ **List** all branches of a repository.
 
 This extension **depends on fzf** as a fuzzy finder, make sure to check if the user has installed fzf,  in case it doesn't echo an error and exit the program.
 
@@ -17,30 +17,43 @@ The extension should use the gh api command, making a graphQL query asking for t
 
 That query should take a node with:
 
-  - number,
-  - author
-  - state
-  - headRefName
+* number
+* author
+* state
+* headRefName
 
 with that information you should be able to print a list of branches that contains the *headRefName* followed by the *number*, the *number* should have a different color depeding on the pull request *state* and the the *author.login*.
 
-</p>
+### functions 
+
+```js 
+/**
+ * Help function that prints the arguments and parameters of the extension 
+ */
+function help() {
+  // print header
+  
+  // print Arguments
+  
+  // print parameters
+  
+  // print footer
+}
+```
+
+### help
+
+usage: gh branch [options]
+
+This is suppose to be a header paragraph
 
 ### Parameters
 
--  -v       <p> Output the program version number </p>
--  -h       <p> Execute the program *help function* </p>
--  --static <p> Print a non-interactive list of branches </p> 
+-  -v       Output the program version number
+-  -h       Execute the program *help function*
+-  --static Print a non-interactive list of branches 
 
-### Help "gh branch [options]" <p> 
-
-Usage: gh branch [options]
-
--v       Output the program version number
--h       Execute the program *help function*
---static Print a non-interactive list of branches
-
-</p>
+Here Can be some footer paragraphs
 
 ## LanguageSettings
 
@@ -49,14 +62,15 @@ Usage: gh branch [options]
 
 ## Examples 
 
-- "gh branch" <p> 
+`gh branch`
+
 ```console
 foo@bar:~$ gh branch --static
 - inproving-parser
 - markdown-like-parser
 - inproving-api-call
 ```
-</p>
 
 # ChatSettings 
- - language: english 
+
+- language: english 
