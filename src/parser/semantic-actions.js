@@ -11,218 +11,124 @@
  * @external Grammar
  */
 'use strict';
-
-// Check if there is more than one property per prompt file
 function checkDuplicatedTags(object, tag, errorMsg = 'Found duplicated a Tag') {
   if (object[tag]) { throw new Error(errorMsg); }
 }
 
-function buildObject([properties, eof]) {
-  let object = {};
-  properties.forEach((property) => { // Deep merge of all property objects
-    checkDuplicatedTags(
-      object, 
-      property.type, 
-      `Duplicated Tags are not allowed. Expected one #${property.type.toUpperCase()} property but received 2.`
-    );
-    object[property.type] = property.content;
-    }
-  );
-  return object;
+function buildPrompt([properties, eof]) {
+  return {
+    extension: properties.find((property) => property.type === 'extension')?.content,
+    query: properties.find((property) => property.type === 'query')?.content,
+    chatSettings: properties.find((property) => property.type === 'chatSettings')?.content,
+  };
 }
 
-function getProperty([hashSymbol, property]) {
-  return property;
-}
-
-function buildExtension([tag, name, properties]) {
-  let extension = {
-    type: tag.type.toLowerCase(),
+function buildExtension([extension, properties]) {
+  return {
+    type: 'extension',
     content: {
-      name: name.value
+      files: properties.filter((property) => property.type === 'file').map((property) => property.content),
+      languageSettings: properties.find((property) => property.type === 'languageSettings')?.content,
+      examples: properties.find((property) => property.type === 'examples')?.content,
+      readme: properties.find((property) => property.type === 'readme')?.content,      
     }
-  }
+  };
+}
+
+function buildFile([file, properties, help]) {
+  let description = '';
+  let functions = '';
   properties.forEach((property) => {
-    checkDuplicatedTags(
-      extension, 
-      property.type, 
-      `Duplicated Tags are not allowed. Expected one ##${property.type.toUpperCase()} but received 2.`
-    );
-    extension.content[property.type] = property.content;
+    if (property.type !== 'functions') { description += property.value + '\n'; }
+    else { functions += property.content; }
   });
-  return extension;
-}
-
-function buildMainFileProperty([tag, filename, description, properties]) {
-  let mainFile = {
-    type: 'mainFile',
+  return {
+    type: 'file',
     content: {
-      name: filename.value,
-      description: description.value,
-    }
-  };
-  properties.forEach((property) => {
-    checkDuplicatedTags(
-      mainFile, 
-      property.type, 
-      `Duplicated Tags are not allowed. Expected one ##${property.type.toUpperCase()} but received 2.`
-    );
-    mainFile.content[property.type] = property.content;
-  });  
-  return mainFile;
-}
-
-function buildFunctionsProperty([tag, functions]) {
-  return {
-    type: tag.type.toLowerCase(),
-    content: functions
-  };
-}
-
-function buildFunction([hyphen, name, colon, description]) {
-  return { name: name.value,  description: description.value };
-}
-
-function buildParametersProperty([tag, parameters]) {
-  return {
-    type: tag.type.toLowerCase(),
-    content: parameters
-  };
-}
-
-function buildLargeParameter([hyphen, parameter, argument, description]) {
-  let argumentObject = null;
-  if (argument !== null) {
-    argumentObject = {
-      name: argument.value,
-      mandatory: (argument.text[0] === '<')
-    };
-  }
-  return { 
-    parameter: parameter.value, 
-    argument: argumentObject,
-    description: description.value 
-  };
-}
-
-function buildShortParameter([hyphen, parameter, description]) {
-  return { 
-    parameter: parameter.value, 
-    argument: null,
-    description: description.value 
-  };
-}
-
-function buildArgumentsProperty([tag, argument_s]) {
-  return {
-    type: tag.type.toLowerCase(),
-    content: argument_s
-  };
-}
-
-function buildArgument([hyphen, argument, description]) {
-  return { 
-    argument: argument.value, 
-    description: description.value,
-    mandatory: (argument.text[0] === '<')
-  };
-}
-
-function buildHelpProperty([tag, usage, help]) {
-  return {
-    type: tag.type.toLowerCase(),
-    content: {
-      usage: usage.value,
-      help: help.value
+      name: file.value,
+      description: description,
+      functions: functions,
+      help: help?.content
     }
   };
 }
 
-function buildFilesProperty([tag, files]) {
+function buildFunctions([functions, codeblocks]) {
+  let content = '';
+  codeblocks.forEach((codeBlock) => { content += codeBlock.value + '\n'; });
   return {
-    type: tag.value.toLowerCase(),
-    content: files
-  }
+    type: 'functions',
+    content: content
+  };
 }
 
-function buildFileProperties([name, description, functions]) {
+function buildHelp([help, header, argumentss, parameters, footer]) {
+  let headerContent = '';
+  header.forEach((paragraph) => headerContent += paragraph.value );
+  let footerContent = '';
+  footer.forEach((paragraph) => footerContent += paragraph.value ); 
   return {
-    name: name.value,
-    description: description.value,
-    functions: functions
+    type: 'help',
+    content: {
+      header: headerContent,
+      arguments: argumentss?.map((argument) => argument.value),
+      parameters: parameters?.map((parameter) => parameter.value),
+      footer: footerContent
+    } 
   };
 }
 
-function buildLanguageSettingsProperty([tag, mandatorySetting, optionalSettings]) {
-  let languageSettings = {
-    type: 'languageSettings',
-    content: {},
-  };
-  languageSettings.content[mandatorySetting.type] = mandatorySetting.value;
-  optionalSettings.forEach((setting) => {
-    checkDuplicatedTags(
-      languageSettings, 
-      setting.type, 
-      `Duplicated Settings are not allowed. Expected one ${setting.type} but received 2.`
-    );
-    languageSettings.content[setting.type.toLowerCase()] = setting.value;    
-  });
-  return languageSettings;
-}
-
-function buildSetting([hyphen, setting, colon, value]) {
-  let setting_ = {
-    type: setting.value,
-    value: value.value.toLowerCase()
-  };
-  return setting_;
-}
-
-function buildExamplesProperty([tag, examples]) {
+function buildReadme([readme, orderedList]) {
   return {
-    type: tag.type.toLowerCase(),
-    content: examples
+    type: 'readme',
+    content: orderedList
   };
 }
 
-function buildExample([hyphen, command, expectedOutput]) {
-  return { command: command.value, output: expectedOutput.value };
+function buildExample([command, output]) {
+  return {
+    command: command.value,
+    output: output.value
+  };
 }
 
-function buildChatSettings([tag, settings]) {
-  let chatSettings = {
-    type: 'chatSettings',
+function buildExamples([examples, exampleList]) {
+  return {
+    type: 'examples',
+    content: exampleList
+  };
+}
+
+const buildSettings = {
+  chatSettings: (d) => buildSetting(['chatSettings', d[1]]),
+  languageSettings: (d) => buildSetting(['languageSettings', d[1]])
+};
+
+function buildSetting([type, settings]) {
+  let settingsObject = {
+    type: type,
     content: {},
   };
   settings.forEach((setting) => {
+    console.log(setting);
     checkDuplicatedTags(
-      chatSettings, 
-      setting.type, 
+      settingsObject, 
+      setting.value.name, 
       `Duplicated Settings are not allowed. Expected one ${setting.type} but received 2.`
     );
-    chatSettings.content[setting.type.toLowerCase()] = setting.value;    
+    settingsObject.content[setting.value.name.toLowerCase()] = setting.value.value;    
   });
-  return chatSettings;
+  return settingsObject;
 }
 
 export {
-  buildObject,
-  getProperty,
+  buildPrompt,
   buildExtension,
-  buildMainFileProperty,
-  buildParametersProperty,
-  buildLargeParameter,
-  buildShortParameter,
-  buildArgumentsProperty,
-  buildArgument,
-  buildFilesProperty,
-  buildFileProperties,
-  buildFunctionsProperty,
-  buildFunction,
-  buildLanguageSettingsProperty,
-  buildSetting,
-  buildExamplesProperty,
+  buildFile,
+  buildFunctions,
+  buildHelp,
+  buildReadme,
   buildExample,
-  buildHelpProperty,
-  buildChatSettings,
+  buildExamples,
+  buildSettings,
 };
