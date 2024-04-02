@@ -4,9 +4,6 @@ This file has been created by the program gh-ai, therefore it does not entail an
 
 The objective of this markdown file is to store the input and the prompts sent by the user making use of the program. 
 
-# Thread ID 
-thread_lJPY7FNL40wmOmsDGzXKjk0o
-
 # inputObject 
 
 Next we have the json object created from the user's submitted information located on the `.\examples\prompt.md` file. 
@@ -14,39 +11,41 @@ Next we have the json object created from the user's submitted information locat
 ```json
 {
   "extension": {
-    "name": "gh-branch",
-    "mainFile": {
-      "name": "gh-branch",
-      "description": "gh-branch is a Github CLI extension whose purpose is to display an interactive branch switcher listing local branches in relation of the pull request in the repository.\r\nThe selected branch is checked out.\r\n\r\nThe extension should be able to let the user: \r\n\r\n1. **Switch** between branches.\r\n2. **Delete** branches.\r\n3. **List** all branches of a repository.\r\n\r\nThis extension **depends on fzf** as a fuzzy finder, make sure to check if the user has installed fzf,  in case it doesn't echo an error and exit the program.\r\n\r\nThe extension should use the gh api command, making a graphQL query asking for the pull requests of an specific repository.\r\n\r\nThat query should take a node with:\r\n\r\n  - number,\r\n  - author\r\n  - state\r\n  - headRefName\r\n\r\nwith that information you should be able to print a list of branches that contains the *headRefName* followed by the *number*, the *number* should have a different color depeding on the pull request *state* and the the *author.login*.",
-      "parameters": [
-        {
-          "parameter": "-v",
-          "argument": null,
-          "description": "Output the program version number"
-        },
-        {
-          "parameter": "-h",
-          "argument": null,
-          "description": "Execute the program *help function*"
-        },
-        {
-          "parameter": "--static",
-          "argument": null,
-          "description": "Print a non-interactive list of branches"
+    "files": [
+      {
+        "name": "gh-branch",
+        "description": "gh-branch is a Github CLI extension whose purpose is to display an interactive branch switcher listing local branches in relation of the pull request in the repository.\r\nThe selected branch is checked out.\r\nThe extension should be able to let the user: \r\n**Switch** between branches.\r\n**Delete** branches.\r\n**List** all branches of a repository.\r\nThis extension **depends on fzf** as a fuzzy finder, make sure to check if the user has installed fzf,  in case it doesn't echo an error and exit the program.\r\nThe extension should use the gh api command, making a graphQL query asking for the pull requests of an specific repository.\r\nThat query should take a node with:\r\nnumber\r\nauthor\r\nstate\r\nheadRefName\r\nwith that information you should be able to print a list of branches that contains the *headRefName* followed by the *number*, the *number* should have a different color depeding on the pull request *state* and the the *author.login*.\r\n",
+        "functions": "```js \r\n/**\r\n * Help function that prints the arguments and parameters of the extension \r\n */\r\nfunction help() {\r\n  // print header\r\n  \r\n  // print Arguments\r\n  \r\n  // print parameters\r\n  \r\n  // print footer\r\n}\r\n```\n",
+        "help": {
+          "header": "usage: gh branch [options]\rThis is suppose to be a header paragraph\r",
+          "parameters": [
+            {
+              "parameter": "-v",
+              "argument": null,
+              "description": "Output the program version number"
+            },
+            {
+              "parameter": "-h",
+              "argument": null,
+              "description": "Execute the program *help function*"
+            },
+            {
+              "parameter": "--static",
+              "argument": null,
+              "description": "Print a non-interactive list of branches "
+            }
+          ],
+          "footer": "Here Can be some footer paragraphs\r"
         }
-      ],
-      "help": {
-        "usage": "gh branch [options]",
-        "help": "Usage: gh branch [options]\r\n\r\n-v       Output the program version number\r\n-h       Execute the program *help function*\r\n--static Print a non-interactive list of branches"
       }
-    },
+    ],
     "languageSettings": {
-      "language": "bash",
-      "style": "google"
+      "language": "Bash",
+      "style": "Google"
     },
     "examples": [
       {
-        "command": "gh branch",
+        "command": "`gh branch`",
         "output": "```console\r\nfoo@bar:~$ gh branch --static\r\n- inproving-parser\r\n- markdown-like-parser\r\n- inproving-api-call\r\n```"
       }
     ]
@@ -67,17 +66,17 @@ The purpose of this prompt is to indicate the context in which the LLM is going 
 #  Your persona
 
 You have to assume the role of a professional computer scientist with experience 
-in program design specifically in the field of the bash programming language. 
+in program design specifically in the field of the Bash programming language. 
 
 Your job consist on analyzing the users ideas for the creation of a Github CLI 
-extension called: gh-branch.
+extension called: .
 
-The user has given a series of instructions about how to work with bash:
+The user has given a series of instructions about how to work with Bash:
 
 
- - You must use the google's coding style guide.
+ - You must use the Google's coding style guide.
  - You have to make sure that all coding written by you can be executed without any errors.
- - Use bash to write the code.
+ - Use Bash to write the code.
 
 # User input
 
@@ -87,7 +86,7 @@ The User will always write in this format:
 
 <name>:  
 The user will write the file name here, make sure to add the default 
- extension in case the user forgets to write it.
+Bash extension in case the user forgets to write it.
 </name>
 
 <description>
@@ -147,10 +146,10 @@ For each user prompt you have to follow a list of steps:
 ```
 # Usage
 
-To be able to execute this program have been needed **10182** Tokens, broken down this way:
+To be able to execute this program have been needed **13908** Tokens, broken down this way:
 
-Tokens used by the program gh-ai: **9534**.  
-Tokens used by the LLM to generate the answers: **648**.
+Tokens used by the program gh-ai: **13214**.  
+Tokens used by the LLM to generate the answers: **694**.
 
 # Considerations and warnings about the AI usage to generate code
 

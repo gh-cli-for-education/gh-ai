@@ -21,25 +21,43 @@ This is what the program has to do:
 
 gh-branch is a Github CLI extension whose purpose is to display an interactive branch switcher listing local branches in relation of the pull request in the repository.
 The selected branch is checked out.
-
 The extension should be able to let the user: 
-
-1. **Switch** between branches.
-2. **Delete** branches.
-3. **List** all branches of a repository.
-
+**Switch** between branches.
+**Delete** branches.
+**List** all branches of a repository.
 This extension **depends on fzf** as a fuzzy finder, make sure to check if the user has installed fzf,  in case it doesn't echo an error and exit the program.
-
 The extension should use the gh api command, making a graphQL query asking for the pull requests of an specific repository.
-
 That query should take a node with:
-
-  - number,
-  - author
-  - state
-  - headRefName
-
+number
+author
+state
+headRefName
 with that information you should be able to print a list of branches that contains the *headRefName* followed by the *number*, the *number* should have a different color depeding on the pull request *state* and the the *author.login*.
+
+
+The program must contain at least the following functions:
+
+```js 
+/**
+ * Help function that prints the arguments and parameters of the extension 
+ */
+function help() {
+  // print header
+  
+  // print Arguments
+  
+  // print parameters
+  
+  // print footer
+}
+```
+
+
+This is how the *usage* section of the *help function* must be: 
+
+usage: gh branch [options]This is suppose to be a header paragraph
+
+At the same time, here is an initial idea of what the help function should be returning:
 
 The program has to react to the possible parameters that are indicated through the command line:
 
@@ -47,18 +65,11 @@ The program has to react to the possible parameters that are indicated through t
 
 - -h: Execute the program *help function*
 
-- --static: Print a non-interactive list of branches
+- --static: Print a non-interactive list of branches 
 
  
-This is how the *usage* section of the *help function* must be: gh branch [options]
 
-At the same time, here is an initial idea of what the help function should be returning. 
-
-Usage: gh branch [options]
-
--v       Output the program version number
--h       Execute the program *help function*
---static Print a non-interactive list of branches
+Here Can be some footer paragraphs
 
 </idea>  
 
@@ -74,12 +85,12 @@ Instead of writting a response, execute **talk_with_user** to tell anything that
 
 ### Response
 
-```bash
-I have completed the generation of the code for the gh-branch Github CLI extension. You can find the code in the file gh-branch.sh.
+```Bash
+The code for the gh-branch Github CLI extension has been successfully generated. You can find it in the file gh-branch.sh.
 ```
 ### Usage
 
-Total tokens used by this file request: **10182** Tokens, broken down this way:
+Total tokens used by this file request: **13908** Tokens, broken down this way:
 
-Tokens used by the prompt: **9534**.  
-Tokens used by the LLM to generate the answer: **648**.
+Tokens used by the prompt: **13214**.  
+Tokens used by the LLM to generate the answer: **694**.

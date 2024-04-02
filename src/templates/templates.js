@@ -28,12 +28,7 @@ TEMPLATES.EXTENSION.SYSTEM = (inputObject) => {
 
 TEMPLATES.EXTENSION.USER = (extensionObject) => {
 
-  let files = [extensionObject.mainFile];
-  if (extensionObject.files) {
-    files = files.concat(extensionObject.files);
-  }
-
-  const PROMPTS = files.map((file) => {
+  const PROMPTS = extensionObject.files.map((file) => {
     file.argumentParser = function() {
       return `- ${this.argument}: **(${this.mandatory? 'Mandatory' : 'Optional'})** ${this.description}\n`;
     };

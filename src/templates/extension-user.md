@@ -6,36 +6,37 @@ This is what the program has to do:
 
 {{description}}
 
-{{#arguments.length}} 
-The program has to make use of the following arguments that are indicated through the command line:
-
-{{#arguments}}
-{{argumentParser}}
-{{/arguments}}
-
-{{/arguments.length}}
-{{#parameters.length}}
-The program has to react to the possible parameters that are indicated through the command line:
-
-{{#parameters}}
-{{parameterParser}}
-{{/parameters}}
- 
-{{/parameters.length}}
-{{#functions.length}}
+{{#functions}}
 The program must contain at least the following functions:
 
-{{#functions}}
-{{functionParser}}
+{{functions}}
+
 {{/functions}}
-
-{{/functions.length}}
 {{#help}}
-This is how the *usage* section of the *help function* must be: {{help.usage}}
+This is how the *usage* section of the *help function* must be: 
 
-At the same time, here is an initial idea of what the help function should be returning. 
+{{help.header}}
 
-{{help.help}}
+At the same time, here is an initial idea of what the help function should be returning:
+
+{{#help.arguments.length}} 
+The program has to make use of the following arguments that are indicated through the command line:
+
+{{#help.arguments}}
+{{argumentParser}}
+{{/help.arguments}}
+
+{{/help.arguments.length}}
+{{#help.parameters.length}}
+The program has to react to the possible parameters that are indicated through the command line:
+
+{{#help.parameters}}
+{{parameterParser}}
+{{/help.parameters}}
+ 
+{{/help.parameters.length}}
+
+{{help.footer}}
 
 {{/help}}
 {{#examples.length}}

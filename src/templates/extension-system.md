@@ -21,7 +21,7 @@ The User will always write in this format:
 
 <name>:  
 The user will write the file name here, make sure to add the default 
-{{languageSettings.language}} extension in case the user forgets to write it.
+{{extension.languageSettings.language}} extension in case the user forgets to write it.
 </name>
 
 <description>
