@@ -14,37 +14,6 @@ import { makeLexer, moo } from 'moo-ignore';
 'use strict';
 
 /**
- * @description Cut double quotation marks from a given string
- * @param {string} string The string with the double quotation marks 
- * @returns {string} The string without the double quotation marks
- * @example console.log(sliceQuotationMarks('"hello!"')); // 'hello!'
- */
-const sliceDoubleQuotationMarks = (string) => {
-  return string.slice(1, -1);
-};
-
-/**
- * @description Extract the content of a paragraph removing both delimiters
- * @param {string} paragraph 
- * @returns {string} With the content of the paragraph
- */
-const getParagraphContent = (paragraph) => {
-  const PARAGRAPH_WITH_GROUP = /<p>((?:.|\s)*?)<\/p>/;
-  return PARAGRAPH_WITH_GROUP.exec(paragraph)[1].trim();
-};
-
-/**
- * @description Extract the content of an Argument removing both <> and [] delimiters
- * @param {string} argument 
- * @returns {string} With just the argument content
- */
-const getArgumentContent = (argument) => {
-  const ARGUMENT_WITH_GROUP = new RegExp(`\<(${ARG_NAME})\>|\\[(${ARG_NAME})\\]`);
-  const RESULT = ARGUMENT_WITH_GROUP.exec(argument);
-  return (RESULT[1])? RESULT[1] : RESULT[2];
-}
-
-/**
  * @description Checks if a character is a letter or not given the RegExp /[a-zA-Z]/
  * @param {string} char
  * @returns {boolean} True - if the character is a letter
@@ -54,7 +23,6 @@ const isLetter = (char) => {
   const LETTER_REGEXP = /[a-zA-Z]/;
   return LETTER_REGEXP.test(char);
 };
-
 /**
  * @description Given a word it will create a string following a case insensitive RegExp
  * @param {string} word The word that will be transformed into case insensitive 
@@ -71,49 +39,105 @@ function toCaseInsensive(word) {
   return regexSource.join('');
 };
 
-function caseInsensitiveKeywords(keywords) {
-  const KEYWORDS = moo.keywords(keywords);
-  return value => KEYWORDS(value.toLowerCase());
-}
-
-// Auxiliary regex 
-const ARG_NAME = '\\s*[a-z][a-z]*(?:[-][a-z][a-z]*)*\\s*';
-
 const TOKENS = {
-  HASH_SYMBOL:     /[#]/,
-  LARGE_PARAMETER: /[-]{2}[a-zA-Z]{2,}(?:[-][a-zA-Z]{2,})*/,
-  SHORT_PARAMETER: /[-][a-zA-Z]/,
-  HYPHEN:          /[-]/,
-  COLON:           /[:]/,
-  WHITES:          { match: /\s+/, lineBreaks: true },
-  COMMENT:         new RegExp('[[]' + toCaseInsensive('comment') + '[]]:\\s*#\\s*[(][^\\n]+?[)]'),
-  STRING:          { match: /"(?:[^"\\]|\\.)*"/, value: sliceDoubleQuotationMarks, lineBreaks: true },
-  PARAGRAPH:       { match: /<p>(?:.|\s)*?<\/p>/, value: getParagraphContent, lineBreaks: true },
-  ARGUMENT:        { match : new RegExp(`\<${ARG_NAME}\>|\\[${ARG_NAME}\\]`), value: getArgumentContent },
-  GH_NAME:         /gh-[a-z][a-z0-9]*(?:[-][a-z0-9]+)*/,
-  EOF:             '__EOF__',
-  WORD:            { match: /[^-<>\.:\s\[\]{}(),"]+/, type: caseInsensitiveKeywords({
-    EXTENSION:         'extension',
-    MAIN_FILE:         'mainfile',
-    FUNCTIONS:         'functions',
-    PARAMETERS:        'parameters',
-    ARGUMENTS:         'arguments',
-    LANGUAGE_SETTINGS: 'languagesettings',
-    CHAT_SETTINGS:     'chatsettings',
-    LANGUAGE:          'language',
-    STYLE:             'style',
-    SPECIFICATION:     'specification',
-    EXAMPLES:          'examples',
-    FILES:             'files',
-    HELP:              'help',
-    API:               'api',
-  })},
-  ERROR:             moo.error
+  WHITES: { match: /\s+/, lineBreaks: true },
+  EOF: '__EOF__',
+  EXTENSION: { match: new RegExp('^# *' + toCaseInsensive('extension')) },
+  QUERY: { match: new RegExp('^# *' + toCaseInsensive('query')) }, 
+  MAIN_FILE: { 
+    match: new RegExp('^#{2} *' + toCaseInsensive('main') + ' *' + toCaseInsensive('file') + ' +gh-[a-z][a-z0-9]*(?:[-][a-z0-9]+)*'), 
+    value: (value) => {
+      const MAIN_FILE_CAPTURING = new RegExp('^#{2} *' + toCaseInsensive('main') + ' *' + toCaseInsensive('file') + ' +(gh-[a-z][a-z0-9]*(?:[-][a-z0-9]+)*)');
+      const RESULT = MAIN_FILE_CAPTURING.exec(value);
+      return RESULT[1];
+    } 
+  },  
+  FUNCTIONS:  { match: new RegExp('^#{3} *' + toCaseInsensive('functions')) }, 
+  EXAMPLES:   { match: new RegExp('^#{2} *' + toCaseInsensive('examples')) }, 
+  HELP:       { match: new RegExp('^#{3} *' + toCaseInsensive('help')) }, 
+  ARGUMENTS:  { match: new RegExp('^#{3} *' + toCaseInsensive('arguments')) }, 
+  PARAMETERS: { match: new RegExp('^#{3} *' + toCaseInsensive('parameters')) }, 
+  FILE: { 
+    match: new RegExp('^#{2} *' + toCaseInsensive('file') + ' +[a-z][a-z0-9]*(?:[-][a-z0-9]+)*'), 
+    value: (value) => {
+      const FILE_CAPTURING = new RegExp('^#{2} *' + toCaseInsensive('file') + ' +([a-z][a-z0-9]*(?:[-][a-z0-9]+)*)');
+      const RESULT = FILE_CAPTURING.exec(value);
+      return RESULT[1];
+    } 
+  }, 
+  LANGUAGE_SETTINGS: { match: new RegExp('^#{2} *' + toCaseInsensive('language') + ' *' + toCaseInsensive('settings')) }, 
+  CHAT_SETTINGS:     { match: new RegExp('^# *' + toCaseInsensive('chat') + ' *' + toCaseInsensive('settings')) }, 
+  README:            { match: new RegExp('^#{2} *' + toCaseInsensive('readme')) }, 
+  COMMENT:           { match: new RegExp('^\\[' + toCaseInsensive('comment') + '\\]: +# +\\([^\\n]+\\)') }, 
+  LONG_PARAMETER: { 
+    match: /^[-] +[-]{2}[a-zA-Z]{2,}(?:[-][a-zA-Z]{2,})* +(?:.*)/, 
+    value: (value) => {
+      const LONG_PARAMETER_CAPTURING = /[-] +([-]{2}[a-zA-Z]{2,}(?:[-][a-zA-Z]{2,})*) +(.*)/;
+      const RESULT = LONG_PARAMETER_CAPTURING.exec(value);
+      return {
+        parameter: RESULT[1],
+        description: RESULT[2]
+      };
+    } 
+  },
+  SHORT_PARAMETER: { 
+    match: /^[-] +[-][a-zA-Z] +(?:.*)/, 
+    value: (value) => {
+      const SHORT_PARAMETER_CAPTURING = /[-] +([-][a-zA-Z]) +(.*)/;
+      const RESULT = SHORT_PARAMETER_CAPTURING.exec(value);
+      return {
+        parameter: RESULT[1],
+        description: RESULT[2]
+      };
+    } 
+  },
+  SETTING: { 
+    match: /^[-] +(?:[a-zA-Z]+) *: *(?:[a-zA-Z]+)/, 
+    value: (value) => {
+      const SETTING_CAPTURING = /^[-] +([a-zA-Z]+) *: *([a-zA-Z]+)/;
+      const RESULT = SETTING_CAPTURING.exec(value);
+      return {
+        name: RESULT[1],
+        value: RESULT[2]
+      };
+    }
+  },
+  ARGUMENT: { 
+    match: /[-] +(?:[a-z][a-z0-9]*(?:[-][a-z0-9]+)*)(?: +.*)?/,
+    value: (value) => {
+      const ARGUMENT_CAPTURING = /[-] +([a-z][a-z0-9]*(?:[-][a-z0-9]+)*)(?: +(.*))?/;
+      const RESULT = ARGUMENT_CAPTURING.exec(value);
+      return {
+        argument: RESULT[1],
+        description: RESULT[2]
+      };      
+    } 
+  },
+  UNORDERED_LIST: { 
+    match: /[+*] (?:[^\n]*)/, 
+    value: (value) => {
+      const UNORDERED_LIST_CAPTURING = /[-+*] ([^\n]*)/;
+      const RESULT = UNORDERED_LIST_CAPTURING.exec(value);
+      return RESULT[1];          
+    } 
+  },
+  ORDERED_LIST: { 
+    match: /\d+\. (?:[^\n]*)/, 
+    value: (value) => {
+      const ORDERED_LIST_CAPTURING = /(\d+)\. ([^\n]*)/;
+      const RESULT = ORDERED_LIST_CAPTURING.exec(value);
+      return {
+        order: RESULT[1],
+        content: RESULT[2]
+      }       
+    } 
+  },
+  CODEBLOCK: { match: /^[`]{3}[a-zA-Z]+(?:[^\n]|\n)*?[`]{3}$/, lineBreaks: true, },
+  HIGHLIGHT: /[`](?:[^\n]*)[`]/,
+  PARAGRAPH: { match: /(?:[^\n]+|\n)/, lineBreaks: true},
+  ERROR:     moo.error,
 };
 
-// console.log(TOKENS, '\n');
+const LEXER = makeLexer(TOKENS, ['WHITES', 'COMMENT'], { eof: true });
 
-/** @description moo-ignore lexer with all the tokens needed for the parser */
-let lexer = makeLexer(TOKENS, ['WHITES', 'COMMENT'], { eof: true });
-
-export { lexer };
+export { LEXER };
