@@ -33,14 +33,11 @@ function buildExtension([extension, properties]) {
 }
 
 function buildFile([file, descriptionBlocks, functions, help]) {
-  let description = '';
-  descriptionBlocks.forEach((block) => { description += block.value + '\n'; } );
-
   return {
     type: 'file',
     content: {
       name: file.value,
-      description: description,
+      description: descriptionBlocks.map((block) => block.value).join('\n'),
       functions: functions?.content,
       help: help?.content
     }
@@ -48,27 +45,21 @@ function buildFile([file, descriptionBlocks, functions, help]) {
 }
 
 function buildFunctions([functions, codeblocks]) {
-  let content = '';
-  codeblocks.forEach((codeBlock) => { content += codeBlock.value + '\n\n'; });
   return {
     type: 'functions',
-    content: content
+    content: codeblocks.map((codeBlock) => codeBlock.value).join('\n\n')
   };
 }
 
 function buildHelp([help, usage, header, argumentss, parameters, footer]) {
-  let headerContent = '';
-  header.forEach((paragraph) => headerContent += paragraph.value );
-  let footerContent = '';
-  footer.forEach((paragraph) => footerContent += paragraph.value ); 
   return {
     type: 'help',
     content: {
       usage: usage.value,
-      header: headerContent,
+      header: header.map((paragraph) => paragraph.value).join(''),
       arguments: argumentss?.map((argument) => argument.value),
       parameters: parameters?.map((parameter) => parameter.value),
-      footer: footerContent
+      footer: footer.map((paragraph) => paragraph.value).join('')
     } 
   };
 }

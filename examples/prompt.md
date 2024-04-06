@@ -24,26 +24,9 @@ That query should take a node with:
 
 with that information you should be able to print a list of branches that contains the *headRefName* followed by the *number*, the *number* should have a different color depeding on the pull request *state* and the the *author.login*.
 
-### functions 
-
-```js 
-/**
- * Help function that prints the arguments and parameters of the extension 
- */
-function help() {
-  // print header
-  
-  // print Arguments
-  
-  // print parameters
-  
-  // print footer
-}
-```
-
 ### help
 
-usage: gh branch [options]
+### usage gh branch [options]
 
 This is suppose to be a header paragraph
 
