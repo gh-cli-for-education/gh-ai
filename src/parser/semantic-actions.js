@@ -11,9 +11,6 @@
  * @external Grammar
  */
 'use strict';
-function checkDuplicatedTags(object, tag, errorMsg = 'Found duplicated a Tag') {
-  if (object[tag]) { throw new Error(errorMsg); }
-}
 
 function buildPrompt([properties, eof]) {
   return {
@@ -35,19 +32,16 @@ function buildExtension([extension, properties]) {
   };
 }
 
-function buildFile([file, properties, help]) {
+function buildFile([file, descriptionBlocks, functions, help]) {
   let description = '';
-  let functions = '';
-  properties.forEach((property) => {
-    if (property.type !== 'functions') { description += property.value + '\n'; }
-    else { functions += property.content; }
-  });
+  descriptionBlocks.forEach((block) => { description += block.value + '\n'; } );
+
   return {
     type: 'file',
     content: {
       name: file.value,
       description: description,
-      functions: functions,
+      functions: functions?.content,
       help: help?.content
     }
   };
@@ -55,14 +49,14 @@ function buildFile([file, properties, help]) {
 
 function buildFunctions([functions, codeblocks]) {
   let content = '';
-  codeblocks.forEach((codeBlock) => { content += codeBlock.value + '\n'; });
+  codeblocks.forEach((codeBlock) => { content += codeBlock.value + '\n\n'; });
   return {
     type: 'functions',
     content: content
   };
 }
 
-function buildHelp([help, header, argumentss, parameters, footer]) {
+function buildHelp([help, usage, header, argumentss, parameters, footer]) {
   let headerContent = '';
   header.forEach((paragraph) => headerContent += paragraph.value );
   let footerContent = '';
@@ -70,6 +64,7 @@ function buildHelp([help, header, argumentss, parameters, footer]) {
   return {
     type: 'help',
     content: {
+      usage: usage.value,
       header: headerContent,
       arguments: argumentss?.map((argument) => argument.value),
       parameters: parameters?.map((parameter) => parameter.value),
@@ -81,7 +76,7 @@ function buildHelp([help, header, argumentss, parameters, footer]) {
 function buildReadme([readme, orderedList]) {
   return {
     type: 'readme',
-    content: orderedList
+    content: orderedList.map((element) => element.value.content )
   };
 }
 
@@ -110,12 +105,10 @@ function buildSetting([type, settings]) {
     content: {},
   };
   settings.forEach((setting) => {
-    checkDuplicatedTags(
-      settingsObject, 
-      setting.value.name, 
-      `Duplicated Settings are not allowed. Expected one ${setting.type} but received 2.`
-    );
-    settingsObject.content[setting.value.name.toLowerCase()] = setting.value.value;    
+    let settingName = setting.value.name.toLowerCase();
+    if (!settingsObject.content[settingName]) {
+      settingsObject.content[settingName] = setting.value.value;  
+    }
   });
   return settingsObject;
 }

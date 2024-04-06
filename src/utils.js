@@ -40,7 +40,7 @@ async function parseInputFile(inputFile, options) {
   if (options.debug) {
     console.log(
       'DEBUG>: input File successfully readed!. input object:\n', 
-      inputObject
+      inputObject.extension
     );
   }
   return inputObject;
@@ -64,36 +64,11 @@ async function createReadme(inputObject, inputFile, outputDirectory, response, o
   await fs.writeFile(`${outputDirectory}/response-log.md`, RESPONSE_LOG);  
 }
 
-/**
- * @description Check if an object literal is empty
- * @param {*} object 
- * @returns true if the object literal is empty
- * @returns false if the object literal is not empty
- */
-const isEmptyObject = (object) => {
-  for (const property in object) {
-    if (Object.hasOwn(object, property)) { return false; }
-  }
-  return true;
-};
-
-/**
- * @description Convert an object into an Array of values(or keys if the
- *  isKeyArray flag is activated)
- * @param {object} object The object to convert to an Array
- * @param {boolean} isKeyArray If activated returns the object keys instead of the values
- * @returns {object} The new Array with the values or keys
- */
-const Object2Array = (object, isKeyArray = false) => {
-  return Object.entries(object).map(([key, value]) => {
-    return ((isKeyArray)? key : value); 
-  });
-};
-
 // ENUMS 
 const HELP_TYPES = Object.freeze({
   EXTENSION: 'extension' 
 });
+
 const PACKAGE_DATA = Object.freeze({
   name: require('../package.json').name,
   version: require('../package.json').version,
@@ -101,8 +76,6 @@ const PACKAGE_DATA = Object.freeze({
 });
 
 export { 
-  isEmptyObject,
-  Object2Array,
   parseInputFile,
   createReadme,
   HELP_TYPES,

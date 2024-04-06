@@ -24,6 +24,7 @@ const PARAMETER_SCHEMA = z.object({
 }).describe('Describe the schema that a parameter must follow').required().strict();
 
 const HELP_SCHEMA = z.object({
+  usage:       z.string().describe('The usage block of a help function'),
   header:      z.string().describe('The string containing the usage and more useful info'),
   arguments:   z.array(ARGUMENT_SCHEMA).describe('The main file arguments').optional(),
   parameters:  z.array(PARAMETER_SCHEMA).describe('The main file parameters').optional(),
@@ -62,7 +63,7 @@ const EXTENSION_SCHEMA = z.object({
   files: z.array(FILES_SCHEMA).describe('An Array with all the files expected by the extension'),
   languageSettings: LANGUAGE_SETTINGS_SCHEMA,
   examples: z.array(EXAMPLES_SCHEMA).describe('An Array with all the usage examples of the extension').optional(),
-  readme: z.array(README_SCHEMA).describe('TODO').optional(),
+  readme: z.array(z.string()).describe('TODO').optional(),
 }).describe('The extension proposal, fill all the parameters for a better result').required({
   languageSettings: true,
   files: true,
@@ -90,7 +91,7 @@ const customErrorMap = (issue, ctx) => {
     if (issue.path.length === 0) { return { message: 'Expected an object. Received nothing' }; }
     let amountOfHashs = 0;
     issue.path.map((path) => amountOfHashs += isNaN(path));
-    let errorMsg = `Expected a ${'#'.repeat(amountOfHashs)}${issue.path[issue.path.length - 1].toUpperCase()} property `;
+    let errorMsg = `Expected a ${'#'.repeat(amountOfHashs)}${issue.path[issue.path.length - 1].toString().toUpperCase()} property `;
     console.log(issue);
     if (issue.path.length > 1) {
       amountOfHashs = 1;

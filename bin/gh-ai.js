@@ -56,6 +56,10 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     console.log(`${PROMPT}Parsing the user input.`)
     let inputObject = await parseInputFile(inputFile, options);
 
+    if (options.debug) { 
+        return;
+    }
+
     console.log(`${PROMPT}Starting ${options.llmApi} API call. This process may take a few seconds.`);
     let apiResponse = await API[options.llmApi](inputObject, outputDirectory, options);
 

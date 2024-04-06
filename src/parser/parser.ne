@@ -34,17 +34,30 @@ mainProperties ->
   | %CHAT_SETTINGS (%SETTING {% id %}):+ {% buildSettings['chatSettings'] %}
 
 extensionProperties ->  
-    %MAIN_FILE (fileProperties {% id %}):* (help {% id %}):?        {% buildFile %}
-  | %FILE (fileProperties {% id %}):*                               {% buildFile %}
-  | %LANGUAGE_SETTINGS (%SETTING {% id %}):*                        {% buildSettings['languageSettings'] %}
-  | %README (%ORDERED_LIST {% id %}):*                              {% buildReadme %}
+    %MAIN_FILE (descriptionBlock {% id %}):+ (functions {% id %}):? (help {% id %}):?       {% buildFile %}
+  | %FILE (descriptionBlock {% id %}):+ (functions {% id %}):?                              {% buildFile %}
+  | %LANGUAGE_SETTINGS (%SETTING {% id %}):*                                                {% buildSettings['languageSettings'] %}
+  | %README (%ORDERED_LIST {% id %}):*                                                      {% buildReadme %}
   | %EXAMPLES ((%HIGHLIGHT {% id %} | %PARAGRAPH {% id %}) %CODEBLOCK {% buildExample %}):+ {% buildExamples %}
 
-fileProperties -> 
-    %PARAGRAPH                         {% id %}
-  | %UNORDERED_LIST                    {% id %}
-  | %CODEBLOCK                         {% id %}
-  | %HIGHLIGHT                         {% id %}
-  | %FUNCTIONS (%CODEBLOCK {% id %}):+ {% buildFunctions %}
+descriptionBlock -> 
+    %PARAGRAPH      {% id %}
+  | %UNORDERED_LIST {% id %}
+  | %HIGHLIGHT      {% id %}
+  | %CODEBLOCK      {% id %}
 
-help -> %HELP (%PARAGRAPH {% id %}):* (%ARGUMENTS (%ARGUMENT {% id %}):+ {% id => id[1] %}):? (%PARAMETERS (%SHORT_PARAMETER {% id %} | %LONG_PARAMETER {% id %}):+ {% id => id[1] %}):? (%PARAGRAPH {% id %}):* {% buildHelp %}
+functions -> %FUNCTIONS (%CODEBLOCK {% id %}):+ {% buildFunctions %}
+
+help -> %HELP %USAGE (%PARAGRAPH {% id %}):* argumentSection parameterSection (%PARAGRAPH {% id %}):* {% buildHelp %}
+
+argumentSection  -> 
+    null {% id %} 
+  | %ARGUMENTS (%ARGUMENT {% id %}):+ {% id => id[1] %}
+
+parameterSection -> 
+    null {% id %} 
+  | %PARAMETERS (parameters {% id %}):+ {% id => id[1] %}
+
+parameters ->  
+    %SHORT_PARAMETER {% id %}
+  | %LONG_PARAMETER  {% id %}

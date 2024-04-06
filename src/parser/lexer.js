@@ -23,6 +23,7 @@ const isLetter = (char) => {
   const LETTER_REGEXP = /[a-zA-Z]/;
   return LETTER_REGEXP.test(char);
 };
+
 /**
  * @description Given a word it will create a string following a case insensitive RegExp
  * @param {string} word The word that will be transformed into case insensitive 
@@ -54,7 +55,15 @@ const TOKENS = {
   },  
   FUNCTIONS:  { match: new RegExp('^#{3} *' + toCaseInsensive('functions')) }, 
   EXAMPLES:   { match: new RegExp('^#{2} *' + toCaseInsensive('examples')) }, 
-  HELP:       { match: new RegExp('^#{3} *' + toCaseInsensive('help')) }, 
+  HELP:       { match: new RegExp('^#{3} *' + toCaseInsensive('help')) },
+  USAGE:      { 
+    match: new RegExp('^#{3} *' + toCaseInsensive('usage') + ' +.*'), 
+    value: (value) => {
+      const USAGE_CAPTURING = new RegExp('^#{3} *' + toCaseInsensive('usage') + ' +(.*)');
+      const RESULT = USAGE_CAPTURING.exec(value);
+      return RESULT[1];      
+    }
+  },
   ARGUMENTS:  { match: new RegExp('^#{3} *' + toCaseInsensive('arguments')) }, 
   PARAMETERS: { match: new RegExp('^#{3} *' + toCaseInsensive('parameters')) }, 
   FILE: { 
@@ -68,6 +77,7 @@ const TOKENS = {
   LANGUAGE_SETTINGS: { match: new RegExp('^#{2} *' + toCaseInsensive('language') + ' *' + toCaseInsensive('settings')) }, 
   CHAT_SETTINGS:     { match: new RegExp('^# *' + toCaseInsensive('chat') + ' *' + toCaseInsensive('settings')) }, 
   README:            { match: new RegExp('^#{2} *' + toCaseInsensive('readme')) }, 
+  HEADER:            { match: /^#{1,6}.*/ },
   COMMENT:           { match: new RegExp('^\\[' + toCaseInsensive('comment') + '\\]: +# +\\([^\\n]+\\)') }, 
   LONG_PARAMETER: { 
     match: /^[-] +[-]{2}[a-zA-Z]{2,}(?:[-][a-zA-Z]{2,})* +(?:.*)/, 
@@ -115,27 +125,20 @@ const TOKENS = {
       };      
     } 
   },
-  UNORDERED_LIST: { 
-    match: /[+*] (?:[^\n]*)/, 
-    value: (value) => {
-      const UNORDERED_LIST_CAPTURING = /[-+*] ([^\n]*)/;
-      const RESULT = UNORDERED_LIST_CAPTURING.exec(value);
-      return RESULT[1];          
-    } 
-  },
+  UNORDERED_LIST: { match: /[-+*] (?:[^\n]*)/ },
   ORDERED_LIST: { 
     match: /\d+\. (?:[^\n]*)/, 
     value: (value) => {
       const ORDERED_LIST_CAPTURING = /(\d+)\. ([^\n]*)/;
       const RESULT = ORDERED_LIST_CAPTURING.exec(value);
       return {
-        order: RESULT[1],
+        order: Number(RESULT[1]),
         content: RESULT[2]
-      }       
+      };       
     } 
   },
   CODEBLOCK: { match: /^[`]{3}[a-zA-Z]+(?:[^\n]|\n)*?[`]{3}$/, lineBreaks: true, },
-  HIGHLIGHT: /[`](?:[^\n]*)[`]/,
+  HIGHLIGHT: /[`](?:[^\n]*?)[`]/,
   PARAGRAPH: { match: /(?:[^\n]+|\n)/, lineBreaks: true},
   ERROR:     moo.error,
 };
