@@ -53,7 +53,14 @@ const TOKENS = {
       return RESULT[1];
     } 
   },  
-  FUNCTIONS:  { match: new RegExp('^#{3} *' + toCaseInsensive('functions')) }, 
+  FUNCTION:   { 
+    match: new RegExp('^#{3} *' + toCaseInsensive('function') + ' +(?:.*)'),
+    value: (value) => {
+      const FUNCTION_CAPTURING = new RegExp('^#{3} *' + toCaseInsensive('function') + ' +(.*)');
+      const RESULT = FUNCTION_CAPTURING.exec(value);
+      return RESULT[1];      
+    }
+  }, 
   EXAMPLES:   { match: new RegExp('^#{2} *' + toCaseInsensive('examples')) }, 
   HELP:       { match: new RegExp('^#{3} *' + toCaseInsensive('help')) },
   USAGE:      { 

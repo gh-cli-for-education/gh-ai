@@ -27,41 +27,15 @@ Lo mismo para las listas desordenadas:
 
 Este es el ultimo parrafo, debería haber una separación entre la lista y este parrafo.
 
-### functions 
+### function nombreDeFuncion
 
-```js 
-/**
- * Lo mejor sería leer correctamente cada función y poder hacer un prompt correcto
- */ 
-function nombreFuncion(parametro0, parametro1, parametro2) {
-  // Primera instrucción
-  // Segunda instrucción 
-  // Tercera instrucción 
-    // sub primera instrucción de la tercera 
-}
+- argument: d
 
-/**
- * Deberían poder haber dos funciones dentro del mismo campo 
- */
-function nombreFuncion(parametro0, parametro1, parametro2) {
-  // Primera instrucción
-  // Segunda instrucción 
-  // Tercera instrucción 
-    // sub primera instrucción de la tercera 
-}
-```
+Descripción de la función
 
-```js 
-/**
- * Tanto varias funciones dentro de un mismo codeblock como varias...
- */ 
-function nombreFuncion(parametro0, parametro1, parametro2) {
-  // Primera instrucción
-  // Segunda instrucción 
-  // Tercera instrucción 
-    // sub primera instrucción de la tercera 
-}
-```
+1. hacer esto
+2. hacer lo otro 
+3. Esto otro también 
 
 [comment]: # (comentario)
 
@@ -109,16 +83,9 @@ pueden contener highligths: `Esto es un highlight`
 // Puede contener CODEBLOCKS
 ```
 
-### functions 
+### function funcion
 
-```js 
-/**
- * Otra función
- */
-function otraFuncion() { 
-  // Acción
-}
-```
+Esto es una función
 
 ## File file3
 

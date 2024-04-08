@@ -33,10 +33,20 @@ const HELP_SCHEMA = z.object({
   header: true
 }).strict();
 
+const FUNCTION_SCHEMA = z.object({
+  name: z.string().describe('Function name'),
+  params: z.array(z.object({})).describe('function params').optional(),
+  description: z.string().describe('function description'),
+  orderList: z.array(z.string()).describe('').optional(),
+}).describe('').required({
+  name: true,
+  description: true
+}).strict();
+
 const FILES_SCHEMA = z.object({
   name:        z.string().describe('The expected name of the object'),
   description: z.string().describe('The description of the object'),
-  functions:   z.string().describe('The description of all functions from the file').optional(),
+  functions:   z.array(FUNCTION_SCHEMA).describe('The description of all functions from the file').optional(),
   help:        HELP_SCHEMA.optional()
 }).describe('A generic schema for any object that has a name and a description').required({
   name: true,
@@ -53,11 +63,6 @@ const LANGUAGE_SETTINGS_SCHEMA = z.object({
   specification: z.string().describe('The language specification').optional(),
   style:         z.string().describe('The coding style for the language').optional()
 }).describe('Script language configuration').required({ language: true }).strict();
-
-const README_SCHEMA = z.object({
-  order: z.number(),
-  content: z.string()
-}).required().strict();
 
 const EXTENSION_SCHEMA = z.object({
   files: z.array(FILES_SCHEMA).describe('An Array with all the files expected by the extension'),

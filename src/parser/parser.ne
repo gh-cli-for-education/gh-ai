@@ -15,7 +15,7 @@ import {
   buildPrompt,
   buildExtension,
   buildFile,
-  buildFunctions,
+  buildFunction,
   buildHelp,
   buildReadme,
   buildExample,
@@ -34,11 +34,11 @@ mainProperties ->
   | %CHAT_SETTINGS (%SETTING {% id %}):+ {% buildSettings['chatSettings'] %}
 
 extensionProperties ->  
-    %MAIN_FILE (descriptionBlock {% id %}):+ (functions {% id %}):? (help {% id %}):?       {% buildFile %}
-  | %FILE (descriptionBlock {% id %}):+ (functions {% id %}):?                              {% buildFile %}
+    %MAIN_FILE (descriptionBlock {% id %}):+ (function {% id %}):* (help {% id %}):?        {% buildFile %}
+  | %FILE (descriptionBlock {% id %}):+ (function {% id %}):*                               {% buildFile %}
   | %LANGUAGE_SETTINGS (%SETTING {% id %}):*                                                {% buildSettings['languageSettings'] %}
   | %README (%ORDERED_LIST {% id %}):*                                                      {% buildReadme %}
-  | %EXAMPLES ((%HIGHLIGHT {% id %} | %PARAGRAPH {% id %}) %CODEBLOCK {% buildExample %}):+ {% buildExamples %}
+  | %EXAMPLES (example {% id %}):+                                                          {% buildExamples %}
 
 descriptionBlock -> 
     %PARAGRAPH      {% id %}
@@ -46,7 +46,9 @@ descriptionBlock ->
   | %HIGHLIGHT      {% id %}
   | %CODEBLOCK      {% id %}
 
-functions -> %FUNCTIONS (%CODEBLOCK {% id %}):+ {% buildFunctions %}
+function -> %FUNCTION (%SETTING {% id %}):* (%PARAGRAPH {% id %}):+ (%ORDERED_LIST {% id %}):* {% buildFunction %}
+
+example -> (%HIGHLIGHT {% id %} | %PARAGRAPH {% id %}) %CODEBLOCK {% buildExample %}
 
 help -> %HELP %USAGE (%PARAGRAPH {% id %}):* argumentSection parameterSection (%PARAGRAPH {% id %}):* {% buildHelp %}
 

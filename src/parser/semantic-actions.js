@@ -38,16 +38,18 @@ function buildFile([file, descriptionBlocks, functions, help]) {
     content: {
       name: file.value,
       description: descriptionBlocks.map((block) => block.value).join('\n'),
-      functions: functions?.content,
+      functions: functions ?? undefined,
       help: help?.content
     }
   };
 }
 
-function buildFunctions([functions, codeblocks]) {
+function buildFunction([functionToken, parameters, description, orderList]) {
   return {
-    type: 'functions',
-    content: codeblocks.map((codeBlock) => codeBlock.value).join('\n\n')
+    name: functionToken.value,
+    params: parameters,
+    description: description.map((paragraph) => paragraph.value).join('\n\n'),
+    orderList: orderList.map((element) => element.value.content)
   };
 }
 
@@ -67,7 +69,7 @@ function buildHelp([help, usage, header, argumentss, parameters, footer]) {
 function buildReadme([readme, orderedList]) {
   return {
     type: 'readme',
-    content: orderedList.map((element) => element.value.content )
+    content: orderedList.map((element) => element.value.content)
   };
 }
 
@@ -108,7 +110,7 @@ export {
   buildPrompt,
   buildExtension,
   buildFile,
-  buildFunctions,
+  buildFunction,
   buildHelp,
   buildReadme,
   buildExample,

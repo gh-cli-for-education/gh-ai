@@ -36,13 +36,8 @@ async function parseInputFile(inputFile, options) {
   let input = await fs.readFile(inputFile, 'utf-8');
   parser.feed(input);
   let inputObject = parser.results[0];
+  if (options.debug) { console.log(inputObject); }
   INPUT_SCHEMA.parse(inputObject);
-  if (options.debug) {
-    console.log(
-      'DEBUG>: input File successfully readed!. input object:\n', 
-      inputObject.extension
-    );
-  }
   return inputObject;
 }
 
