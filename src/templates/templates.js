@@ -16,16 +16,52 @@ TEMPLATES = {
   EXTENSION: {},
 };
 
-const EXTENSION_SYSTEM_TEMPLATE       = await fs.readFile('src/templates/extension-system.md', ENCODER);
-const EXTENSION_USER_TEMPLATE         = await fs.readFile('src/templates/extension-user.md', ENCODER);
-const EXTENSION_USER_LOG_TEMPLATE     = await fs.readFile('src/templates/extension-user-log.md', ENCODER);
-const EXTENSION_RESPONSE_LOG_TEMPLATE = await fs.readFile('src/templates/extension-response-log.md', ENCODER);
+const EXTENSION_SYSTEM_TEMPLATE            = await fs.readFile('src/templates/extension/system-prompt.md', ENCODER);
+const EXTENSION_MAIN_FUNCTION_TEMPLATE     = await fs.readFile('src/templates/extension/main-function.md', ENCODER);
+const EXTENSION_GENERIC_FUNCTION_TEMPLATE  = await fs.readFile('src/templates/extension/generic-function.md', ENCODER);
+const EXTENSION_FILE_GENERAL_IDEA_TEMPLATE = await fs.readFile('src/templates/extension/file-general-idea.md', ENCODER);
+const EXTENSION_POST_PROCESSING_TEMPLATE   = await fs.readFile('src/templates/extension/post-processing.md', ENCODER);
+
+const USER_LOG_TEMPLATE     = await fs.readFile('src/templates/user-log.md', ENCODER);
+const RESPONSE_LOG_TEMPLATE = await fs.readFile('src/templates/response-log.md', ENCODER);
+const README_TEMPLATE       = await fs.readFile('src/templates/readme-template.md', ENCODER);
 
 // EXTENSION TEMPLATES 
 TEMPLATES.EXTENSION.SYSTEM = (inputObject) => {
   return Mustache.render(EXTENSION_SYSTEM_TEMPLATE, inputObject);
 };
 
+TEMPLATES.EXTENSION.MAIN_FUNCTION = (fileObject) => {
+  fileObject.argumentParser = function () {
+    return `${this.argument}     ${this.description}`;
+  }
+
+  fileObject.parameterParser = function () {
+    return `${this.parameter} ${this.argument ?? ''} ${this.description}`;
+  }
+  return Mustache.render(EXTENSION_MAIN_FUNCTION_TEMPLATE, fileObject);
+}
+
+TEMPLATES.EXTENSION.GENERIC_FUNCTION = (functionObject) => {
+  functionObject.functionParametersParaser = function () {
+    return `A parameter called: **${this.name}** of type *${this.value}*`
+  }
+  return Mustache.render(EXTENSION_GENERIC_FUNCTION_TEMPLATE, functionObject);
+}
+
+TEMPLATES.EXTENSION.FILE_GENERAL_IDEA = (fileObject) => {
+  return Mustache.render(EXTENSION_FILE_GENERAL_IDEA_TEMPLATE, fileObject);
+}
+
+TEMPLATES.EXTENSION.POST_PROCESSING = (settingsObject) => {
+  return Mustache.render(EXTENSION_POST_PROCESSING_TEMPLATE, settingsObject);
+}
+
+TEMPLATES.README = (readmeObject) => {
+  return Mustache.render(README_TEMPLATE, readmeObject);
+}
+
+/*
 TEMPLATES.EXTENSION.USER = (extensionObject) => {
 
   const PROMPTS = extensionObject.files.map((file) => {
@@ -48,31 +84,31 @@ TEMPLATES.EXTENSION.USER = (extensionObject) => {
     };
   });
 
-  // PROMPTS.push('I request you to generate a README.md file containing: 1. A brief description of what the program does.\n 2. A installation guide for the generated gh extension. 3. An Usage section. 4. An examples section with 2 examples in it.')
   return PROMPTS;
 };
-
-TEMPLATES.EXTENSION.USER_LOG = (inputObject, inputFile, response, options) => {
+*/ 
+TEMPLATES.EXTENSION.USER_LOG = (inputObject, inputFile, responseObject, options) => {
   const LOG = {
     inputObject,
     inputFile, 
-    systemPrompt: response.systemPrompt,
-    usage: response.usage,
-    assistant: response.assistant,
-    thread: response.thread,
+    systemPrompt: responseObject.systemPrompt,
+    usage: responseObject.usage,
+    assistant: responseObject.assistant,
+    thread: responseObject.thread,
     options,
     parseInputObject: function() { return JSON.stringify(this, null, 2); }
   }
-  return Mustache.render(EXTENSION_USER_LOG_TEMPLATE, LOG);
+  return Mustache.render(USER_LOG_TEMPLATE, LOG);
 }
 
-TEMPLATES.EXTENSION.RESPONSE_LOG = (apiResponse, options) => {
+TEMPLATES.EXTENSION.RESPONSE_LOG = (reponseObject, options) => {
   const LOG = {
-    messages: apiResponse.messages,
-    config: apiResponse.config,
+    messages: reponseObject.messages,
+    config: reponseObject.config,
     options: options,
   };
-  return Mustache.render(EXTENSION_RESPONSE_LOG_TEMPLATE, LOG);
+  LOG[options.commandType] = true;
+  return Mustache.render(RESPONSE_LOG_TEMPLATE, LOG);
 };
 
 TEMPLATES = Object.freeze(TEMPLATES);

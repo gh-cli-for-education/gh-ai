@@ -8,6 +8,7 @@
 
 - language: Bash
 - Style: Google
+- Specification: aiuda
 
 ## MainFile gh-ai
 

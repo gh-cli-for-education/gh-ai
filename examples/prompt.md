@@ -1,3 +1,7 @@
+# chatSettings 
+
+- language: english
+
 # Extension
 
 ## MainFile gh-branch  
@@ -26,7 +30,7 @@ with that information you should be able to print a list of branches that contai
 
 ### help
 
-### usage gh branch [options]
+### Usage gh branch [options]
 
 This is suppose to be a header paragraph
 
@@ -53,7 +57,3 @@ foo@bar:~$ gh branch --static
 - markdown-like-parser
 - inproving-api-call
 ```
-
-# ChatSettings 
-
-- language: english 

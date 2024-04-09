@@ -9,7 +9,7 @@ The objective of this markdown file is to store the input and the prompts sent b
 For each file requested by the user, its corresponding code has been generated. 
 
 {{#messages}}
-## File {{title}}
+## {{#extension}}File{{/extension}} {{title}}
 
 ### Petition
 
@@ -19,7 +19,7 @@ For each file requested by the user, its corresponding code has been generated.
 
 ### Response
 
-```{{config.language}}
+```{{config.scriptLanguage}}
 {{response}}
 ```
 {{#usage}}

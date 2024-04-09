@@ -18,10 +18,11 @@ const require = createRequire(import.meta.url);
 import * as grammarModule from './grammar.js';
 import { TEMPLATES } from './templates/templates.js';
 import { INPUT_SCHEMA } from './schemas/input-schema.js';
+import { COLORS } from './colors.js';
 'use strict';
 
 const API = Object.create(null);
-
+const GH_AI_PROMPT  = COLORS.yellow('GH-AI>: ');
 /**
  * @description Parse the input file from the user and returns an object with
  * the extracted values 
@@ -46,16 +47,22 @@ async function parseInputFile(inputFile, options) {
  * @param {*} apiResponse 
  * @param {*} options 
  */
-async function createReadme(inputObject, inputFile, outputDirectory, response, options) {
-  try {
+async function createProgramLogs(inputObject, responseObject, inputFile, outputDirectory, options) {
+
+  try { // NO ESTA DEL TODO CORRECTO HAY QUE HACER EL CHECK DEL OUTPUTDIRECTORY AL PRINCIPIO 
     await fs.mkdir(outputDirectory, { recursive: true });
   } catch(error) {
     if (error.code === 'EEXIT') { console.log(`El directorio ya existe`); } // Esto nunca se llama 
   }
+
   const TYPE = options.commandType.toUpperCase();
-  const USER_LOG = TEMPLATES[TYPE].USER_LOG(inputObject, inputFile, response, options);
+
+  console.log(`${GH_AI_PROMPT}Generating user-log.md where you can find all the input information`);
+  const USER_LOG = TEMPLATES[TYPE].USER_LOG(inputObject, inputFile, responseObject, options);
   await fs.writeFile(`${outputDirectory}/user-log.md`, USER_LOG);
-  const RESPONSE_LOG = TEMPLATES[TYPE].RESPONSE_LOG(response, options);
+
+  console.log(`${GH_AI_PROMPT}Generating reponse-log.md where you can find all the output information`);
+  const RESPONSE_LOG = TEMPLATES[TYPE].RESPONSE_LOG(responseObject, options);
   await fs.writeFile(`${outputDirectory}/response-log.md`, RESPONSE_LOG);  
 }
 
@@ -72,7 +79,7 @@ const PACKAGE_DATA = Object.freeze({
 
 export { 
   parseInputFile,
-  createReadme,
+  createProgramLogs,
   HELP_TYPES,
   PACKAGE_DATA,
   API,

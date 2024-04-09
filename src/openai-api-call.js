@@ -13,7 +13,6 @@ import OpenAI from 'openai';
 import { sleep } from 'openai/core.js';
 
 import { API } from './utils.js';
-import { TEMPLATES } from './templates/templates.js'; // update TEMPLATES object
 import { COLORS } from './colors.js';
 import { TOOLS, TOOLS_DESCRIPTIONS } from './openai-api-tools.js';
 'use strict';
@@ -24,36 +23,32 @@ const ERROR_PROMPT  = COLORS.red(`GH-AI-ERROR>: `);
 const WARNING_PROMPT  = COLORS.magenta(`GH-AI-WARNING>: `);
 
 /**
- * @description OpenAI specific implementation of the API call
- * @param {object} prompts 
+ * 
+ * @param {*} promptObject 
+ * @param {*} outputDirectory 
  * @param {*} options 
  * @returns 
  */
-API['OPENAI'] = async function(inputObject, outputDirectory, options) {
+API['OPENAI'] = async function(promptObject, outputDirectory, options) {
   
   const OPENAI = new OpenAI({ 
     apiKey: process.env.OPENAI_API_KEY,
     organization: process.env.OPENAI_ORG
   });
 
-  const TYPE = options.commandType.toUpperCase();
-
-  const SYSTEM_PROMPT = TEMPLATES[TYPE].SYSTEM(inputObject);
-  const PROMPTS = TEMPLATES[TYPE].USER(inputObject[options.commandType]);
-
-  let apiCallResult = {
-    systemPrompt: SYSTEM_PROMPT,
+  let responseObject = {
+    systemPrompt: promptObject.system,
     messages: [],
     usage: {
       totalPromptTokens: 0,
       totalCompletionTokens: 0,
       totalTokens: 0,
     },
-    failed: false,
-    config: {
-      llm: options.llm,
-      language: inputObject.extension?.languageSettings.language
+    readme: {
+      prompt: promptObject.readme,
+      result: undefined 
     },
+    config: undefined,
     assistant: undefined,
     thread: undefined,
   };
@@ -62,70 +57,40 @@ API['OPENAI'] = async function(inputObject, outputDirectory, options) {
   let thread = undefined;
 
   try {
-    [assistant, thread] = await createAssistantAndThread(OPENAI, SYSTEM_PROMPT, options);
+    [assistant, thread] = await createAssistantAndThread(OPENAI, promptObject.system, options);
     
-    if (options.saveAssistant) { apiCallResult.assistant = assistant.id; }
-    if (options.saveThread) { apiCallResult.thread = thread.id; }
+    if (options.saveAssistant) { responseObject.assistant = assistant.id; }
+    if (options.saveThread) { responseObject.thread = thread.id; }
 
-    for (const PROMPT of PROMPTS) {
+    for (const PROMPT of promptObject.user) {
+      console.log(`${GH_AI_PROMPT}Working with ${PROMPT.title} prompt`);
+      // console.log(PROMPT);
 
-      console.log(`${GH_AI_PROMPT}Working with ${PROMPT.title} file`);
-
-      // Añadir el mensaje a la conversación
-      await OPENAI.beta.threads.messages.create(
-        thread.id,
-        {
-          role: 'user',
-          content: PROMPT.content
-        }
-      );
-
-      const DELAY = 10000; // 10s
-      const MAX_TRIES = 10;
-      let currentTry = 0;
-      
-      let result = {};
-      while (currentTry < MAX_TRIES) {
-        result = await call(OPENAI, assistant.id, thread.id, outputDirectory, options);
-
-        if (result.completed) { break; }
-
-        if (!result.error) {
-          currentTry++;
-          await sleep(DELAY);
-        }
-        else {
-          apiCallResult.failed = true;
-          break;
+      for (const PROMPT_SECTION of PROMPT.content) {
+        // Llamar a la API y añadir la respuesta al reponseObject
+        const CALL_RESULT = await call(OPENAI, PROMPT_SECTION, assistant.id, thread.id, outputDirectory, options);
+        await addResultToResponseObject(OPENAI, CALL_RESULT, responseObject, { title: PROMPT.title, content: PROMPT_SECTION }, thread.id, options);
+        if (CALL_RESULT.error) { // En caso de error detener la ejecución
+          return responseObject;
         }
       }
       
-      if (apiCallResult.failed || currentTry >= MAX_TRIES) {
+    }
 
-        console.log(`${ERROR_PROMPT}The API call couldn't be executed correctly, Generating Logs and stopping execution.`);
+    if (responseObject.readme.prompt) {
 
-        apiCallResult.messages.push({
-          title: PROMPT.title,
-          prompt: PROMPT.content,
-          response: run.last_error.message,
-          usage: undefined
-        });
+      console.log(`${GH_AI_PROMPT}Working with README.md prompt`);
 
-        apiCallResult.usage.totalPromptTokens = run.usage.prompt_tokens;
-        apiCallResult.usage.totalTokens = run.usage.total_tokens;
-        
-        return apiCallResult;
+      const CALL_RESULT = await call(OPENAI, responseObject.readme.prompt, assistant.id, thread.id, outputDirectory, options);
+
+      if (CALL_RESULT.error) { // En caso de error detener la ejecución
+        return responseObject;
       }
 
-      let messages = await OPENAI.beta.threads.messages.list(thread.id);
+      let messages = await openai.beta.threads.messages.list(threadID);
       messages = messages.data.filter(message => message.role === 'assistant');
-  
-      apiCallResult.messages.push({
-        title: PROMPT.title,
-        prompt: PROMPT.content,
-        response: messages[0].content.map((content) => { return content.text.value;}),
-        usage: (options.tokensVerbose)? result.run.usage : undefined,
-      });
+
+      promptObject.readme.result = messages[0].content.map((content) => { return content.text.value;});
 
     }
 
@@ -133,14 +98,14 @@ API['OPENAI'] = async function(inputObject, outputDirectory, options) {
 
     /** @TODO No tiene en cuenta los tokens usados por las tools */
     if (options.tokensVerbose) { // Calcular el total de tokens usados.
-      for (const MESSAGE of apiCallResult.messages) {
-        apiCallResult.usage.totalPromptTokens += MESSAGE.usage.prompt_tokens;
-        apiCallResult.usage.totalCompletionTokens += MESSAGE.usage.completion_tokens;
-        apiCallResult.usage.totalTokens += MESSAGE.usage.total_tokens;
+      for (const MESSAGE of responseObject.messages) {
+        responseObject.usage.totalPromptTokens += MESSAGE.usage.prompt_tokens;
+        responseObject.usage.totalCompletionTokens += MESSAGE.usage.completion_tokens;
+        responseObject.usage.totalTokens += MESSAGE.usage.total_tokens;
       }
     }
 
-    return apiCallResult;
+    return responseObject;
   } 
   finally {
     
@@ -158,6 +123,7 @@ API['OPENAI'] = async function(inputObject, outputDirectory, options) {
 /**
  * 
  * @param {*} openai 
+ * @param {*} systemPrompt 
  * @param {*} options 
  * @returns 
  */
@@ -197,8 +163,84 @@ async function createAssistantAndThread(openai, systemPrompt, options) {
   return [assistant, thread];
 }
 
+/**
+ * 
+ * @param {*} openai 
+ * @param {*} callResult 
+ * @param {*} responseObject 
+ * @param {*} threadID 
+ * @param {*} options 
+ */
+async function addResultToResponseObject(openai, callResult, responseObject, prompt, threadID, options) {
+  if (callResult.error) { // Se genera una respuesta de error y se termina la ejecución del programa
+    responseObject.messages.push({
+      title: prompt.title,
+      prompt: prompt.content,
+      response: callResult.run.last_error.message,
+      usage: undefined
+    });
+
+    responseObject.usage.totalPromptTokens = callResult.run.usage.prompt_tokens;
+    responseObject.usage.totalTokens = callResult.run.usage.total_tokens;
+  }
+
+  let messages = await openai.beta.threads.messages.list(threadID);
+  messages = messages.data.filter(message => message.role === 'assistant');
+
+  responseObject.messages.push({
+    title: prompt.title,
+    prompt: prompt.content,
+    response: messages[0].content.map((content) => { return content.text.value;}),
+    usage: (options.tokensVerbose)? result.run.usage : undefined,
+  });
+}
+
+/**
+ * 
+ * @param {*} openai 
+ * @param {*} assistantID 
+ * @param {*} threadID 
+ * @param {*} outputDirectory 
+ * @param {*} options 
+ * @returns 
+ */
+async function call(openai, prompt, assistantID, threadID, outputDirectory, options) {
+
+  // Añadir el mensaje a la conversación
+  await openai.beta.threads.messages.create(
+    threadID,
+    {
+      role: 'user',
+      content: prompt
+    }
+  );
+
+  const DELAY = 10000; // 10s
+  const MAX_TRIES = 10;
+  let currentTry = 0;
+  
+  let result = {};
+  while (currentTry < MAX_TRIES) {
+    result = await checkRunStatus(openai, assistantID, threadID, outputDirectory, options);
+
+    if (result.completed) { return result; }
+
+    if (result.error) {
+      console.log(`${ERROR_PROMPT}The API call couldn't be executed correctly, Generating Logs and stopping execution.`);
+      return result;
+    }
+
+    currentTry++;
+    await sleep(DELAY);
+  }
+
+  result.error = true;
+  console.log(`${ERROR_PROMPT}The program used the max amount of calls but the API didn't respond, finishing execution.`)
+  return result;
+}
+
 // Ver como puedo quitar de aquí el outputDirectory
-async function call(openai, assistantID, threadID, outputDirectory, options) {
+async function checkRunStatus(openai, assistantID, threadID, outputDirectory, options) {
 
   const DELAY = 2000; // ms
   let failure = false;
@@ -245,7 +287,7 @@ async function call(openai, assistantID, threadID, outputDirectory, options) {
   
       case 'cancelled':
         console.log(`${OPENAI_PROMPT}The run has been cancelled successfully.`);
-        return { completed: false, error: false, run: run };
+        return { completed: false, error: true, run: run };
   
       case 'requires_action':
         console.log(`${OPENAI_PROMPT}The run requires an action from a tool. Waiting for the result.`);

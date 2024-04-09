@@ -16,11 +16,12 @@ import { z } from 'zod';
 import OpenAI from 'openai';
 import dotEnv from 'dotenv';
 
-import { parseInputFile, createReadme } from '../src/utils.js';
+import { parseInputFile, createProgramLogs } from '../src/utils.js';
 import { HELP_TYPES, PACKAGE_DATA } from '../src/utils.js';
 import { API } from '../src/openai-api-call.js';
 import { ERROR_HANDLER } from '../src/error-handlers.js';
 import { COLORS } from '../src/colors.js';
+import { PROMPT_GENERATOR } from '../src/prompt-generator.js';
 
 dotEnv.config();
 const PROGRAM = new Command();
@@ -56,14 +57,20 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     console.log(`${PROMPT}Parsing the user input.`)
     let inputObject = await parseInputFile(inputFile, options);
 
-    if (options.debug) { 
-        return;
-    }
+    console.log(`${PROMPT}Generating prompts..`)
+    let promptObject = await PROMPT_GENERATOR[options.commandType.toUpperCase()](inputObject, options);
+
+    // if (options.debug) { console.log(promptObject.files[0].prompts); }
 
     console.log(`${PROMPT}Starting ${options.llmApi} API call. This process may take a few seconds.`);
-    let apiResponse = await API[options.llmApi](inputObject, outputDirectory, options);
+    let responseObject = await API[options.llmApi](promptObject, outputDirectory, options);
 
-    await createReadme(inputObject, inputFile, outputDirectory, apiResponse, options);
+    responseObject.config = {
+      llm: options.llm,
+      scriptLanguage: inputObject.extension?.languageSettings.language
+    };
+
+    await createProgramLogs(inputObject, responseObject, inputFile, outputDirectory, options);
     console.log(`${PROMPT}Generated log files inside ${outputDirectory}/`); 
 
   } catch (error) {

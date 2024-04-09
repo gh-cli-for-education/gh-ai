@@ -47,7 +47,7 @@ function buildFile([file, descriptionBlocks, functions, help]) {
 function buildFunction([functionToken, parameters, description, orderList]) {
   return {
     name: functionToken.value,
-    params: parameters,
+    params: parameters.map((parameter) => { return { parameter:  parameter.value.name, type: parameter.value.value }; }),
     description: description.map((paragraph) => paragraph.value).join('\n\n'),
     orderList: orderList.map((element) => element.value.content)
   };
