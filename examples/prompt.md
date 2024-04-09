@@ -9,24 +9,19 @@
 gh-branch is a Github CLI extension whose purpose is to display an interactive branch switcher listing local branches in relation of the pull request in the repository.
 The selected branch is checked out.
 
-The extension should be able to let the user: 
+### function list_branches 
 
-+ **Switch** between branches.
-+ **Delete** branches.
-+ **List** all branches of a repository.
+this function should let the user: switch, delete and list all the local brances of a repository.
+This function depends on fzf as a fuzzy finder. 
+The function use the gh api command to make a GraphQL query to extract information from Github APIv4
 
-This extension **depends on fzf** as a fuzzy finder, make sure to check if the user has installed fzf,  in case it doesn't echo an error and exit the program.
-
-The extension should use the gh api command, making a graphQL query asking for the pull requests of an specific repository.
-
-That query should take a node with:
-
-* number
-* author
-* state
-* headRefName
-
-with that information you should be able to print a list of branches that contains the *headRefName* followed by the *number*, the *number* should have a different color depeding on the pull request *state* and the the *author.login*.
+1. Check if fzf is installed.
+2. If fzf is not installed echo an error and exit the program.
+3. If fzf is installed make a query with gh api that take a node from GraphQL with number, author, state and headRefName.
+4. With the information extracted from the API implement the Switch between branches.
+5. With the information extracted from the API implement the Delete branch.  
+6. In case the parameter `--static` is active list all branches and exit the program.
+7. The branches should have a different color depending on the pull request state and the author.login
 
 ### help
 
@@ -57,3 +52,9 @@ foo@bar:~$ gh branch --static
 - markdown-like-parser
 - inproving-api-call
 ```
+
+## readme
+
+1. Write how to **install** th gh-branch extension using the Github CLI program.
+2. Write the **help** and usage of the gh-branch extension.
+3. Write some **examples** of use.

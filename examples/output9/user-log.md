@@ -14,10 +14,26 @@ Next we have the json object created from the user's submitted information locat
     "files": [
       {
         "name": "gh-branch",
-        "description": "gh-branch is a Github CLI extension whose purpose is to display an interactive branch switcher listing local branches in relation of the pull request in the repository.\r\nThe selected branch is checked out.\r\nThe extension should be able to let the user: \r\n**Switch** between branches.\r\n**Delete** branches.\r\n**List** all branches of a repository.\r\nThis extension **depends on fzf** as a fuzzy finder, make sure to check if the user has installed fzf,  in case it doesn't echo an error and exit the program.\r\nThe extension should use the gh api command, making a graphQL query asking for the pull requests of an specific repository.\r\nThat query should take a node with:\r\nnumber\r\nauthor\r\nstate\r\nheadRefName\r\nwith that information you should be able to print a list of branches that contains the *headRefName* followed by the *number*, the *number* should have a different color depeding on the pull request *state* and the the *author.login*.\r\n",
-        "functions": "```js \r\n/**\r\n * Help function that prints the arguments and parameters of the extension \r\n */\r\nfunction help() {\r\n  // print header\r\n  \r\n  // print Arguments\r\n  \r\n  // print parameters\r\n  \r\n  // print footer\r\n}\r\n```\n",
+        "description": "gh-branch is a Github CLI extension whose purpose is to display an interactive branch switcher listing local branches in relation of the pull request in the repository.\r\nThe selected branch is checked out.\r",
+        "functions": [
+          {
+            "name": "list_branches ",
+            "params": [],
+            "description": "this function should let the user: switch, delete and list all the local brances of a repository.\r\n\nThis function depends on fzf as a fuzzy finder. \r\n\nThe function use the gh api command to make a GraphQL query to extract information from Github APIv4\r",
+            "orderList": [
+              "Check if fzf is installed.\r",
+              "If fzf is not installed echo an error and exit the program.\r",
+              "If fzf is installed make a query with gh api that take a node from GraphQL with number, author, state and headRefName.\r",
+              "With the information extracted from the API implement the Switch between branches.\r",
+              "With the information extracted from the API implement the Delete branch.  \r",
+              "In case the parameter `--static` is active list all branches and exit the program.\r",
+              "The branches should have a different color depending on the pull request state and the author.login\r"
+            ]
+          }
+        ],
         "help": {
-          "header": "usage: gh branch [options]\rThis is suppose to be a header paragraph\r",
+          "usage": "gh branch [options]",
+          "header": "This is suppose to be a header paragraph\r",
           "parameters": [
             {
               "parameter": "-v",
@@ -48,6 +64,11 @@ Next we have the json object created from the user's submitted information locat
         "command": "`gh branch`",
         "output": "```console\r\nfoo@bar:~$ gh branch --static\r\n- inproving-parser\r\n- markdown-like-parser\r\n- inproving-api-call\r\n```"
       }
+    ],
+    "readme": [
+      "Write how to **install** th gh-branch extension using the Github CLI program.\r",
+      "Write the **help** and usage of the gh-branch extension.\r",
+      "Write some **examples** of use.\r"
     ]
   },
   "chatSettings": {
@@ -80,26 +101,7 @@ The user has given a series of instructions about how to work with Bash:
 
 # User input
 
-The User will always write in this format:
-
-<idea>
-
-<name>:  
-The user will write the file name here, make sure to add the default 
-Bash extension in case the user forgets to write it.
-</name>
-
-<description>
-The user will write here a more or less detailed description about the 
-functionalities that you must implement in the code, the user will provide a 
-template with a general idea of what you have to do. 
-</description>
-
-</idea>
-
-<petition>
-The user will write here a small sentence with some tips on how to write the code. 
-</petition>
+The user will give you a series of prompts to generate a file, each prompt is a step where you have to generate code to fulfill with the user ideas specified in the prompt itself.
 
 # The tools you have to use
 
@@ -138,18 +140,18 @@ Listed below there is a series of important rules that you must follow during th
 The user is unable to see the Chat interface unless you execute the provided tools, for that reason you have to execute the tools.
 Don't waste tokens writting a chat response, the user won't be able to see it, call **talk_with_user** if you want to responde the user.
 
-For each user prompt you have to follow a list of steps:
+For each user prompt you have to follow some rules:
 
-1. If the user has an idea and a petititon, you must use the **generate_file** tool with the code generated by you. 
-2. For each respond from you that is not generated code, you must call the **talk_with_user** tool, in other case the user won't be able to read you.
-3. If the user request a README file, you must use the **generate_file** tool.
+- For each user prompt you must generated the coded using the information provided by the user as guide. 
+- For each respond from you that is not generated code, you must call the **talk_with_user** tool, in other case the user won't be able to read you.
+- If the user ask to **generate a file** you must use the **generate_file**.
 ```
 # Usage
 
-To be able to execute this program have been needed **2499** Tokens, broken down this way:
+To be able to execute this program have been needed **0** Tokens, broken down this way:
 
-Tokens used by the program gh-ai: **1841**.  
-Tokens used by the LLM to generate the answers: **658**.
+Tokens used by the program gh-ai: **0**.  
+Tokens used by the LLM to generate the answers: **0**.
 
 # Considerations and warnings about the AI usage to generate code
 

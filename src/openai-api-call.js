@@ -87,7 +87,7 @@ API['OPENAI'] = async function(promptObject, outputDirectory, options) {
         return responseObject;
       }
 
-      let messages = await openai.beta.threads.messages.list(threadID);
+      let messages = await OPENAI.beta.threads.messages.list(thread.id);
       messages = messages.data.filter(message => message.role === 'assistant');
 
       promptObject.readme.result = messages[0].content.map((content) => { return content.text.value;});
