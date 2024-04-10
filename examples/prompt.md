@@ -11,8 +11,8 @@ The selected branch is checked out.
 
 ### function list_branches 
 
-this function should let the user: switch, delete and list all the local brances of a repository.
-This function depends on fzf as a fuzzy finder. 
+this function should let the user: switch, delete and list all the local branches of a repository.
+This function depends on `fzf` as a fuzzy finder. 
 The function use the gh api command to make a GraphQL query to extract information from Github APIv4
 
 1. Check if fzf is installed.
@@ -55,6 +55,6 @@ foo@bar:~$ gh branch --static
 
 ## readme
 
-1. Write how to **install** th gh-branch extension using the Github CLI program.
+1. Write how to **install** the gh-branch extension using the Github CLI program.
 2. Write the **help** and usage of the gh-branch extension.
 3. Write some **examples** of use.
