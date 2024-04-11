@@ -17,8 +17,8 @@ import OpenAI from 'openai';
 import dotEnv from 'dotenv';
 
 import { parseInputFile, createProgramLogs } from '../src/utils.js';
-import { HELP_TYPES, PACKAGE_DATA } from '../src/utils.js';
-import { API } from '../src/openai-api-call.js';
+import { HELP_TYPES, PACKAGE_DATA, CONSOLE_PROMPT } from '../src/utils.js';
+import { API } from '../src/openai/gh-ai-openai.js';
 import { ERROR_HANDLER } from '../src/error-handlers.js';
 import { COLORS } from '../src/colors.js';
 import { PROMPT_GENERATOR } from '../src/prompt-generator.js';
@@ -52,17 +52,16 @@ PROGRAM
 // Program actions to options values
 PROGRAM.action(async (inputFile, outputDirectory, options) => {
   try {
-    const PROMPT = COLORS.yellow(`GH-AI>: `);
 
-    console.log(`${PROMPT}Parsing the user input.`)
+    console.log(`${CONSOLE_PROMPT.GH_AI}Parsing the user input.`)
     let inputObject = await parseInputFile(inputFile, options);
 
-    console.log(`${PROMPT}Generating prompts..`)
+    console.log(`${CONSOLE_PROMPT.GH_AI}Generating prompts..`)
     let promptObject = await PROMPT_GENERATOR[options.commandType.toUpperCase()](inputObject, options);
 
     // if (options.debug) { console.log(promptObject.files[0].prompts); }
 
-    console.log(`${PROMPT}Starting ${options.llmApi} API call. This process may take a few seconds.`);
+    console.log(`${CONSOLE_PROMPT.GH_AI}Starting ${options.llmApi} API call. This process may take a few seconds.`);
     let responseObject = await API[options.llmApi](promptObject, outputDirectory, options);
 
     responseObject.config = {
@@ -71,7 +70,7 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     };
 
     await createProgramLogs(inputObject, responseObject, inputFile, outputDirectory, options);
-    console.log(`${PROMPT}Generated log files inside ${outputDirectory}/`); 
+    console.log(`${CONSOLE_PROMPT.GH_AI}Generated log files inside ${outputDirectory}/`); 
 
   } catch (error) {
     if (error instanceof z.ZodError) { 
@@ -84,12 +83,11 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
       ERROR_HANDLER.openaiError(error);
     } 
     else {
-      console.error(`An unexpected error has ocurred\n ${error.message}`);
-      console.error(error);
+      console.error(`${CONSOLE_PROMPT.ERROR}An unexpected error has ocurred\n ${error.message}`);
+      if (options.debug) { console.error(error); }
     }
   }
+  process.exit(0);
 });
 
 PROGRAM.parse(process.argv);
-
-

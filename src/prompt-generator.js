@@ -17,6 +17,7 @@ import { TEMPLATES } from "./templates/templates.js";
 let PROMPT_GENERATOR = Object.create(null);
 
 PROMPT_GENERATOR['EXTENSION'] = async function generatePrompts(inputObject, options) {
+  
   let promptObject = {
     system: TEMPLATES.EXTENSION.SYSTEM(inputObject),
     user: [],

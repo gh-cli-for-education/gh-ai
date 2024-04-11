@@ -4,8 +4,8 @@
 import { z } from 'zod';
 import * as fs from 'fs/promises';
 
-import { COLORS } from "./colors.js";
-import { API_RESPONSE_SCHEMA } from './schemas/api-response-schema.js';
+import { COLORS } from "../colors.js";
+import { API_RESPONSE_SCHEMA } from '../schemas/api-response-schema.js';
 
 'use strict';
 

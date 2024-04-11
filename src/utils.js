@@ -22,7 +22,7 @@ import { COLORS } from './colors.js';
 'use strict';
 
 const API = Object.create(null);
-const GH_AI_PROMPT  = COLORS.yellow('GH-AI>: ');
+const GH_AI_PROMPT = COLORS.yellow('GH-AI>: ');
 /**
  * @description Parse the input file from the user and returns an object with
  * the extracted values 
@@ -66,6 +66,7 @@ async function createProgramLogs(inputObject, responseObject, inputFile, outputD
   await fs.writeFile(`${outputDirectory}/response-log.md`, RESPONSE_LOG);  
 }
 
+
 // ENUMS 
 const HELP_TYPES = Object.freeze({
   EXTENSION: 'extension' 
@@ -77,10 +78,18 @@ const PACKAGE_DATA = Object.freeze({
   description: require('../package.json').description
 });
 
+const CONSOLE_PROMPT = Object.freeze({
+  GH_AI:   COLORS.yellow('GH-AI>: '),
+  OPENAI:  COLORS.blue(`GH-AI-OPENAI>: `),
+  ERROR:   COLORS.red(`GH-AI-ERROR>: `),
+  WARNING: COLORS.magenta(`GH-AI-WARNING>: `),  
+});
+
 export { 
   parseInputFile,
   createProgramLogs,
   HELP_TYPES,
   PACKAGE_DATA,
   API,
+  CONSOLE_PROMPT,
 };
