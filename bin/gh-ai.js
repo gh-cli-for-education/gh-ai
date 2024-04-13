@@ -69,6 +69,7 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
       scriptLanguage: inputObject.extension?.languageSettings.language
     };
 
+    /** @TODO BUG: Creo que esto no se ejecuta incluso si el error de la API esta controlado */
     await createProgramLogs(inputObject, responseObject, inputFile, outputDirectory, options);
     console.log(`${CONSOLE_PROMPT.GH_AI}Generated log files inside ${outputDirectory}/`); 
 

@@ -61,32 +61,6 @@ TEMPLATES.README = (readmeObject) => {
   return Mustache.render(README_TEMPLATE, readmeObject);
 }
 
-/*
-TEMPLATES.EXTENSION.USER = (extensionObject) => {
-
-  const PROMPTS = extensionObject.files.map((file) => {
-    file.argumentParser = function() {
-      return `- ${this.argument}: **(${this.mandatory? 'Mandatory' : 'Optional'})** ${this.description}\n`;
-    };
-    file.parameterParser = function() {
-      const ARGUMENT = (this.argument)? ` ${this.argument.name}` : '';
-      return `- ${this.parameter}${ARGUMENT}: ${this.description}\n`;
-    };
-    file.exampleParser = function() {
-      return `Given the command: ${this.command}\nThe expected output of the program is:\n\n${this.output}\n\n`;
-    };
-    file.functionParser = function() {
-      return `A function called *${this.name}*, that will do:\n\n${this.description}\n`;
-    };
-    return {
-      title: file.name, 
-      content: Mustache.render(EXTENSION_USER_TEMPLATE, file),
-    };
-  });
-
-  return PROMPTS;
-};
-*/ 
 TEMPLATES.EXTENSION.USER_LOG = (inputObject, inputFile, responseObject, options) => {
   const LOG = {
     inputObject,

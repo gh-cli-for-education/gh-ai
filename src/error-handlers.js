@@ -5,6 +5,7 @@ import nearley from 'nearley';
 
 import * as grammarModule from './grammar.js';
 import { COLORS } from './colors.js';
+import { CONSOLE_PROMPT } from './utils.js';
 'use strict';
 
 const ERROR_HANDLER = Object.create(null);
@@ -47,9 +48,7 @@ ERROR_HANDLER['nearleyError'] = (error) => {
 };
 
 ERROR_HANDLER['openaiError'] = (error) => {
-  const PROMPT = `${COLORS.red('OPENAI-API-ERROR>: ')}`;
-  console.error(`${PROMPT}A(n) ${error.status} ${error.type} ocurred while making the API request.\n`);
-  console.error(`\t${error.message}\n\n${error}`);
+  console.error(`${CONSOLE_PROMPT.ERROR}A(n) ${error.status} ${error.type} ocurred while making the API request.\n\t${error.message}`);
 }
 
 export { ERROR_HANDLER };

@@ -16,6 +16,12 @@ import { TEMPLATES } from "./templates/templates.js";
 
 let PROMPT_GENERATOR = Object.create(null);
 
+/**
+ * 
+ * @param {*} inputObject 
+ * @param {*} options 
+ * @returns 
+ */
 PROMPT_GENERATOR['EXTENSION'] = async function generatePrompts(inputObject, options) {
   
   let promptObject = {
@@ -25,24 +31,41 @@ PROMPT_GENERATOR['EXTENSION'] = async function generatePrompts(inputObject, opti
 
   const EXTENSION = inputObject.extension;
 
+  // Por cada fichero pedido por el usuario
   EXTENSION.files.forEach((file, index) => {
     let filePrompts = []
-    if (index === 0) {
+
+    // El primer fichero del userPrompt siempre se tratará como un MainFile
+    if (index === 0) { 
       filePrompts.push(TEMPLATES.EXTENSION.MAIN_FUNCTION(file));
     }
+
+    // Por cada función se genera su correspondiente prompt
     file.functions.forEach((functionn) => {
       filePrompts.push(TEMPLATES.EXTENSION.GENERIC_FUNCTION(functionn));
     });
+
+    // Se añade La idea general del fichero al prompt
     filePrompts.push(TEMPLATES.EXTENSION.FILE_GENERAL_IDEA(file));
+    
+    // Se hace un post procesado del fichero en un prompt por separado
     filePrompts.push(TEMPLATES.EXTENSION.POST_PROCESSING({ name: file.name, languageSettings: inputObject.extension.languageSettings }));
+    
+    // Se guarda el prompt completo en el promptObject
     promptObject.user.push({
       title: file.name,
       content: filePrompts,
     });
+
+
   });
 
+  // En caso de pedir una extension, se añade a la lista de userPrompts
   if (EXTENSION.readme) {
-    promptObject.readme = TEMPLATES.README(EXTENSION.readme);
+    promptObject.user.push({
+      title: 'readme',
+      content: [TEMPLATES.README(EXTENSION.readme)],  
+    });
   }
 
   return promptObject;
