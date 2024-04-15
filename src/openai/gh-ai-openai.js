@@ -48,13 +48,14 @@ API['OPENAI'] = async function(promptObject, outputDirectory, options) {
       // Por cada sección de un mismo prompt
       /** @TODO HAY UN "BUG" QUE SI PASA UN CONTENT QUE NO ES UN ARRAY SINO UNA SOLA STRING EMPEZARÁ A EJECUTAR LETRA POR LETRA DE LA STRING */
       for (const PROMPT_SECTION of PROMPT.content) {
-        
+
         // Se llama a la api 
         let callResult = await call(OPENAI, PROMPT_SECTION, assistant.id, thread.id);
 
         // En caso de que se requiera una acción, se ejecuta y se vuelva a llamar a la API con la respuesta de la Tool todas las veces que sea necesaria 
         while (callResult.runStatus === 'requires_action') {
           let toolOutputs = await manageToolActions(OPENAI, thread.id, callResult.runID, outputDirectory, options);
+          console.log(`${CONSOLE_PROMPT.GH_AI}Tool executed successfully!.`);
           callResult = await call(OPENAI, toolOutputs, assistant.id, thread.id, callResult.runID);
         }
 
@@ -113,6 +114,7 @@ async function addResultToResponseObject(openai, responseObject, prompt, threadI
   }
   else {
     latestAiResponse = await openai.beta.threads.messages.list(threadID);                         // Se obtiene la lista de mensajes (Tanto de usuario como IA)
+    /** @TODO ESTO ESTA BUG */
     latestAiResponse = latestAiResponse.data.find((message) => { return message.role === 'assistant';}); // Se encuentra el ultimo mensaje de la IA(assistant), que en este caso será el primer mensaje del array con role assistant
     latestAiResponse = latestAiResponse.content?.map((content) => { return content.text.value; }); // Se obtiene todos los posibles textos que haya podido generar en un solo mensaje.
   }
@@ -149,7 +151,7 @@ async function manageToolActions(openai, threadID, runID, outputDirectory, optio
     let requiredActions = RUN.required_action.submit_tool_outputs;
     let outputs = await Promise.all(requiredActions.tool_calls.map(async (call) => {
 
-      console.log(`\tDEBUG>: Executing ${call.function.name} tool.`);
+      console.log(`${CONSOLE_PROMPT.DEBUG}Executing ${call.function.name} tool.`);
       return {
         tool_call_id: call.id,
         output: await TOOLS[call.function.name](call.function.arguments, outputDirectory, options)

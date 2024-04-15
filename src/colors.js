@@ -13,6 +13,7 @@
 'use strict';
 
 const RED     = '\x1b[31m';
+const GREEN   = '\x1b[32m';
 const BLUE    = '\x1b[34m';
 const YELLOW  = '\x1b[33m';
 const MAGENTA = '\x1b[35m';
@@ -20,6 +21,7 @@ const RESET   = '\x1b[0m';
 
 const COLORS = {
   red:     (string) => `${RED}${string}${RESET}`,
+  green:   (string) => `${GREEN}${string}${RESET}`,
   blue:    (string) => `${BLUE}${string}${RESET}`,
   yellow:  (string) => `${YELLOW}${string}${RESET}`,
   magenta: (string) => `${MAGENTA}${string}${RESET}`,

@@ -16,11 +16,10 @@ import { z } from 'zod';
 import OpenAI from 'openai';
 import dotEnv from 'dotenv';
 
-import { parseInputFile, createProgramLogs } from '../src/utils.js';
+import { parseInputFile, createProgramLogs, checkDirectoryExistance } from '../src/utils.js';
 import { HELP_TYPES, PACKAGE_DATA, CONSOLE_PROMPT } from '../src/utils.js';
 import { API } from '../src/openai/gh-ai-openai.js';
 import { ERROR_HANDLER } from '../src/error-handlers.js';
-import { COLORS } from '../src/colors.js';
 import { PROMPT_GENERATOR } from '../src/prompt-generator.js';
 
 dotEnv.config();
@@ -53,10 +52,13 @@ PROGRAM
 PROGRAM.action(async (inputFile, outputDirectory, options) => {
   try {
 
-    console.log(`${CONSOLE_PROMPT.GH_AI}Parsing the user input.`)
+    // Antes de empezar el programa se comprueba que el directorio este vacio o no exista
+    await checkDirectoryExistance(outputDirectory, options);
+
+    console.log(`${CONSOLE_PROMPT.GH_AI}Parsing the user input.`);
     let inputObject = await parseInputFile(inputFile, options);
 
-    console.log(`${CONSOLE_PROMPT.GH_AI}Generating prompts..`)
+    console.log(`${CONSOLE_PROMPT.GH_AI}Generating prompts...`);
     let promptObject = await PROMPT_GENERATOR[options.commandType.toUpperCase()](inputObject, options);
 
     // if (options.debug) { console.log(promptObject.files[0].prompts); }

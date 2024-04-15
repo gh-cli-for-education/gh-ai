@@ -3,11 +3,14 @@
  */
 import { z } from 'zod';
 import * as fs from 'fs/promises';
+import readline from 'readline/promises';
 
 import { COLORS } from "../colors.js";
 import { API_RESPONSE_SCHEMA } from '../schemas/api-response-schema.js';
 
 'use strict';
+
+const READLINE = readline.createInterface({ input: process.stdin, output: process.stdout });
 
 const TOOLS_DESCRIPTIONS = [
   {

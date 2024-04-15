@@ -12,13 +12,10 @@
 import OpenAI from 'openai';
 import { sleep } from 'openai/core.js';
 
-import { CONSOLE_PROMPT } from '../utils.js';
-import readline from 'readline/promises';
-
+import { CONSOLE_PROMPT, askYesNoQuestionToUser } from '../utils.js';
 'use strict';
 
 const DEFAULT_MODEL = 'gpt-3.5-turbo-0125';
-const READLINE = readline.createInterface({ input: process.stdin, output: process.stdout });
 
 /**
  * 
@@ -44,6 +41,7 @@ async function createOrRetreiveAssistant(openai, systemPrompt, llmModel, toolDes
     let assistant = await openai.beta.assistants.retrieve(assistantID);
     let askForUpdate = false;
 
+    // Arrow function para sacar solo estas properties del objeto
     const unwrapper = (({model, name, description, instructions}) => {
        return {model, name, description, instructions};
     });
@@ -68,28 +66,18 @@ async function createOrRetreiveAssistant(openai, systemPrompt, llmModel, toolDes
     }
 
     // En caso de que alguna configuración no coincida, preguntar al usuario si quiere actualizarlo
-    while (askForUpdate) {
-
-      const response = await READLINE.question('  Do you want to update the assistant configuration?(Y[es]/N[o]): ');
-
-      if (/^y(?:es)?$/i.exec(response)) {
-
+    if (askForUpdate) {
+      await askYesNoQuestionToUser('  Do you want to update the assistant configuration?', async () => {
         console.log(`${CONSOLE_PROMPT.GH_AI}Updating assistant's configuration.`);
         assistant = await openai.beta.assistants.update(assistant.id, ASSISTANT_CONFIGURATION);
-        break;
-
-      } 
-      else if (/^n(?:o)?$/i.exec(response)) { break; }
-
+      });
     }
 
     return assistant;
-
   }
 
   // Si no existe process.env.ASSISTANT_ID se genera un nuevo asistente
   return await openai.beta.assistants.create(ASSISTANT_CONFIGURATION);
-
 }
 
 /**
