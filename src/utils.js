@@ -84,8 +84,9 @@ async function checkDirectoryExistance(path, options) {
   }
   catch (error) {
     if (options.debug) { 
-      console.log(`${CONSOLE_PROMPT.DEBUG}There is no directory with name: "${outputDirectory}"`)
+      console.log(`${CONSOLE_PROMPT.DEBUG}There is no directory with name: "${path}"`);
     }
+    await fs.mkdir(path);
   }
 }
 
@@ -104,9 +105,7 @@ async function parseInputFile(inputFile, options) {
   parser.feed(input);
   let inputObject = parser.results[0];
 
-  if (options.debug) { 
-    console.log(`${CONSOLE_PROMPT.DEBUG}\n\n${inputObject}\n`); 
-  }
+  if (options.debug) { console.log(CONSOLE_PROMPT.DEBUG, inputObject); }
 
   INPUT_SCHEMA.parse(inputObject);
   return inputObject;
@@ -143,10 +142,11 @@ const PACKAGE_DATA = Object.freeze({
 
 const CONSOLE_PROMPT = Object.freeze({
   GH_AI:   COLORS.yellow('GH-AI>: '),
-  OPENAI:  COLORS.blue(`GH-AI-OPENAI>: `),
-  ERROR:   COLORS.red(`GH-AI-ERROR>: `),
-  WARNING: COLORS.magenta(`GH-AI-WARNING>: `),
-  DEBUG:   COLORS.green(`DEBUG>:`),  
+  OPENAI:  COLORS.blue('GH-AI-OPENAI>: '),
+  CHATGPT: 'CHATGPT>: ',
+  ERROR:   COLORS.red('GH-AI-ERROR>: '),
+  WARNING: COLORS.magenta('GH-AI-WARNING>: '),
+  DEBUG:   COLORS.green('DEBUG>: '),  
 });
 
 const API = Object.create(null);

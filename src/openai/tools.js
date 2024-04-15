@@ -1,16 +1,13 @@
 /**
  * 
  */
-import { z } from 'zod';
 import * as fs from 'fs/promises';
-import readline from 'readline/promises';
 
 import { COLORS } from "../colors.js";
 import { API_RESPONSE_SCHEMA } from '../schemas/api-response-schema.js';
+import { CONSOLE_PROMPT } from '../utils.js';
 
 'use strict';
-
-const READLINE = readline.createInterface({ input: process.stdin, output: process.stdout });
 
 const TOOLS_DESCRIPTIONS = [
   {
@@ -67,73 +64,37 @@ const TOOLS_DESCRIPTIONS = [
 
 const TOOLS = Object.create(null);
 
-TOOLS['generate_file'] = async (input, outputDirectory, options) => {    
-  try {
-    await fs.mkdir(outputDirectory, { recursive: true });
-    input = JSON.parse(input);
-    API_RESPONSE_SCHEMA.parse(input);
+TOOLS['generate_file'] = async (input, outputDirectory) => {    
 
-    let file = input.file;
-    await fs.writeFile(`${outputDirectory}/${file.name}`, file.content);
+  // Se comprueba si el input de la IA es correcto
+  input = JSON.parse(input);
+  API_RESPONSE_SCHEMA.parse(input);
 
-    if (input.errors) { 
-      input.errors.map((error) => {
-        console.log(`${COLORS.red(`${options.llmApi}>: `)} ${error}`); 
-      });
-    }
+  // Se crea el fichero
+  await fs.writeFile(`${outputDirectory}/${input.file.name}`, input.file.content);
 
-    return 'Function executed successfully. Now use the tool **talk_with_user** to tell him that you are done generating the code.';     
-  } 
-  catch (error) {
-    const WARNING = COLORS.magenta('WARNING>: ');
-    let errorMsg = '';
-
-    if (error instanceof SyntaxError) {
-      errorMsg = 'The input object doens\'t have a valid JSON Syntax. ';
-      console.error(`${WARNING}${errorMsg}`);
-      return errorMsg + 'Try calling the function again with a valid Syntax.';
-    }
-
-    else if (error instanceof z.ZodError) {
-      errorMsg = 'The input JSON doesn\'t follow the expected Schema. ';
-      console.error(`${WARNING}${errorMsg}`)
-      return errorMsg + 'Try calling the function again with a valid JSON Schema.';
-    } 
-
-    else {
-      throw error;
-    }
-  }
+  // Se le envia un output a la IA
+  return 'Function executed successfully. Now use the tool **talk_with_user** to tell him that you are done generating the code.';     
 };
 
-TOOLS['search_documentation'] = async (input, options) => {
+TOOLS['search_documentation'] = async (input) => {
   return 'function not implemented yet';
 };
 
-TOOLS['talk_with_user'] = async (input, options) => {
-  try {
+TOOLS['talk_with_user'] = async (input) => {
 
-    const PROMPT = 'CHATGPT>: ';
-    const PROMPTS = {
-      chat: COLORS.yellow(PROMPT),
-      questions: COLORS.magenta(PROMPT),
-      error: COLORS.red(PROMPT)
-    };
+  // Se comprueba que el input de la IA se correcta
+  input = JSON.parse(input);
 
-    input = JSON.parse(input);
+  const PROMPTS = {
+    chat: COLORS.yellow(CONSOLE_PROMPT.CHATGPT),
+    questions: COLORS.magenta(CONSOLE_PROMPT.CHATGPT),
+    error: COLORS.red(CONSOLE_PROMPT.CHATGPT)
+  };
 
-    console.log(`${PROMPTS[input.motive]}${input.message}`);
+  console.log(`${PROMPTS[input.motive]}${input.message}`);
 
-    return 'Do not respond after executing this tool.';
-
-  } catch (error) {
-
-    if (error instanceof SyntaxError) {
-      console.error('The input object doens\'t have a valid JSON Syntax.');
-      return 'Try calling the function again with a valid Syntax.';
-    }
-
-  }
+  return 'Do not respond after executing this tool.';
 };
 
 export { TOOLS_DESCRIPTIONS, TOOLS };

@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { z } from 'zod';
 
 import { API, CONSOLE_PROMPT } from '../utils.js';
 import { createOrRetreiveAssistant, createOrRetreiveThread, call } from './call.js';
@@ -55,7 +56,6 @@ API['OPENAI'] = async function(promptObject, outputDirectory, options) {
         // En caso de que se requiera una acción, se ejecuta y se vuelva a llamar a la API con la respuesta de la Tool todas las veces que sea necesaria 
         while (callResult.runStatus === 'requires_action') {
           let toolOutputs = await manageToolActions(OPENAI, thread.id, callResult.runID, outputDirectory, options);
-          console.log(`${CONSOLE_PROMPT.GH_AI}Tool executed successfully!.`);
           callResult = await call(OPENAI, toolOutputs, assistant.id, thread.id, callResult.runID);
         }
 
@@ -64,7 +64,6 @@ API['OPENAI'] = async function(promptObject, outputDirectory, options) {
 
         // En caso de error detener la ejecución
         if (callResult.status === 'failed') { return responseObject; } 
-
       }
       
     }
@@ -152,14 +151,31 @@ async function manageToolActions(openai, threadID, runID, outputDirectory, optio
     let outputs = await Promise.all(requiredActions.tool_calls.map(async (call) => {
 
       console.log(`${CONSOLE_PROMPT.DEBUG}Executing ${call.function.name} tool.`);
-      return {
-        tool_call_id: call.id,
-        output: await TOOLS[call.function.name](call.function.arguments, outputDirectory, options)
+
+      let toolOutput = '';
+
+      try {
+        toolOutput = await TOOLS[call.function.name](call.function.arguments, outputDirectory, options);
+        console.log(`${CONSOLE_PROMPT.GH_AI}Tool executed successfully!.`);
+      } catch (error) {
+
+        console.error(`${CONSOLE_PROMPT.WARNING}Tool execution failed. The AI failed to give a valid input.`);
+        if (error instanceof SyntaxError) {
+          toolOutput = 'The input object doens\'t have a valid JSON Syntax. Try calling the function again with a valid Syntax.';
+        }
+        else if (error instanceof z.ZodError) {
+          toolOutput = 'The input JSON doesn\'t follow the expected Schema. Try calling the function again with a valid JSON Schema.';
+        }
+        else {
+          console.error(`${CONSOLE_PROMPT.WARNING}Tool execution failed. The tool had an internal error.`);
+          throw error;
+        }
       }
 
+      return { tool_call_id: call.id, output: toolOutput };
     }));
-    return { tool_outputs: outputs };
 
+    return { tool_outputs: outputs };
   }
 
   throw new OpenAI.APIError(-3, {
