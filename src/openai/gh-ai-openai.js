@@ -63,7 +63,7 @@ API['OPENAI'] = async function(promptObject, outputDirectory, options) {
         await addResultToResponseObject(OPENAI, responseObject, { title: PROMPT.title, content: PROMPT_SECTION }, thread.id, callResult.runID, options.tokensVerbose);
 
         // En caso de error detener la ejecución
-        if (callResult.status === 'failed') { return responseObject; } 
+        if (callResult.runStatus === 'failed') { return responseObject; } 
       }
       
     }
@@ -114,7 +114,7 @@ async function addResultToResponseObject(openai, responseObject, prompt, threadI
   else {
     latestAiResponse = await openai.beta.threads.messages.list(threadID);                         // Se obtiene la lista de mensajes (Tanto de usuario como IA)
     /** @TODO ESTO ESTA BUG */
-    latestAiResponse = latestAiResponse.data.find((message) => { return message.role === 'assistant';}); // Se encuentra el ultimo mensaje de la IA(assistant), que en este caso será el primer mensaje del array con role assistant
+    latestAiResponse = latestAiResponse.data.find((message) => { return message.role === 'assistant'; }); // Se encuentra el ultimo mensaje de la IA(assistant), que en este caso será el primer mensaje del array con role assistant
     latestAiResponse = latestAiResponse.content?.map((content) => { return content.text.value; }); // Se obtiene todos los posibles textos que haya podido generar en un solo mensaje.
   }
 
@@ -182,6 +182,10 @@ async function manageToolActions(openai, threadID, runID, outputDirectory, optio
     type: 'submit_tool_outputs_error',
     message: 'The action required was not a tool output submition.'
   });
+}
+
+async function gracefulShutdown() {
+  
 }
 
 export { API };

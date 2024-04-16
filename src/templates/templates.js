@@ -21,6 +21,7 @@ const EXTENSION_MAIN_FUNCTION_TEMPLATE     = await fs.readFile('src/templates/ex
 const EXTENSION_GENERIC_FUNCTION_TEMPLATE  = await fs.readFile('src/templates/extension/generic-function.md', ENCODER);
 const EXTENSION_FILE_GENERAL_IDEA_TEMPLATE = await fs.readFile('src/templates/extension/file-general-idea.md', ENCODER);
 const EXTENSION_POST_PROCESSING_TEMPLATE   = await fs.readFile('src/templates/extension/post-processing.md', ENCODER);
+const EXTENSION_GENERATE_FILE_TEMPLATE     = await fs.readFile('src/templates/extension/generate-file.md', ENCODER);
 
 const USER_LOG_TEMPLATE     = await fs.readFile('src/templates/user-log.md', ENCODER);
 const RESPONSE_LOG_TEMPLATE = await fs.readFile('src/templates/response-log.md', ENCODER);
@@ -50,11 +51,19 @@ TEMPLATES.EXTENSION.GENERIC_FUNCTION = (functionObject) => {
 }
 
 TEMPLATES.EXTENSION.FILE_GENERAL_IDEA = (fileObject) => {
+  fileObject.functionNames = function () { return `- ${this.name}`; }
+  fileObject.parseExamples = function () { 
+    return `- Give the following input: ${this.command}.\n\n This is what the program is expected to output:\n\n ${this.output}\n`;
+  }
   return Mustache.render(EXTENSION_FILE_GENERAL_IDEA_TEMPLATE, fileObject);
 }
 
 TEMPLATES.EXTENSION.POST_PROCESSING = (settingsObject) => {
   return Mustache.render(EXTENSION_POST_PROCESSING_TEMPLATE, settingsObject);
+}
+
+TEMPLATES.EXTENSION.GENERATE_FILE = (fileObject) => {
+  return Mustache.render(EXTENSION_GENERATE_FILE_TEMPLATE, fileObject);
 }
 
 TEMPLATES.README = (readmeObject) => {
@@ -77,7 +86,7 @@ TEMPLATES.EXTENSION.USER_LOG = (inputObject, inputFile, responseObject, options)
 
 TEMPLATES.EXTENSION.RESPONSE_LOG = (reponseObject, options) => {
   const LOG = {
-    messages: reponseObject.messages,
+    userPrompts: reponseObject.userPrompts,
     config: reponseObject.config,
     options: options,
   };

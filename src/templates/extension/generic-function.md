@@ -1,32 +1,41 @@
-Now You have to generate the corresponding code using the following function description as *guide*: 
+# Code expansion 
+
+Read once again the *requirements* and the *previously generated code* written by you.
+
+Then **generate a new approach** and make sure to add the functions described in the following section.
+
+## {{name}} Function 
+
+Use the following *description* as guide to generate the corresponding code.
 
 ```
-
 {{description}}
-
 ```
-
-In addition to the function description, you must make sure to include the following information:
-
-The *function name* is: **{{name}}**
-
 {{#params.length}}
+
+### Parameters
+
 The function receives the following parameters:
 
 {{#params}}
 {{functionParametersParaser}}
 {{/params}}
 {{/params.length}}
+{{#orderList.length}}
 
-{{#orderedList.length}}
-This is the most important content of the function. You have to follow the list step by step, **generating** the corresponding code, you can also expand the step idea.
+### Code Steps
 
-{{#orderedList}}
-- {{orderedList}}
-{{/orderedList}}
+Follow the list step by step and make sure to **Generate the corresponding code**
 
-Specifically, for each element on the list you have to:
+{{#orderList}}
 
-1. Write a comment with the element content.
-2. **Generate the corresponding code below the comment.** 
-{{/orderedList.length}}
+<step>
+{{.}}
+</step>
+
+<code>
+Put here the gerated code using the content from the *step tag* as a guide.
+</code>
+
+{{/orderList}}
+{{/orderList.length}}

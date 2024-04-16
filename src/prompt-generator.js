@@ -35,38 +35,52 @@ PROMPT_GENERATOR['EXTENSION'] = async function generatePrompts(inputObject, opti
   EXTENSION.files.forEach((file, index) => {
     let filePrompts = []
 
+    // Se añade La idea general del fichero al prompt
+    filePrompts.push({
+      text: TEMPLATES.EXTENSION.FILE_GENERAL_IDEA(file),
+    });
+
     // El primer fichero del userPrompt siempre se tratará como un MainFile
     if (index === 0) { 
-      filePrompts.push(TEMPLATES.EXTENSION.MAIN_FUNCTION(file));
+      filePrompts.push({
+        text: TEMPLATES.EXTENSION.MAIN_FUNCTION(file),
+      });
     }
 
     // Por cada función se genera su correspondiente prompt
     file.functions.forEach((functionn) => {
-      filePrompts.push(TEMPLATES.EXTENSION.GENERIC_FUNCTION(functionn));
+      filePrompts.push({
+        text: TEMPLATES.EXTENSION.GENERIC_FUNCTION(functionn)
+      });
     });
-
-    // Se añade La idea general del fichero al prompt
-    filePrompts.push(TEMPLATES.EXTENSION.FILE_GENERAL_IDEA(file));
     
     // Se hace un post procesado del fichero en un prompt por separado
-    filePrompts.push(TEMPLATES.EXTENSION.POST_PROCESSING({ name: file.name, languageSettings: inputObject.extension.languageSettings }));
+    filePrompts.push({
+      text: TEMPLATES.EXTENSION.POST_PROCESSING({ name: file.name, languageSettings: inputObject.extension.languageSettings })
+    });
     
-    // Se guarda el prompt completo en el promptObject
-    promptObject.user.push({
-      title: file.name,
-      content: filePrompts,
+    filePrompts.push({
+      text: TEMPLATES.EXTENSION.GENERATE_FILE(file),
       executeTool: 'generate_file',
       askForChanges: true,
     });
 
-
+    // Se guarda el prompt completo en el promptObject
+    promptObject.user.push({
+      title: file.name,
+      content: filePrompts,
+    });
   });
 
   // En caso de pedir una extension, se añade a la lista de userPrompts
   if (EXTENSION.readme) {
     promptObject.user.push({
       title: 'readme',
-      content: [TEMPLATES.README(EXTENSION.readme)],  
+      content: [{
+       text: TEMPLATES.README(EXTENSION.readme),
+       executeTool: 'generate_file',
+       askForChanges: true,
+      }],  
     });
   }
 

@@ -1,15 +1,43 @@
-Now you have to write more code whose content is based in the following description:
+# File {{name}}
 
-```
+# Description of what you have to do
 
+Given the following *description* your job is to generate code based on what you are going to read inside the *description tag*.
+
+<description>
 {{description}}
+</description>
 
-```
+{{#functions.length}}
+In addition to the *description* the program **must** necessarily **contain** the **following functions**:
 
-{{#functions.length}} 
-You must also *add to the generated code* all the function created in the **previous prompts**. Make sure the *generated code* have **cohesion with those functions previously created**.
+{{#functions}}
+{{functionNames}}
+{{/functions}}
 
 {{/functions.length}}
-{{#help}}
-You must also *add to the generated code* the **main function** and the **help function** created in the *first prompt*. The *generated code* should take these possible parameters and arguments into account.
-{{/help}}
+## **Rules** you **must follow**:
+
+- Make sure to generate a simple approach, implementing the most important ideas that you have been able to extract from the *description*. 
+- The code must be easy to base and expand on for future improvements.
+- Make sure to adress the *description* goals and rules. 
+
+## Outputs
+
+<Code>
+Put here your generated code
+</Code>
+
+<requirements>
+Write here a list of the most important ideas you have been able to extract from the *description*.
+</requirements>
+
+{{#examples.length}}
+## Examples 
+
+Here are some examples of what the program must output given certain inputs:
+
+{{#examples}}
+{{parseExamples}}
+{{/examples}}
+{{/examples.length}}

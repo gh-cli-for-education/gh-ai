@@ -1,9 +1,30 @@
-To finish this conversation there is one last **file** you have to **generate**. The last file is a `README.md` that must contains the following subjects:
+# Creation of a `README.md` file
 
-A continuación encontrarás una lista con los topicos que debes incluir en el `README`, para cada elemento de la lista genera una sección con un titulo asociado al contenido del elemento. 
+To conclude this conversation the last thing to write is a `README.md` file. This file must contain enough information to satisfy any use doubts.
+Make sure to include information that agrees with what was *previusly generated*.
 
-{{#orderedList}}
-{{orderedList}}
-{{/orderedList}}
+{{#readme}}
+Use The following instrucctions as a guide for what you have to write:
 
-For each element from that list you must generate the corresponding markdown section with a title associated to what the list element want you to fill.  
+<idea>
+{{.}}
+</idea>
+
+From the idea you have to extract:
+
+1. The section Title
+2. The section depth 
+3. What should be the section content
+
+<section>
+Write the corresponding section here
+</section>
+{{/readme}}
+{{^readme}}
+The file must contain the following sections:
+
+- Description
+- Installation
+- Usage
+- Examples
+{{/readme}}

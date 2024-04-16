@@ -8,13 +8,13 @@ The objective of this markdown file is to store the input and the prompts sent b
 
 For each file requested by the user, its corresponding code has been generated. 
 
-{{#messages}}
+{{#userPrompts}}
 ## {{#extension}}File{{/extension}} {{title}}
 
 ### Petition
 
 ```md
-{{prompt}}
+{{prompt.text}}
 ```
 
 ### Response
@@ -30,4 +30,4 @@ Total tokens used by this file request: **{{usage.total_tokens}}** Tokens, broke
 Tokens used by the prompt: **{{usage.prompt_tokens}}**.  
 Tokens used by the LLM to generate the answer: **{{usage.completion_tokens}}**.
 {{/usage}}
-{{/messages}}
+{{/userPrompts}}

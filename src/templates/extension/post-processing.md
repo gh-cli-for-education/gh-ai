@@ -1,5 +1,17 @@
-Using the *generated code* from the **previous prompt** You have to make some final modification to it. 
+# Code improvement 
 
-1. Read all the *generated code* once again and **check** that there is no syntax or semantic **errors** {{#languageSettings.specification}}under the {{languageSettings.language}}  `{{languageSettings.specification}}` specification{{/languageSettings.specification}}.
-2. **Write quality comments** for me to be able to understand the generated code each time I read it.
-{{#languageSettings.style}}3. Check if the *generated code* is formatted under the {{languageSettings.style}}'s coding style for {{languageSettings.language}}.{{/languageSettings.style}}
+Using the *previously generated code* you have to make some final modification to it. 
+
+## Error checking
+
+**Check** the *previously generated code* to correct any syntax or semantic **error**{{#languageSettings.specification}} under the {{languageSettings.language}}`{{languageSettings.specification}}` specification{{/languageSettings.specification}}.
+
+## Comments
+
+**Write quality comments** so that anyone is able to understand the generated.
+
+{{#languageSettings.style}}
+## Coding style Checking 
+
+**Check** if the *previously generated code* is formatted under the {{languageSettings.style}}'s coding style for {{languageSettings.language}}.
+{{/languageSettings.style}}

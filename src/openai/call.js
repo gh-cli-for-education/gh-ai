@@ -113,7 +113,7 @@ async function call(openai, prompt, assistantID, threadID, runID = undefined) {
     // Añadir el mensaje a la conversación
     await openai.beta.threads.messages.create(
       threadID,
-      { role: 'user', content: prompt }
+      { role: 'user', content: prompt.text }
     );
   
   }
@@ -142,7 +142,10 @@ async function call(openai, prompt, assistantID, threadID, runID = undefined) {
     else {
       run = await openai.beta.threads.runs.create(
         threadID,
-        { assistant_id: assistantID, }
+        { 
+          assistant_id: assistantID, 
+          tool_choice: prompt.executeTool ?? 'none',
+        }
       ); 
     }
 
@@ -160,6 +163,11 @@ async function call(openai, prompt, assistantID, threadID, runID = undefined) {
 
     // En caso de Rate Limit se vuelve a crear la run y se intenta de nuevo hasta que se alcance MAX_TRIES
     currentTry++;
+    
+    if (MAX_TRIES - currentTry <= MAX_TRIES * 0.5) {
+      console.log(`\t${MAX_TRIES - currentTry} Attempts left before canceling execution.`);
+    }
+
     await sleep(DELAY);
   }
 
@@ -190,7 +198,7 @@ async function checkRunStatus(openai, runID, threadID) {
     completed:           `${CONSOLE_PROMPT.OPENAI}The run has been completed, extracting the AI response.`
   };
 
-  const DELAY = 3000; // 3s
+  const DELAY = 5000; // 5s
 
   // Comprobar constantemente si la conversación ha terminado correctamente
   while (true) {

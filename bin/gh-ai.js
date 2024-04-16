@@ -61,7 +61,7 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     console.log(`${CONSOLE_PROMPT.GH_AI}Generating prompts...`);
     let promptObject = await PROMPT_GENERATOR[options.commandType.toUpperCase()](inputObject, options);
 
-    // if (options.debug) { console.log(promptObject.files[0].prompts); }
+    // if (options.debug) { console.log(JSON.stringify(promptObject, null, 2)); }
 
     console.log(`${CONSOLE_PROMPT.GH_AI}Starting ${options.llmApi} API call. This process may take a few seconds.`);
     let responseObject = await API[options.llmApi](promptObject, outputDirectory, options);
