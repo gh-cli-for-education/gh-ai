@@ -61,7 +61,7 @@ PROMPT_GENERATOR['EXTENSION'] = async function generatePrompts(inputObject, opti
     
     filePrompts.push({
       text: TEMPLATES.EXTENSION.GENERATE_FILE(file),
-      executeTool: 'generate_file',
+      executeTool: 'auto', // {type: 'function', function: { name: 'generate_file'}},
       askForChanges: true,
     });
 

@@ -6,19 +6,52 @@ The objective of this markdown file is to store the input and the prompts sent b
 
 # inputObject 
 
-Next we have the json object created from the user's submitted information located on the `.\examples\prompt.md` file. 
+Next we have the json object created from the user's submitted information located on the `.\examples\gh-poi.md` file. 
 
 ```json
 {
   "extension": {
     "files": [
       {
-        "name": "gh-branch",
-        "description": "gh-branch is a Github CLI extension whose purpose is to display an interactive branch switcher listing local branches in relation of the pull request in the repository.\r\nThe selected branch is checked out.\r\nThe extension should be able to let the user: \r\n+ **Switch** between branches.\r\n+ **Delete** branches.\r\n+ **List** all branches of a repository.\r\nThis extension **depends on fzf** as a fuzzy finder, make sure to check if the user has installed fzf,  in case it doesn't echo an error and exit the program.\r\nThe extension should use the gh api command, making a graphQL query asking for the pull requests of an specific repository.\r\nThat query should take a node with:\r\n* number\r\n* author\r\n* state\r\n* headRefName\r\nwith that information you should be able to print a list of branches that contains the *headRefName* followed by the *number*, the *number* should have a different color depeding on the pull request *state* and the the *author.login*.\r",
-        "functions": [],
+        "name": "gh-poi",
+        "description": "This gh extension determines which local branches have been merged and safely deletes them.\r\nDaily development makes it difficult to know which branch is active when there are many unnecessary branches left locally\r\nIf you squash merge a pull request, there is no history of the merge to the default branch, so you have to force delete the branch to clean it up, and you have to be careful not to accidentally delete the active branch.\r",
+        "functions": [
+          {
+            "name": "get_local_branches",
+            "params": [],
+            "description": "This function must call Github API using the Github CLI tool `gh api` to make a GraphQL query to *retreive* information of the *pull request status*. \r",
+            "orderList": [
+              "GraphQL query to retreive the pull request status of the current repository local branches\r",
+              "Return query result\r"
+            ]
+          },
+          {
+            "name": "isFullyMerged",
+            "params": [],
+            "description": "branch: object\r\n\npr: object\r\n\nChecks if the input branch is fully merged, it checks if the pull request state is `Merged` and if the branch doesn't have any Commit ahead of the main branch\r",
+            "orderList": []
+          },
+          {
+            "name": "mark_branches",
+            "params": [],
+            "description": "branches: object\r\n\nTraverse the branches array, calling the function `isFullyMerged` to check if the branch is fully merged, it also check if the branch is protected or not.\r",
+            "orderList": [
+              "Traverse the branches array.\r",
+              "call isFullyMerged with each branch inside the array.\r",
+              "If isFullyMerged and the branch is not protected, mark it as `deletable`\r",
+              "Else mark it as `noDeletable`\r"
+            ]
+          },
+          {
+            "name": "delete_branches",
+            "params": [],
+            "description": "This function must delete all the branches that are marked as `deletable`, for each deleted branch the program must print a log with the deleted branch name and a message indicating that has been deleted.\r",
+            "orderList": []
+          }
+        ],
         "help": {
-          "usage": "gh branch [options]",
-          "header": "This is suppose to be a header paragraph\r",
+          "usage": "gh poi <command> [options]",
+          "header": "Delete the merged local branches\r",
           "parameters": [
             {
               "parameter": "-v",
@@ -31,24 +64,44 @@ Next we have the json object created from the user's submitted information locat
               "description": "Execute the program *help function*"
             },
             {
-              "parameter": "--static",
+              "parameter": "--dry-run",
               "argument": null,
-              "description": "Print a non-interactive list of branches "
+              "description": "Check what branches are going to be deleted without actually deleting them"
+            },
+            {
+              "parameter": "--debug",
+              "argument": null,
+              "description": "Enable debug logs"
+            },
+            {
+              "parameter": "--protect",
+              "argument": null,
+              "description": "Protect a <branchname> from deletion. It is possible to pass multiple branches"
+            },
+            {
+              "parameter": "--unprotect",
+              "argument": null,
+              "description": "Unprotect a <branchname> local branch. It is possible to pass multiple branches"
             }
           ],
-          "footer": "Here Can be some footer paragraphs\r"
+          "footer": "The program will stop execution if an unkown command is passed from the command line\r"
         }
       }
     ],
     "languageSettings": {
-      "language": "Bash",
+      "language": "JavaScript",
       "style": "Google"
     },
     "examples": [
       {
-        "command": "`gh branch`",
-        "output": "```console\r\nfoo@bar:~$ gh branch --static\r\n- inproving-parser\r\n- markdown-like-parser\r\n- inproving-api-call\r\n```"
+        "command": "`gh branch; gh poi; gh branch`",
+        "output": "```console\r\nfoo@bar:~$ gh branch\r\n- inproving-parser\r\n- markdown-like-parser\r\n- inproving-api-call\r\n- main\r\n\r\nfoo@bar:~$ gh poi\r\n# Fetching pull requests...\r\n# Deleting Branches...\r\n\r\nfoo@bar:~$ gh branch\r\n- inproving-api-call\r\n- main\r\n```"
       }
+    ],
+    "readme": [
+      "Write how to **install** th gh-poi extension using the Github CLI program.\r",
+      "Write the **help** and usage of the gh-poi extension.\r",
+      "Write some **examples** of use `Don't use any provided example from the prompt`.\r"
     ]
   },
   "chatSettings": {
@@ -64,20 +117,20 @@ Next we have the json object created from the user's submitted information locat
 The purpose of this prompt is to indicate the context in which the LLM is going to work during the conversation. 
 
 ```md
-#  Your persona
+# Your persona
 
 You have to assume the role of a professional computer scientist with experience 
-in program design specifically in the field of the Bash programming language. 
+in program design specifically in the field of the JavaScript programming language. 
 
 Your job consist on analyzing the users ideas for the creation of a Github CLI 
 extension called: .
 
-The user has given a series of instructions about how to work with Bash:
+The user has given a series of instructions about how to work with JavaScript:
 
+ - You have to make sure that all coding written by you can be executed without any errors.
+ - Use JavaScript to write the code.
 
  - You must use the Google's coding style guide.
- - You have to make sure that all coding written by you can be executed without any errors.
- - Use Bash to write the code.
 
 # User input
 

@@ -84,6 +84,7 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     }
     else if (error instanceof OpenAI.APIError) {
       ERROR_HANDLER.openaiError(error);
+      await createProgramLogs(undefined, error.response, inputFile, outputDirectory, options);
     } 
     else {
       console.error(`${CONSOLE_PROMPT.ERROR}An unexpected error has ocurred\n ${error.message}`);

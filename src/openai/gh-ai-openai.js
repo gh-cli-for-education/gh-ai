@@ -72,7 +72,10 @@ API['OPENAI'] = async function(promptObject, outputDirectory, options) {
 
     return responseObject;
   } 
-
+  catch (error) {
+    if (error instanceof OpenAI.APIError) { error.response = responseObject; }
+    throw error;
+  }
   // Independientemente de lo que ocurra, sea una ejecución correcta o exista una excepción se debe limpiar o guardar la memoria
   finally {
     
