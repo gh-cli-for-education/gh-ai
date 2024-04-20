@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Universidad de La Laguna
  * Escuela Superior de Ingeniería y Tecnología
@@ -99,15 +98,21 @@ async function checkDirectoryExistance(path, options) {
  * @throws  {Error} If the parsed object doesn't fit the expected schema 
  * @throws  {Error} If there is an error while parsing the input file
  */
-async function parseInputFile(inputFile, options) {
-  const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammarModule.grammar));
-  let input = await fs.readFile(inputFile, 'utf-8');
-  parser.feed(input);
-  let inputObject = parser.results[0];
+async function parseInputFile(inputFile, responseObject, options) {
+  const PARSER = new nearley.Parser(nearley.Grammar.fromCompiled(grammarModule.grammar));
+  const INPUT = await fs.readFile(inputFile, 'utf-8');
+  PARSER.feed(INPUT);
+  let inputObject = PARSER.results[0];
+  
+  // Comprobar que el inputObject sea correcto
+  INPUT_SCHEMA.parse(inputObject);
 
   if (options.debug) { console.log(CONSOLE_PROMPT.DEBUG, inputObject); }
 
-  INPUT_SCHEMA.parse(inputObject);
+  // Añade la información del lenguage al reponseObject
+  console.log(responseObject);
+  responseObject.config.scriptLanguage = inputObject.extension?.languageSettings.language;
+
   return inputObject;
 }
 

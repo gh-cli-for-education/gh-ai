@@ -4,7 +4,6 @@
 import nearley from 'nearley';
 
 import * as grammarModule from './grammar.js';
-import { COLORS } from './colors.js';
 import { CONSOLE_PROMPT } from './utils.js';
 'use strict';
 

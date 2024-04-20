@@ -50,30 +50,41 @@ PROGRAM
   
 // Program actions to options values
 PROGRAM.action(async (inputFile, outputDirectory, options) => {
+
+  // Contiene toda la información extraida del prompt del usuario
+  let inputObject = {}; 
+
+  // Es una unión del inputObject y el prompt Object con la información util para el usuario
+  let responseObject = {
+    systemPrompt: undefined,
+    userPrompts: [],
+    usage: {
+      totalPromptTokens: 0,
+      totalCompletionTokens: 0,
+      totalTokens: 0,      
+    },
+    config: {
+      llm: options.llm,
+      scriptLanguage: undefined
+    },
+    assistant: undefined,
+    thread: undefined
+  };
+
+  // Antes de empezar el programa se comprueba que el directorio este vacio o no exista
+  await checkDirectoryExistance(outputDirectory, options);
+
   try {
 
-    // Antes de empezar el programa se comprueba que el directorio este vacio o no exista
-    await checkDirectoryExistance(outputDirectory, options);
-
     console.log(`${CONSOLE_PROMPT.GH_AI}Parsing the user input.`);
-    let inputObject = await parseInputFile(inputFile, options);
+
+    inputObject = await parseInputFile(inputFile, responseObject, options);
 
     console.log(`${CONSOLE_PROMPT.GH_AI}Generating prompts...`);
-    let promptObject = await PROMPT_GENERATOR[options.commandType.toUpperCase()](inputObject, options);
-
-    // if (options.debug) { console.log(JSON.stringify(promptObject, null, 2)); }
+    await PROMPT_GENERATOR[options.commandType.toUpperCase()](inputObject, responseObject, responseObject, options);
 
     console.log(`${CONSOLE_PROMPT.GH_AI}Starting ${options.llmApi} API call. This process may take a few seconds.`);
-    let responseObject = await API[options.llmApi](promptObject, outputDirectory, options);
-
-    responseObject.config = {
-      llm: options.llm,
-      scriptLanguage: inputObject.extension?.languageSettings.language
-    };
-
-    /** @TODO BUG: Creo que esto no se ejecuta incluso si el error de la API esta controlado */
-    await createProgramLogs(inputObject, responseObject, inputFile, outputDirectory, options);
-    console.log(`${CONSOLE_PROMPT.GH_AI}Generated log files inside ${outputDirectory}/`); 
+    await API[options.llmApi](responseObject, outputDirectory, options);
 
   } catch (error) {
     if (error instanceof z.ZodError) { 
@@ -84,13 +95,17 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     }
     else if (error instanceof OpenAI.APIError) {
       ERROR_HANDLER.openaiError(error);
-      await createProgramLogs(undefined, error.response, inputFile, outputDirectory, options);
     } 
     else {
       console.error(`${CONSOLE_PROMPT.ERROR}An unexpected error has ocurred\n ${error.message}`);
       if (options.debug) { console.error(error); }
     }
   }
+  
+  // No importa lo que pase, se tiene que generar los logs
+  await createProgramLogs(inputObject, responseObject, inputFile, outputDirectory, options);
+  console.log(`${CONSOLE_PROMPT.GH_AI}Generated log files inside ${outputDirectory}/`); 
+  
   process.exit(0);
 });
 

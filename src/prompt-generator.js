@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Universidad de La Laguna
  * Escuela Superior de Ingeniería y Tecnología
@@ -19,16 +18,13 @@ let PROMPT_GENERATOR = Object.create(null);
 /**
  * 
  * @param {*} inputObject 
+ * @param {*} responseObject 
  * @param {*} options 
- * @returns 
  */
-PROMPT_GENERATOR['EXTENSION'] = async function generatePrompts(inputObject, options) {
+PROMPT_GENERATOR['EXTENSION'] = async function generatePrompts(inputObject, responseObject, options) {
   
-  let promptObject = {
-    system: TEMPLATES.EXTENSION.SYSTEM(inputObject),
-    user: [],
-  };
-
+  responseObject.systemPrompt = TEMPLATES.EXTENSION.SYSTEM(inputObject);
+  
   const EXTENSION = inputObject.extension;
 
   // Por cada fichero pedido por el usuario
@@ -37,54 +33,96 @@ PROMPT_GENERATOR['EXTENSION'] = async function generatePrompts(inputObject, opti
 
     // Se añade La idea general del fichero al prompt
     filePrompts.push({
+      title: `general idea of ${file.name}.`,
       text: TEMPLATES.EXTENSION.FILE_GENERAL_IDEA(file),
+      reponse: undefined,
+      usage: {},
+      executeTool: undefined,
+      askForChanges: false,
     });
 
     // El primer fichero del userPrompt siempre se tratará como un MainFile
     if (index === 0) { 
       filePrompts.push({
+        title: `main and help functions of ${file.name}.`,
         text: TEMPLATES.EXTENSION.MAIN_FUNCTION(file),
+        reponse: undefined,
+        usage: {},
+        executeTool: undefined,
+        askForChanges: false,
       });
     }
 
     // Por cada función se genera su correspondiente prompt
     file.functions.forEach((functionn) => {
       filePrompts.push({
-        text: TEMPLATES.EXTENSION.GENERIC_FUNCTION(functionn)
+        title: `${functionn.name} of ${file.name}.`,
+        text: TEMPLATES.EXTENSION.GENERIC_FUNCTION(functionn),
+        reponse: undefined,
+        usage: {},
+        executeTool: undefined,
+        askForChanges: false,
       });
     });
     
     // Se hace un post procesado del fichero en un prompt por separado
     filePrompts.push({
-      text: TEMPLATES.EXTENSION.POST_PROCESSING({ name: file.name, languageSettings: inputObject.extension.languageSettings })
+      title: `post processing of ${file.name}.`,
+      text: TEMPLATES.EXTENSION.POST_PROCESSING({ 
+        name: file.name, 
+        languageSettings: inputObject.extension.languageSettings 
+      }),
+      reponse: undefined,
+      usage: {},
+      executeTool: undefined,
+      askForChanges: false,
     });
-    
+
+    // Se genera un prompt para indicarle a la IA que debe generar el fichero utilizando las tools
     filePrompts.push({
+      title: `${file.name} file generation.`,
       text: TEMPLATES.EXTENSION.GENERATE_FILE(file),
-      executeTool: 'auto', // {type: 'function', function: { name: 'generate_file'}},
+      reponse: undefined,
+      usage: {},
+      executeTool: { type: 'function', function: { name: 'generate_file'} },
       askForChanges: true,
     });
 
     // Se guarda el prompt completo en el promptObject
-    promptObject.user.push({
+    responseObject.userPrompts.push({
       title: file.name,
-      content: filePrompts,
+      prompts: filePrompts,
+      usage: {
+        totalPromptTokens: 0,
+        totalCompletionTokens: 0,
+        totalTokens: 0,
+      }
     });
   });
 
   // En caso de pedir una extension, se añade a la lista de userPrompts
   if (EXTENSION.readme) {
-    promptObject.user.push({
-      title: 'readme',
-      content: [{
-       text: TEMPLATES.README(EXTENSION.readme),
-       executeTool: 'generate_file',
-       askForChanges: true,
-      }],  
+    responseObject.userPrompts.push({
+      title: 'Readme',
+      prompts: [{
+        title: 'Readme file generation',
+        text: TEMPLATES.README(EXTENSION.readme),
+        reponse: undefined,
+        usage: {},
+        executeTool: { type: 'function', function: { name: 'generate_file'} },
+        askForChanges: true,
+      }],
+      usage: {
+        totalPromptTokens: 0,
+        totalCompletionTokens: 0,
+        totalTokens: 0,        
+      }
     });
   }
 
-  return promptObject;
+  if (options.debug) { 
+    console.log(JSON.stringify(responseObject.userPrompts, null, 2)); 
+  }
 }
 
 export { PROMPT_GENERATOR };

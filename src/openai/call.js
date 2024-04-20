@@ -48,7 +48,8 @@ async function createOrRetreiveAssistant(openai, systemPrompt, llmModel, toolDes
 
     const ASSISTANT_OLD_CONFIGURATION = unwrapper(assistant);
 
-    for (const KEY of Object.keys(ASSISTANT_OLD_CONFIGURATION)) { // Recorre el objeto comprobando que tengan la misma configuración
+    // Recorre el objeto comprobando que tengan la misma configuración
+    for (const KEY of Object.keys(ASSISTANT_OLD_CONFIGURATION)) { 
 
       /** 
        * @TODO Ver como hacer para que se pueda comprobar que contiene las tools correctas
@@ -56,11 +57,9 @@ async function createOrRetreiveAssistant(openai, systemPrompt, llmModel, toolDes
        * con eso ya se puede saber si se ha cambiado gran parte de la configuración 
       */
       if (ASSISTANT_CONFIGURATION[KEY] !== ASSISTANT_OLD_CONFIGURATION[KEY]) { 
-
         console.log(`${CONSOLE_PROMPT.WARNING}The old assistant configuration of "${assistant.name}" doesn't match with the new configuration readed from the inputObject.`);
         askForUpdate = true;
         break; 
-
       }
 
     }
@@ -101,7 +100,7 @@ async function createOrRetreiveThread(openai, threadID) {
  * @param {object} options 
  * @returns 
  */
-async function call(openai, prompt, assistantID, threadID, runID = undefined) {
+async function call(openai, prompt, assistantID, threadID, executeTool = undefined, runID = undefined) {
 
   const DELAY = 10000; // 10s
   const MAX_TRIES = 10;
@@ -113,7 +112,7 @@ async function call(openai, prompt, assistantID, threadID, runID = undefined) {
     // Añadir el mensaje a la conversación
     await openai.beta.threads.messages.create(
       threadID,
-      { role: 'user', content: prompt.text }
+      { role: 'user', content: prompt }
     );
   
   }
@@ -144,7 +143,7 @@ async function call(openai, prompt, assistantID, threadID, runID = undefined) {
         threadID,
         { 
           assistant_id: assistantID, 
-          tool_choice: prompt.executeTool ?? 'none',
+          tool_choice: executeTool ?? 'none',
         }
       ); 
     }
@@ -214,7 +213,8 @@ async function checkRunStatus(openai, runID, threadID) {
         if (RUN.last_error.code === 'rate_limit_exceeded') {
           console.log(LOG_STATUS[RUN.last_error.code]);
           return RUN.last_error.code;
-        } 
+        }
+        
         return 'failed';
 
       case 'expired':         return 'failed';   //

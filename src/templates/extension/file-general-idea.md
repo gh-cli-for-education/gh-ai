@@ -31,8 +31,8 @@ Put here your generated code
 <requirements>
 Write here a list of the most important ideas you have been able to extract from the *description*.
 </requirements>
-
 {{#examples.length}}
+
 ## Examples 
 
 Here are some examples of what the program must output given certain inputs:

@@ -11,23 +11,28 @@ For each file requested by the user, its corresponding code has been generated.
 {{#userPrompts}}
 ## {{#extension}}File{{/extension}} {{title}}
 
-### Petition
+{{#prompts}}
+### Petition {{title}}
 
 ```md
-{{prompt.text}}
+{{text}}
 ```
 
-### Response
+#### Assistant Response
 
-```{{config.scriptLanguage}}
 {{response}}
-```
-{{#usage}}
-### Usage
 
-Total tokens used by this file request: **{{usage.total_tokens}}** Tokens, broken down this way:
+#### Petition Usage
 
-Tokens used by the prompt: **{{usage.prompt_tokens}}**.  
+Total tokens used: **{{usage.total_tokens}}**
+Tokens used by the gh-ai generated prompt: **{{usage.prompt_tokens}}**.  
 Tokens used by the LLM to generate the answer: **{{usage.completion_tokens}}**.
-{{/usage}}
+
+{{/prompts}}
+### Total Usage
+
+Total tokens used to generate the {{#extension}}file{{/extension}}: **{{usage.totalTokens}}**.
+Total tokens used by the gh-ai generated prompts: **{{usage.totalPromptTokens}}**.  
+Total tokens used by the LLM to generate the answer: **{{usage.totalCompletionTokens}}**.
+
 {{/userPrompts}}
