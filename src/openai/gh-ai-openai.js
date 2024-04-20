@@ -44,7 +44,7 @@ API['OPENAI'] = async function(responseObject, outputDirectory, options) {
         let callResult = await call(OPENAI, PROMPT_SECTION.text, assistant.id, thread.id, PROMPT_SECTION.executeTool);
 
         // En caso de que se requiera una acción, se ejecuta y se vuelva a llamar a la API con la respuesta de la Tool todas las veces que sea necesaria 
-        while (callResult.runStatus === 'requires_action'/* Comprobar tambien sigint */) {
+        while (callResult.runStatus === 'requires_action' && !process.env.GRACEFUL_SHUTDOWN) {
           let toolOutputs = await manageToolActions(OPENAI, thread.id, callResult.runID, outputDirectory, options);
           callResult = await call(OPENAI, toolOutputs, assistant.id, thread.id, undefined, callResult.runID);
         }
@@ -55,7 +55,7 @@ API['OPENAI'] = async function(responseObject, outputDirectory, options) {
         // await addResultToResponseObject(OPENAI, responseObject, { title: PROMPT.title, content: PROMPT_SECTION }, thread.id, callResult.runID, options.tokensVerbose);
 
         // En caso de error or SIGINT detener la ejecución
-        if (callResult.runStatus === 'failed') { 
+        if (callResult.runStatus === 'failed' || process.env.GRACEFUL_SHUTDOWN) { 
           return; 
         } 
       }
@@ -141,47 +141,6 @@ async function calculatePromgramTotalUsage(responseObject) {
     responseObject.usage.totalTokens           += promptUsage.totalTokens;
   }
 }
-
-/**
- * 
- * @param {OpenAI} openai 
- * @param {object} responseObject 
- * @param {object} prompt 
- * @param {string} threadID 
- * @param {string} runID
- * @param {bool} tokensVerbose 
- */
-async function addResultToResponseObject(openai, responseObject, prompt, threadID , runID, tokensVerbose = false) {
-
-  const RUN = await openai.beta.threads.runs.retrieve(threadID, runID);
-
-  let latestAiResponse = '';
-
-  if (RUN.status !== 'completed') {
-    latestAiResponse = RUN.last_error?.message;
-  }
-  else {
-    latestAiResponse = await openai.beta.threads.messages.list(threadID);                         // Se obtiene la lista de mensajes (Tanto de usuario como IA)
-    latestAiResponse = latestAiResponse.data.find((message) => { return message.role === 'assistant'; }); // Se encuentra el ultimo mensaje de la IA(assistant), que en este caso será el primer mensaje del array con role assistant
-    latestAiResponse = latestAiResponse.content?.map((content) => { return content.text.value; }); // Se obtiene todos los posibles textos que haya podido generar en un solo mensaje.
-  }
-
-  if (tokensVerbose) {
-    responseObject.usage.totalPromptTokens     += RUN.usage.prompt_tokens;
-    responseObject.usage.totalCompletionTokens += RUN.usage.completion_tokens;
-    responseObject.usage.totalTokens           += RUN.usage.total_tokens;    
-  }
-
-  responseObject.userPrompts.push({ // Se añade el mensaje al reponseObject
-    title: prompt.title,
-    prompt: prompt.content,
-    response: latestAiResponse,
-    usage: ((tokensVerbose)? RUN.usage : undefined),
-  });
-
-}
-
-
 
 /**
  * @param {OpenAI} openai

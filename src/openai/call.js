@@ -120,7 +120,10 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
     isToolOutput = true;
   }
 
-  let callResult = {}
+  let callResult = {
+    runID: undefined,
+    runStatus: undefined,
+  };
 
   // Repetir la llamada todas las veces necesarias hasta que MAX_TRIES sea alcanzado, se complete la run u ocurra un fallo
   while (currentTry < MAX_TRIES) {
@@ -151,6 +154,10 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
     // Se guarda la nueva información de la run por cada intento.
     callResult.runID = run.id;
     callResult.runStatus = await checkRunStatus(openai, run.id, threadID);
+
+    if (process.env.GRACEFUL_SHUTDOWN) {
+      return callResult;
+    }
 
     // La run termina siempre que no se llegue a un Rate_Limit
     if (callResult.runStatus !== 'rate_limit_exceeded') {
@@ -200,7 +207,7 @@ async function checkRunStatus(openai, runID, threadID) {
   const DELAY = 5000; // 5s
 
   // Comprobar constantemente si la conversación ha terminado correctamente
-  while (true) {
+  while (!process.env.GRACEFUL_SHUTDOWN) {
 
     // Comprobar la conversación en el momento actual
     const RUN = await openai.beta.threads.runs.retrieve(threadID, runID);
@@ -235,6 +242,7 @@ async function checkRunStatus(openai, runID, threadID) {
 
     await sleep(DELAY);
   }
+  return 'gracefulShutdown';
 }
 
 export { createOrRetreiveAssistant, createOrRetreiveThread, call };

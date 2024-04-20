@@ -12,6 +12,7 @@ For each file requested by the user, its corresponding code has been generated.
 
 ### Petition general idea of gh-poi.
 
+```md
 # File gh-poi
 
 # Description of what you have to do
@@ -47,63 +48,57 @@ Put here your generated code
 Write here a list of the most important ideas you have been able to extract from the *description*.
 </requirements>
 
+```
 
 #### Assistant Response
 
 ```javascript
-// Extension to determine and delete merged local branches
+// Extension gh-poi
 
-// Function to get the list of local branches
+// Function to get local branches
 function get_local_branches() {
-    // Logic to fetch and return the list of local branches
+    // This function will retrieve all local branches from the repository
+    // and return them as a list
 }
 
-// Function to check if a branch is fully merged to default branch
+// Function to check if a branch is fully merged
 function isFullyMerged(branch) {
-    // Logic to check if the branch is fully merged
+    // This function will check if the specified branch has been fully merged 
+    // and return true if it has, false otherwise
 }
 
-// Function to mark branches based on merge status
+// Function to mark branches for deletion
 function mark_branches(branches) {
-    // Logic to mark branches as fully merged or not
+    // This function will take a list of branches and mark them for deletion
+    // based on certain criteria such as being fully merged
 }
 
-// Function to delete branches that are fully merged
+// Function to delete branches
 function delete_branches(branches) {
-    // Logic to delete branches that are fully merged
+    // This function will delete the branches that have been marked for deletion
+    // It will prompt the user for confirmation before actually deleting the branches
 }
 
-// Additional code for organizing and executing the functions
-// This code can fetch local branches, mark them as fully merged or not, then delete the fully merged ones
-
-// Initializing the process
-const branches = get_local_branches(); // Get list of local branches
-if (branches.length > 0) {
-    mark_branches(branches); // Mark branches as fully merged or not
-    const fullyMergedBranches = branches.filter(branch => isFullyMerged(branch));
-    delete_branches(fullyMergedBranches); // Delete fully merged branches
-} else {
-    console.log("No local branches found.");
-}
+// Additional code for improving functionality can be added here
 
 ```
 
 <requirements>
-- Determine and delete merged local branches.
-- Fetch and display the list of local branches.
-- Check if a branch is fully merged to the default branch.
-- Mark branches as fully merged or not.
-- Delete branches that are fully merged.
+- The extension helps to determine which local branches have been merged and safely deletes them.
+- It aims to solve the issue of having many unnecessary branches left locally due to daily development.
+- It allows for identifying and safely deleting branches that have been fully merged.
+- The extension should be cautious not to accidentally delete the active branch.
 </requirements>
 
 #### Petition Usage
 
-Total tokens used: **1480**
+Total tokens used: **1425**
 Tokens used by the gh-ai generated prompt: **1157**.  
-Tokens used by the LLM to generate the answer: **323**.
+Tokens used by the LLM to generate the answer: **268**.
 
 ### Petition main and help functions of gh-poi.
 
+```md
 # Code expansion
 
 Read once again the *requirements* and the *previously generated code* written by you.
@@ -146,84 +141,21 @@ Delete the merged local branches
 The program will stop execution if an unkown command is passed from the command line
 - Once all the information is printed the program must finish execution.
 
+```
 
 #### Assistant Response
 
-```javascript
-// Extension to determine and delete merged local branches
-
-// Function to get the list of local branches
-function get_local_branches() {
-    // Logic to fetch and return the list of local branches
-}
-
-// Function to check if a branch is fully merged to default branch
-function isFullyMerged(branch) {
-    // Logic to check if the branch is fully merged
-}
-
-// Function to mark branches based on merge status
-function mark_branches(branches) {
-    // Logic to mark branches as fully merged or not
-}
-
-// Function to delete branches that are fully merged
-function delete_branches(branches) {
-    // Logic to delete branches that are fully merged
-}
-
-// Main function to parse command line arguments and execute corresponding actions
-function main() {
-    const args = process.argv.slice(2);
-
-    if (args.includes("-v")) {
-        console.log("Version 1.0");
-    } else if (args.includes("-h") || args.includes("--help")) {
-        help();
-    } else if (args.includes("--dry-run")) {
-        // Logic for dry-run
-    } else if (args.includes("--debug")) {
-        // Enable debug logs
-    } else if (args.includes("--protect")) {
-        // Logic to protect branches
-    } else if (args.includes("--unprotect")) {
-        // Logic to unprotect branches
-    } else {
-        console.log("Unknown command. Use -h or --help for program usage.");
-    }
-}
-
-// Help function to display program information
-function help() {
-    console.log("\nUsage: gh poi <command> [options]\n");
-    console.log("Delete the merged local branches\n");
-
-    console.log("Options:");
-    console.log("-v                          Output the program version number");
-    console.log("-h, --help                  Execute the program help function");
-    console.log("--dry-run                   Check what branches are going to be deleted without actually deleting them");
-    console.log("--debug                     Enable debug logs");
-    console.log("--protect <branchname>      Protect a <branchname> from deletion. Multiple branches allowed");
-    console.log("--unprotect <branchname>    Unprotect a <branchname> local branch. Multiple branches allowed\n");
-
-    console.log("The program will stop execution if an unknown command is passed from the command line\n");
-}
-
-// Additional code for organizing and executing the functions
-// This code can fetch local branches, mark them as fully merged or not, then delete the fully merged ones
-
-main(); // Call the main function to start command line argument processing
-```
 
 
 #### Petition Usage
 
-Total tokens used: **2442**
-Tokens used by the gh-ai generated prompt: **1914**.  
-Tokens used by the LLM to generate the answer: **528**.
+Total tokens used: ****
+Tokens used by the gh-ai generated prompt: ****.  
+Tokens used by the LLM to generate the answer: ****.
 
 ### Petition get_local_branches of gh-poi.
 
+```md
 # Code expansion 
 
 Read once again the *requirements* and the *previously generated code* written by you.
@@ -261,51 +193,21 @@ Put here the gerated code using the content from the *step tag* as a guide.
 </code>
 
 
+```
 
 #### Assistant Response
 
-```javascript
-// Function to get the list of local branches by querying GitHub API for pull request status
 
-// Function to get the list of local branches
-function get_local_branches() {
-    const { stdout, stderr } = require('child_process').execSync('gh api graphql -f query=pullRequestStatus');
-
-    if (stderr) {
-        console.error(`Error executing Github API query: ${stderr}`);
-        return [];
-    }
-
-    const localBranches = JSON.parse(stdout);
-    return localBranches;
-}
-```
-
-```javascript
-// Function to get the list of local branches by querying GitHub API for pull request status
-
-// Function to get the list of local branches
-function get_local_branches() {
-    const { stdout, stderr } = require('child_process').execSync('gh api graphql -f query=pullRequestStatus');
-
-    if (stderr) {
-        console.error(`Error executing Github API query: ${stderr}`);
-        return [];
-    }
-
-    const localBranches = JSON.parse(stdout);
-    return localBranches;
-}
-```
 
 #### Petition Usage
 
-Total tokens used: **2872**
-Tokens used by the gh-ai generated prompt: **2656**.  
-Tokens used by the LLM to generate the answer: **216**.
+Total tokens used: ****
+Tokens used by the gh-ai generated prompt: ****.  
+Tokens used by the LLM to generate the answer: ****.
 
 ### Petition isFullyMerged of gh-poi.
 
+```md
 # Code expansion 
 
 Read once again the *requirements* and the *previously generated code* written by you.
@@ -324,30 +226,21 @@ pr: object
 Checks if the input branch is fully merged, it checks if the pull request state is `Merged` and if the branch doesn't have any Commit ahead of the main branch
 ```
 
+```
 
 #### Assistant Response
 
-```javascript
-// Function to check if a branch is fully merged by examining the pull request status
 
-// Function to check if a branch is fully merged
-function isFullyMerged(branch, pr) {
-    // Check if the pull request state is Merged and if the branch is not ahead of the main branch
-    if (pr.state === "Merged" && branch.commitsAhead === 0) {
-        return true;
-    }
-    return false;
-}
-```
 
 #### Petition Usage
 
-Total tokens used: **3088**
-Tokens used by the gh-ai generated prompt: **2991**.  
-Tokens used by the LLM to generate the answer: **97**.
+Total tokens used: ****
+Tokens used by the gh-ai generated prompt: ****.  
+Tokens used by the LLM to generate the answer: ****.
 
 ### Petition mark_branches of gh-poi.
 
+```md
 # Code expansion 
 
 Read once again the *requirements* and the *previously generated code* written by you.
@@ -405,33 +298,21 @@ Put here the gerated code using the content from the *step tag* as a guide.
 </code>
 
 
+```
 
 #### Assistant Response
 
-```javascript
-// Function to mark branches based on merge status and protection
 
-// Function to mark branches based on merge status and protection
-function mark_branches(branches) {
-    branches.forEach(branch => {
-        const merged = isFullyMerged(branch, branch.pr);
-        if (merged && !branch.protected) {
-            branch.status = "deletable";
-        } else {
-            branch.status = "noDeletable";
-        }
-    });
-}
-```
 
 #### Petition Usage
 
-Total tokens used: **3494**
-Tokens used by the gh-ai generated prompt: **3399**.  
-Tokens used by the LLM to generate the answer: **95**.
+Total tokens used: ****
+Tokens used by the gh-ai generated prompt: ****.  
+Tokens used by the LLM to generate the answer: ****.
 
 ### Petition delete_branches of gh-poi.
 
+```md
 # Code expansion 
 
 Read once again the *requirements* and the *previously generated code* written by you.
@@ -446,31 +327,21 @@ Use the following *description* as guide to generate the corresponding code.
 This function must delete all the branches that are marked as `deletable`, for each deleted branch the program must print a log with the deleted branch name and a message indicating that has been deleted.
 ```
 
+```
 
 #### Assistant Response
 
-```javascript
-// Function to delete branches that are marked as deletable
 
-// Function to delete branches that are marked as deletable
-function delete_branches(branches) {
-    branches.forEach(branch => {
-        if (branch.status === "deletable") {
-            // Logic to delete branch
-            console.log(`Deleted branch: ${branch.name}`);
-        }
-    });
-}
-```
 
 #### Petition Usage
 
-Total tokens used: **3687**
-Tokens used by the gh-ai generated prompt: **3609**.  
-Tokens used by the LLM to generate the answer: **78**.
+Total tokens used: ****
+Tokens used by the gh-ai generated prompt: ****.  
+Tokens used by the LLM to generate the answer: ****.
 
 ### Petition post processing of gh-poi.
 
+```md
 # Code improvement 
 
 Using the *previously generated code* you have to make some final modification to it. 
@@ -487,126 +358,47 @@ Using the *previously generated code* you have to make some final modification t
 
 **Check** if the *previously generated code* is formatted under the Google's coding style for JavaScript.
 
+```
 
 #### Assistant Response
 
-```javascript
-// Function to get the list of local branches by querying GitHub API for pull request status
-function get_local_branches() {
-    const { stdout, stderr } = require('child_process').execSync('gh api graphql -f query=pullRequestStatus');
 
-    if (stderr) {
-        console.error(`Error executing Github API query: ${stderr}`);
-        return [];
-    }
-
-    const localBranches = JSON.parse(stdout);
-    return localBranches;
-}
-
-// Function to check if a branch is fully merged by examining the pull request status
-function isFullyMerged(branch, pr) {
-    // Check if the pull request state is Merged and if the branch is not ahead of the main branch
-    if (pr.state === "Merged" && branch.commitsAhead === 0) {
-        return true;
-    }
-    return false;
-}
-
-// Function to mark branches based on merge status and protection
-function mark_branches(branches) {
-    branches.forEach(branch => {
-        const merged = isFullyMerged(branch, branch.pr);
-        if (merged && !branch.protected) {
-            branch.status = "deletable";
-        } else {
-            branch.status = "noDeletable";
-        }
-    });
-}
-
-// Function to delete branches that are marked as deletable
-function delete_branches(branches) {
-    branches.forEach(branch => {
-        if (branch.status === "deletable") {
-            // Logic to delete branch
-            console.log(`Deleted branch: ${branch.name}`);
-        }
-    });
-}
-
-// Main function to parse command line arguments and execute corresponding actions
-function main() {
-    const args = process.argv.slice(2);
-
-    if (args.includes("-v")) {
-        console.log("Version 1.0");
-    } else if (args.includes("-h") || args.includes("--help")) {
-        help();
-    } else if (args.includes("--dry-run")) {
-        // Logic for dry-run
-    } else if (args.includes("--debug")) {
-        // Enable debug logs
-    } else if (args.includes("--protect")) {
-        // Logic to protect branches
-    } else if (args.includes("--unprotect")) {
-        // Logic to unprotect branches
-    } else {
-        console.log("Unknown command. Use -h or --help for program usage.");
-    }
-}
-
-// Help function to display program information
-function help() {
-    console.log("\nUsage: gh poi <command> [options]\n");
-    console.log("Delete the merged local branches\n");
-
-    console.log("Options:");
-    console.log("-v                          Output the program version number");
-    console.log("-h, --help                  Execute the program help function");
-    console.log("--dry-run                   Check what branches are going to be deleted without actually deleting them");
-    console.log("--debug                     Enable debug logs");
-    console.log("--protect <branchname>      Protect a <branchname> from deletion. Multiple branches allowed");
-    console.log("--unprotect <branchname>    Unprotect a <branchname> local branch. Multiple branches allowed\n");
-
-    console.log("The program will stop execution if an unknown command is passed from the command line\n");
-}
-
-main(); // Call the main function to start command line argument processing
-```
 
 #### Petition Usage
 
-Total tokens used: **4456**
-Tokens used by the gh-ai generated prompt: **3786**.  
-Tokens used by the LLM to generate the answer: **670**.
+Total tokens used: ****
+Tokens used by the gh-ai generated prompt: ****.  
+Tokens used by the LLM to generate the answer: ****.
 
 ### Petition gh-poi file generation.
 
+```md
 # File generation 
 
 **Generate** a new **file** called **gh-poi** whose content is all the **last** *previously generated code* using the **generate_file* tool.
+```
 
 #### Assistant Response
 
-I have completed the generation of the file *gh-poi.js* with the final code based on the last modifications.
+
 
 #### Petition Usage
 
-Total tokens used: **5464**
-Tokens used by the gh-ai generated prompt: **5439**.  
-Tokens used by the LLM to generate the answer: **25**.
+Total tokens used: ****
+Tokens used by the gh-ai generated prompt: ****.  
+Tokens used by the LLM to generate the answer: ****.
 
 ### Total Usage
 
-Total tokens used to generate the file: **26983**.
-Total tokens used by the gh-ai generated prompts: **24951**.  
-Total tokens used by the LLM to generate the answer: **2032**.
+Total tokens used to generate the file: **0**.
+Total tokens used by the gh-ai generated prompts: **0**.  
+Total tokens used by the LLM to generate the answer: **0**.
 
 ## File Readme
 
 ### Petition Readme file generation
 
+```md
 # Creation of a `README.md` file
 
 To conclude this conversation the last thing to write is a `README.md` file. This file must contain enough information to satisfy any use doubts.
@@ -619,20 +411,21 @@ The file must contain the following sections:
 - Usage
 - Examples
 
+```
 
 #### Assistant Response
 
-I have successfully generated the README.md file with the required sections based on the provided information.
+
 
 #### Petition Usage
 
-Total tokens used: **5920**
-Tokens used by the gh-ai generated prompt: **5901**.  
-Tokens used by the LLM to generate the answer: **19**.
+Total tokens used: ****
+Tokens used by the gh-ai generated prompt: ****.  
+Tokens used by the LLM to generate the answer: ****.
 
 ### Total Usage
 
-Total tokens used to generate the file: **5920**.
-Total tokens used by the gh-ai generated prompts: **5901**.  
-Total tokens used by the LLM to generate the answer: **19**.
+Total tokens used to generate the file: **0**.
+Total tokens used by the gh-ai generated prompts: **0**.  
+Total tokens used by the LLM to generate the answer: **0**.
 

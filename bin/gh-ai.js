@@ -110,3 +110,11 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
 });
 
 PROGRAM.parse(process.argv);
+
+const gracefulShutdown = () => { 
+  console.log(`${CONSOLE_PROMPT.GH_AI}Cancelling the program execution...`);
+  process.env.GRACEFUL_SHUTDOWN = true; 
+}
+
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);

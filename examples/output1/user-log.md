@@ -4,6 +4,9 @@ This file has been created by the program gh-ai, therefore it does not entail an
 
 The objective of this markdown file is to store the input and the prompts sent by the user making use of the program. 
 
+# Thread ID 
+thread_5Kyrn4FdcApK6dpCiJ18m1cq
+
 # inputObject 
 
 Next we have the json object created from the user's submitted information located on the `.\examples\gh-poi.md` file. 
@@ -181,10 +184,10 @@ For each user prompt you have to follow some rules:
 ```
 # Usage
 
-To be able to execute this program have been needed **32903** Tokens, broken down this way:
+To be able to execute this program have been needed **0** Tokens, broken down this way:
 
-Tokens used by the program gh-ai: **30852**.  
-Tokens used by the LLM to generate the answers: **2051**.
+Tokens used by the program gh-ai: **0**.  
+Tokens used by the LLM to generate the answers: **0**.
 
 # Considerations and warnings about the AI usage to generate code
 

@@ -33,6 +33,8 @@ async function askYesNoQuestionToUser(query, yesCallBack, noCallBack) {
   while (true) {
     const RESPONSE = await READLINE.question(query + '(Y[es]/N[o]): ');
 
+    if (process.env.GRACEFUL_SHUTDOWN) { break; }
+
     if (/^y(?:es)?$/i.exec(RESPONSE)) {
       if (yesCallBack) { await yesCallBack(); }
       break;
@@ -41,7 +43,6 @@ async function askYesNoQuestionToUser(query, yesCallBack, noCallBack) {
       if (noCallBack) { await noCallBack(); } 
       break;
     }
-
   }
 }
 
