@@ -52,49 +52,13 @@ Write here a list of the most important ideas you have been able to extract from
 
 #### Assistant Response
 
-```javascript
-// Extension gh-poi
 
-// Function to get local branches
-function get_local_branches() {
-    // This function will retrieve all local branches from the repository
-    // and return them as a list
-}
-
-// Function to check if a branch is fully merged
-function isFullyMerged(branch) {
-    // This function will check if the specified branch has been fully merged 
-    // and return true if it has, false otherwise
-}
-
-// Function to mark branches for deletion
-function mark_branches(branches) {
-    // This function will take a list of branches and mark them for deletion
-    // based on certain criteria such as being fully merged
-}
-
-// Function to delete branches
-function delete_branches(branches) {
-    // This function will delete the branches that have been marked for deletion
-    // It will prompt the user for confirmation before actually deleting the branches
-}
-
-// Additional code for improving functionality can be added here
-
-```
-
-<requirements>
-- The extension helps to determine which local branches have been merged and safely deletes them.
-- It aims to solve the issue of having many unnecessary branches left locally due to daily development.
-- It allows for identifying and safely deleting branches that have been fully merged.
-- The extension should be cautious not to accidentally delete the active branch.
-</requirements>
 
 #### Petition Usage
 
-Total tokens used: **1425**
-Tokens used by the gh-ai generated prompt: **1157**.  
-Tokens used by the LLM to generate the answer: **268**.
+Total tokens used: ****
+Tokens used by the gh-ai generated prompt: ****.  
+Tokens used by the LLM to generate the answer: ****.
 
 ### Petition main and help functions of gh-poi.
 

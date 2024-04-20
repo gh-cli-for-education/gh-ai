@@ -4,9 +4,6 @@ This file has been created by the program gh-ai, therefore it does not entail an
 
 The objective of this markdown file is to store the input and the prompts sent by the user making use of the program. 
 
-# Thread ID 
-thread_5Kyrn4FdcApK6dpCiJ18m1cq
-
 # inputObject 
 
 Next we have the json object created from the user's submitted information located on the `.\examples\gh-poi.md` file. 

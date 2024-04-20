@@ -11,6 +11,7 @@
  */
 import OpenAI from 'openai';
 import { sleep } from 'openai/core.js';
+import ora, { oraPromise } from 'ora';
 
 import { CONSOLE_PROMPT, askYesNoQuestionToUser } from '../utils.js';
 'use strict';
@@ -153,8 +154,10 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
 
     // Se guarda la nueva información de la run por cada intento.
     callResult.runID = run.id;
-    callResult.runStatus = await checkRunStatus(openai, run.id, threadID);
 
+    let spinner = ora({ color: 'blue' }).start();
+    callResult.runStatus = await checkRunStatus(openai, run.id, threadID, spinner);
+    
     if (process.env.GRACEFUL_SHUTDOWN) {
       return callResult;
     }
@@ -164,6 +167,7 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
       if (callResult.runStatus === 'error') { // En caso de error, mostrarle información al usuario
         console.error(`${CONSOLE_PROMPT.ERROR}The API call couldn't be executed correctly, Generating Logs and stopping execution.`);  
       }
+      spinner.stop();
       return callResult;
     }
 
@@ -171,10 +175,11 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
     currentTry++;
     
     if (MAX_TRIES - currentTry <= MAX_TRIES * 0.5) {
-      console.log(`\t${MAX_TRIES - currentTry} Attempts left before canceling execution.`);
+      spinner.text += ` ${MAX_TRIES - currentTry} Attempts left before canceling execution.`;
     }
 
     await sleep(DELAY);
+    spinner.stop();
   }
 
   // Si se alcanza MAX_TRIES El resultado se comporta como un error de la API
@@ -188,50 +193,58 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
  * @param {OpenAI} openai 
  * @param {string} runID 
  * @param {string} threadID 
+ * @param {Ora} spinner
  * @returns 
  */
-async function checkRunStatus(openai, runID, threadID) {
+async function checkRunStatus(openai, runID, threadID, spinner) {
 
-  const LOG_STATUS = {
-    rate_limit_exceeded: `${CONSOLE_PROMPT.WARNING}Rate limit exceeded, applying a 10s delay.`,
-    failed:              `${CONSOLE_PROMPT.ERROR}The run failed while attempting to talk with the AI.`,
-    expired:             `${CONSOLE_PROMPT.ERROR}The run reached the 10 minutes limit.`,
-    queued:              `${CONSOLE_PROMPT.OPENAI}The run is still in queue. Waiting for the API to received.`,
-    in_progress:         `${CONSOLE_PROMPT.OPENAI}The run is still active. Waiting for the API to response.`,
-    cancelling:          `${CONSOLE_PROMPT.OPENAI}The run is being cancelled.`,
-    cancelled:           `${CONSOLE_PROMPT.OPENAI}The run has been cancelled successfully.`,
-    requires_action:     `${CONSOLE_PROMPT.OPENAI}The run requires an action from a tool. Waiting for the result.`,
-    completed:           `${CONSOLE_PROMPT.OPENAI}The run has been completed, extracting the AI response.`
-  };
-
-  const DELAY = 5000; // 5s
+  const DELAY = 2500; // 2.5s
 
   // Comprobar constantemente si la conversación ha terminado correctamente
   while (!process.env.GRACEFUL_SHUTDOWN) {
 
     // Comprobar la conversación en el momento actual
     const RUN = await openai.beta.threads.runs.retrieve(threadID, runID);
-  
-    console.log(LOG_STATUS[RUN.status]);
-
+    
     switch (RUN.status) {
 
       case 'failed':
         if (RUN.last_error.code === 'rate_limit_exceeded') {
-          console.log(LOG_STATUS[RUN.last_error.code]);
+          spinner.color = 'magenta';
+          spinner.text = `${CONSOLE_PROMPT.WARNING}Rate limit exceeded, applying a 10s delay.`;
           return RUN.last_error.code;
         }
-        
+        spinner.fail(`${CONSOLE_PROMPT.ERROR}The run failed while attempting to talk with the AI.`);        
         return 'failed';
 
-      case 'expired':         return 'failed';   //
-      case 'cancelled':       return 'failed';   // Estados finales Se simplifica los estados a 'Completado' 'Require una accion' 'Error' y 'Limite Excedido'
-      case 'requires_action': return RUN.status; //
-      case 'completed':       return RUN.status; //
+      case 'expired':
+        spinner.fail(`${CONSOLE_PROMPT.ERROR}The run reached the 10 minutes limit.`);
+        return 'failed';
 
-      case 'queued':          break; //
-      case 'in_progress':     break; // Estados intermedios, hay que seguir esperando para comprobar el estado final 
-      case 'cancelling':      break; //
+      case 'cancelled': 
+        spinner.info(`${CONSOLE_PROMPT.OPENAI}The run has been cancelled successfully.`);      
+        return 'failed';
+
+      case 'requires_action':
+        spinner.info(`${CONSOLE_PROMPT.OPENAI}The run requires an action from a tool. Waiting for the result.`);      
+        return RUN.status;
+
+      case 'completed': 
+        spinner.succeed(`${CONSOLE_PROMPT.OPENAI}The run has been completed, extracting the AI response.`);
+        return RUN.status; //
+
+      case 'queued':
+        spinner.text = `${CONSOLE_PROMPT.OPENAI}The run is still in queue. Waiting for the API to received.`;
+        break;
+
+      case 'in_progress': 
+        spinner.text = `${CONSOLE_PROMPT.OPENAI}The run is still active. Waiting for the API to response.`;
+        break;
+
+      case 'cancelling': 
+        spinner.color = 'magenta';
+        spinner.text = `${CONSOLE_PROMPT.OPENAI}The run is being cancelled.`;
+        break;
 
       default: // En caso de que la Run se encuentre en un estado desconocido. Error
         throw new OpenAI.APIError(-1, {
@@ -242,6 +255,7 @@ async function checkRunStatus(openai, runID, threadID) {
 
     await sleep(DELAY);
   }
+
   return 'gracefulShutdown';
 }
 
