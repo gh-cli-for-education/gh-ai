@@ -125,11 +125,11 @@ async function parseInputFile(inputFile, responseObject, options) {
 async function createProgramLogs(inputObject, responseObject, inputFile, outputDirectory, options) {
   const TYPE = options.commandType.toUpperCase();
 
-  console.log(`${CONSOLE_PROMPT.GH_AI}Generating user-log.md where you can find all the input information`);
+  console.log(`${CONSOLE_PROMPT.GH_AI}Generating ${outputDirectory}/user-log.md where you can find all the input information`);
   const USER_LOG = TEMPLATES[TYPE].USER_LOG(inputObject, inputFile, responseObject, options);
   await fs.writeFile(`${outputDirectory}/user-log.md`, USER_LOG);
 
-  console.log(`${CONSOLE_PROMPT.GH_AI}Generating reponse-log.md where you can find all the output information`);
+  console.log(`${CONSOLE_PROMPT.GH_AI}Generating ${outputDirectory}/reponse-log.md where you can find all the output information`);
   const RESPONSE_LOG = TEMPLATES[TYPE].RESPONSE_LOG(responseObject, options);
   await fs.writeFile(`${outputDirectory}/response-log.md`, RESPONSE_LOG);  
 }

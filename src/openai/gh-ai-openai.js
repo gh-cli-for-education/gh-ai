@@ -181,7 +181,7 @@ async function manageToolActions(openai, threadID, runID, outputDirectory, optio
         }
       }
 
-      toolOutput += 'Write a message to the user that contains the inputObjet you submitted to this tool.';
+      toolOutput += 'Execute the same tool again with a valid syntax.';
       return { tool_call_id: call.id, output: toolOutput };
     }));
 

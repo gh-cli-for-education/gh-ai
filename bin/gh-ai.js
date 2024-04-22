@@ -50,7 +50,6 @@ PROGRAM
   
 // Program actions to options values
 PROGRAM.action(async (inputFile, outputDirectory, options) => {
-
   // Contiene toda la información extraida del prompt del usuario
   let inputObject = {}; 
 
@@ -102,9 +101,8 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     }
   }
   
-  // No importa lo que pase, se tiene que generar los logs
+  // No importa lo que pase, se tienen que generar los logs
   await createProgramLogs(inputObject, responseObject, inputFile, outputDirectory, options);
-  console.log(`${CONSOLE_PROMPT.GH_AI}Generated log files inside ${outputDirectory}/`); 
   
   process.exit(0);
 });
