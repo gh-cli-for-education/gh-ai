@@ -67,6 +67,7 @@ async function isEmptyDir(path) {
  * 
  * @param {string} outputDirectory 
  * @param {object} options 
+ * @return {boolean}
  */
 async function checkDirectoryExistance(path, options) {
   try {
@@ -81,12 +82,21 @@ async function checkDirectoryExistance(path, options) {
         console.log(`${CONSOLE_PROMPT.GH_AI}Directory successfully cleaned.`);
       }
     );
+    return false;
   }
   catch (error) {
     if (options.debug) { 
-      console.log(`${CONSOLE_PROMPT.DEBUG}There is no directory with name: "${path}"`);
+      console.error(`${CONSOLE_PROMPT.DEBUG}There is no directory with name: "${path}"`);
     }
+  }
+
+  try {
     await fs.mkdir(path);
+  } catch (error) {
+    if (options.debug) {
+      console.error(`${CONSOLE_PROMPT.DEBUG}The directory: "${path}" couldn't be created.`);
+    }
+    return true;
   }
 }
 
@@ -125,13 +135,19 @@ async function parseInputFile(inputFile, responseObject, options) {
 async function createProgramLogs(inputObject, responseObject, inputFile, outputDirectory, options) {
   const TYPE = options.commandType.toUpperCase();
 
-  console.log(`${CONSOLE_PROMPT.GH_AI}Generating ${outputDirectory}/user-log.md where you can find all the input information`);
-  const USER_LOG = TEMPLATES[TYPE].USER_LOG(inputObject, inputFile, responseObject, options);
-  await fs.writeFile(`${outputDirectory}/user-log.md`, USER_LOG);
+  try {
+    console.log(`${CONSOLE_PROMPT.GH_AI}Generating ${outputDirectory}/user-log.md where you can find all the input information`);
+    const USER_LOG = TEMPLATES[TYPE].USER_LOG(inputObject, inputFile, responseObject, options);
+    await fs.writeFile(`${outputDirectory}/user-log.md`, USER_LOG);
+  
+    console.log(`${CONSOLE_PROMPT.GH_AI}Generating ${outputDirectory}/reponse-log.md where you can find all the output information`);
+    const RESPONSE_LOG = TEMPLATES[TYPE].RESPONSE_LOG(responseObject, options);
+    await fs.writeFile(`${outputDirectory}/response-log.md`, RESPONSE_LOG);  
+  } 
+  catch (error) {
+    console.error(`${CONSOLE_PROMPT.ERROR}It was not possible to create the log files.`);
+  }
 
-  console.log(`${CONSOLE_PROMPT.GH_AI}Generating ${outputDirectory}/reponse-log.md where you can find all the output information`);
-  const RESPONSE_LOG = TEMPLATES[TYPE].RESPONSE_LOG(responseObject, options);
-  await fs.writeFile(`${outputDirectory}/response-log.md`, RESPONSE_LOG);  
 }
 
 

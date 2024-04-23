@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Global variables
+GH_API_VERSION="2022-11-28"
+ACCEPT_HEADER="Accept: application/vnd.github+json"
+
+# Function to display usage information
+help() {
+  echo "Usage: gh-rate-limit [OPTIONS]"
+  echo "Options:"
+  echo "  -u           Show the 'used' rather than 'remaining' limit"
+  echo "  -h, --help   Show help and usage information"
+  exit 0
+}
+
+# Function to check prerequisites
+check_prerequisites() {
+  command -v gh > /dev/null 2>&1 || { echo >&2 "Github CLI (gh) is not installed. Please install it to proceed."; exit 1; }
+  command -v jq > /dev/null 2>&1 || { echo >&2 "jq is not installed. Please install it to proceed."; exit 1; }
+}
+
+# Function to make the API call based on parameters
+call() {
+  local keyType=".remaining"
+  if [[ "$USAGE_FLAG" == "used" ]]; then
+    keyType=".used"
+  fi
+
+  gh api -X GET "rate_limit" \
+    --header "X-GitHub-Api-Version: $GH_API_VERSION" \
+    --header "$ACCEPT_HEADER" | 
+    jq ".resources | to_entries[] | {name: .key} + .value | \"\(.name)  \(.resources.[0]$keyType)/\(.limit)  \(.reset | strflocaltime(%H:%M:%S))\"" | 
+    column -t
+}
+
+# Function to parse command line arguments
+parse_arguments() {
+  USAGE_FLAG="remaining"
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -u)
+        USAGE_FLAG="used"
+        shift
+        ;;
+      -h|--help)
+        help
+        ;;
+      *)
+        echo "Invalid option: $1"
+        help
+        exit 1
+        ;;
+    esac
+  done
+}
+
+# Main function to control program flow
+main() {
+  check_prerequisites
+  parse_arguments "$@"
+  
+  call
+}
+
+main "$@"

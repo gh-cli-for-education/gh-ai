@@ -6,103 +6,46 @@ The objective of this markdown file is to store the input and the prompts sent b
 
 # inputObject 
 
-Next we have the json object created from the user's submitted information located on the `.\examples\gh-poi.md` file. 
+Next we have the json object created from the user's submitted information located on the `.\examples\gh-rate-limit\gh-rate-limit.md` file. 
 
 ```json
 {
   "extension": {
     "files": [
       {
-        "name": "gh-poi",
-        "description": "This gh extension determines which local branches have been merged and safely deletes them.\r\nDaily development makes it difficult to know which branch is active when there are many unnecessary branches left locally\r\nIf you squash merge a pull request, there is no history of the merge to the default branch, so you have to force delete the branch to clean it up, and you have to be careful not to accidentally delete the active branch.\r",
+        "name": "gh-rate-limit",
+        "description": "gh-notify is an extension of the Github Command Line Interface (Github CLI) whose purpose is to show the user their existing rate limits and when its resets. The program does exactly the same as executing the following command:\r\n``\n` bash\r\ncurl -fSsL -H \"Authorization: token $(github_pat)\" -X GET \\\r\nhttps://api.github.com/rate_limit \\\r\n| jq --raw-output '.resources | to_entries[] | {name: .key} + .value | \"\\(.name)  \\(.remaining)/\\(.limit)  \\(.reset | strflocaltime(\"%H:%M:%S\") )\"' \\\r\n| column -t\r\n``\n`\r\nThe program has some **Prerequisites** that are: \r\n+ It is necessary to have `Github CLI (gh) installed`, so the program must be able to verify that said program is installed.\r\n+ It is necessary to have `js installed`, so the program is able to execute it.\r\nThe program must use the *\"X-GitHub-Api-Version: 2022-11-28\"* version of the gh REST API and save it as a global variable inside the program. It also contains a HTTP header with the value *Accept: application/vnd.github+json* inside a global variable.\r\nThis is a small skeleton that you should use as a guide for generating the code.\r\n```bash\r\nhelp() {\r\n  # Here goes all the program usage and the parameters and arguments list.\r\n  # Exit the program with code 1\r\n}\r\n\r\n\r\nmain () {\r\n  # Processes the command line and activates the different flags specified in the main function section.\r\n  # Check `Prerequisites`\r\n  # Execute the gh_api function with the value of the usage flag as argument.\r\n}\r\n```\nMake sure the program is executable.\r",
         "functions": [
           {
-            "name": "get_local_branches",
+            "name": "call",
             "params": [],
-            "description": "This function must call Github API using the Github CLI tool `gh api` to make a GraphQL query to *retreive* information of the *pull request status*. \r",
-            "orderList": [
-              "GraphQL query to retreive the pull request status of the current repository local branches\r",
-              "Return query result\r"
-            ]
-          },
-          {
-            "name": "isFullyMerged",
-            "params": [],
-            "description": "branch: object\r\n\npr: object\r\n\nChecks if the input branch is fully merged, it checks if the pull request state is `Merged` and if the branch doesn't have any Commit ahead of the main branch\r",
-            "orderList": []
-          },
-          {
-            "name": "mark_branches",
-            "params": [],
-            "description": "branches: object\r\n\nTraverse the branches array, calling the function `isFullyMerged` to check if the branch is fully merged, it also check if the branch is protected or not.\r",
-            "orderList": [
-              "Traverse the branches array.\r",
-              "call isFullyMerged with each branch inside the array.\r",
-              "If isFullyMerged and the branch is not protected, mark it as `deletable`\r",
-              "Else mark it as `noDeletable`\r"
-            ]
-          },
-          {
-            "name": "delete_branches",
-            "params": [],
-            "description": "This function must delete all the branches that are marked as `deletable`, for each deleted branch the program must print a log with the deleted branch name and a message indicating that has been deleted.\r",
+            "description": "The function makes a call to the Github REST API using the `gh api` command, utilizing local variables as headers for the call. This function translates the content in the following code block, taking into account the `usage` flag to check the remaining or percentage of usage.\r\n\ncurl -fSsL -H \"Authorization: token $(github_pat)\" -X GET https://api.github.com/rate_limit | jq --raw-output '.resources | to_entries[] | {name: .key} + .value | \"\\(.name)  \\(.remaining) \\(.limit)  \\(.reset | strflocaltime(\"%H:%M:%S\") )\"' | column -t\r",
             "orderList": []
           }
         ],
         "help": {
-          "usage": "gh poi <command> [options]",
-          "header": "Delete the merged local branches\r",
+          "usage": "gh-rate-limit [options]",
+          "header": "",
           "parameters": [
             {
-              "parameter": "-v",
+              "parameter": "-u",
               "argument": null,
-              "description": "Output the program version number"
+              "description": "Show the 'used' rather than 'remaining' limit (Activates the `usage` flag)."
             },
             {
               "parameter": "-h",
               "argument": null,
-              "description": "Execute the program *help function*"
-            },
-            {
-              "parameter": "--dry-run",
-              "argument": null,
-              "description": "Check what branches are going to be deleted without actually deleting them"
-            },
-            {
-              "parameter": "--debug",
-              "argument": null,
-              "description": "Enable debug logs"
-            },
-            {
-              "parameter": "--protect",
-              "argument": null,
-              "description": "Protect a <branchname> from deletion. It is possible to pass multiple branches"
-            },
-            {
-              "parameter": "--unprotect",
-              "argument": null,
-              "description": "Unprotect a <branchname> local branch. It is possible to pass multiple branches"
+              "description": "Prints the help information of the program."
             }
           ],
-          "footer": "The program will stop execution if an unkown command is passed from the command line\r"
+          "footer": ""
         }
       }
     ],
     "languageSettings": {
-      "language": "JavaScript",
+      "language": "bash",
       "style": "Google"
-    },
-    "examples": [
-      {
-        "command": "`gh branch; gh poi; gh branch`",
-        "output": "```console\r\nfoo@bar:~$ gh branch\r\n- inproving-parser\r\n- markdown-like-parser\r\n- inproving-api-call\r\n- main\r\n\r\nfoo@bar:~$ gh poi\r\n# Fetching pull requests...\r\n# Deleting Branches...\r\n\r\nfoo@bar:~$ gh branch\r\n- inproving-api-call\r\n- main\r\n```"
-      }
-    ],
-    "readme": [
-      "Write how to **install** th gh-poi extension using the Github CLI program.\r",
-      "Write the **help** and usage of the gh-poi extension.\r",
-      "Write some **examples** of use `Don't use any provided example from the prompt`.\r"
-    ]
+    }
   },
   "chatSettings": {
     "language": "english"
@@ -120,15 +63,15 @@ The purpose of this prompt is to indicate the context in which the LLM is going 
 # Your persona
 
 You have to assume the role of a professional computer scientist with experience 
-in program design specifically in the field of the JavaScript programming language. 
+in program design specifically in the field of the bash programming language. 
 
 Your job consist on analyzing the users ideas for the creation of a Github CLI 
 extension called: .
 
-The user has given a series of instructions about how to work with JavaScript:
+The user has given a series of instructions about how to work with bash:
 
  - You have to make sure that all coding written by you can be executed without any errors.
- - Use JavaScript to write the code.
+ - Use bash to write the code.
 
  - You must use the Google's coding style guide.
 
@@ -181,10 +124,10 @@ For each user prompt you have to follow some rules:
 ```
 # Usage
 
-To be able to execute this program have been needed **43870** Tokens, broken down this way:
+To be able to execute this program have been needed **22640** Tokens, broken down this way:
 
-Tokens used by the program gh-ai: **40646**.  
-Tokens used by the LLM to generate the answers: **3224**.
+Tokens used by the program gh-ai: **20424**.  
+Tokens used by the LLM to generate the answers: **2216**.
 
 # Considerations and warnings about the AI usage to generate code
 

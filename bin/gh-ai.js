@@ -11,7 +11,7 @@
  */
 'use strict';
 
-import { Command, Option } from 'commander'; 
+import { Command, Option, program } from 'commander'; 
 import { z } from 'zod';
 import OpenAI from 'openai';
 import dotEnv from 'dotenv';
@@ -71,7 +71,12 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
   };
 
   // Antes de empezar el programa se comprueba que el directorio este vacio o no exista
-  await checkDirectoryExistance(outputDirectory, options);
+  let errorWithDirectoryCreation = await checkDirectoryExistance(outputDirectory, options);
+
+  if (errorWithDirectoryCreation) {
+    console.error(`${CONSOLE_PROMPT.ERROR}The directory: "${outputDirectory}" couldn't be created.`);
+    process.exit(1);
+  }
 
   try {
 

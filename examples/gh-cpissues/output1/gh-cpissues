@@ -1,0 +1,101 @@
+#!/bin/bash
+
+# Function to copy GitHub issues from one repository to the current repository based on a specified label
+copy_issues() {
+  local source_repo=$1
+  local target_repo=$2
+  local label=$3
+
+  # Check if source repo, target repo, and label are provided
+  if [ -z "$source_repo" ] || [ -z "$target_repo" ] || [ -z "$label" ]; then
+    echo "Error: Source repository, target repository, and label must be provided."
+    exit 1
+  fi
+
+  # Check if gh is installed
+  if ! command -v gh &> /dev/null; then
+    echo "Error: Github CLI (gh) is not installed. Please install it before running this script."
+    exit 1
+  fi
+
+  # Check if git is installed
+  if ! command -v git &> /dev/null; then
+    echo "Error: Git is not installed. Please install it before running this script."
+    exit 1
+  fi
+
+  # Save the root of the current repository
+  current_repo_root=$(git rev-parse --show-toplevel)
+  current_commit=$(git rev-parse HEAD)
+
+  echo "Copying issues with label '$label' from $source_repo to the current repository."
+
+  # Get issues with the specified label from source repository
+  issues=$(gh issue list -R $source_repo -l "$label" --json title,body)
+
+  if [ -z "$issues" ]; then
+    echo "No issues with label '$label' found in $source_repo."
+  else
+    for row in $(echo "${issues}" | jq -r '.[] | @base64'); do
+      _jq() {
+        echo ${row} | base64 --decode | jq -r ${1}
+      }
+
+      issue_title=$(_jq '.title')
+      issue_body=$(_jq '.body')
+
+      # Check if issue already exists in the current repository
+      if ! gh issue list --json title | grep -q "\"$issue_title\""; then
+        gh issue create -t "$issue_title" -b "$issue_body" -l "$label"
+        echo "Issue '$issue_title' copied successfully to the current repository."
+      else
+        echo "Issue '$issue_title' already exists in the current repository. Skipped."
+      fi
+    done
+  fi
+
+  echo "Copying issues with label '$label' from $source_repo to the current repository completed."
+}
+
+# Function to display help information
+help() {
+  echo "Usage: gh-cpissues <git-repo> --label <label> [--verbose]"
+  echo "Arguments:"
+  echo "  git-repo     The target repository in the format '<owner>/<repository>'"
+  echo "Parameters:"
+  echo "  --label      Specify the <label> of the issue to copy"
+  echo "  --verbose    Activates the verbose execution and will keep the .tmp and .json file"
+  exit 0
+}
+
+main() {
+  # Parse command line arguments
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -h|--help)
+        help
+        ;;
+      --label)
+        label=$2
+        shift
+        ;;
+      --verbose)
+        verbose=true
+        ;;
+      *)
+        git_repo=$1
+        ;;
+    esac
+    shift
+  done
+
+  # Check prerequisites
+  if [ -z "$git_repo" ] || [ -z "$label" ]; then
+    echo "Error: Required arguments missing. Use -h or --help for usage."
+    exit 1
+  fi
+
+  copy_issues "$git_repo" "$label"
+}
+
+main "$@"

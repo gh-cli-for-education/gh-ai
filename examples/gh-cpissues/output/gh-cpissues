@@ -1,0 +1,39 @@
+```bash
+copy_issues() {
+  # Check if Git is installed
+  if ! command -v git &> /dev/null; then
+    echo "Error: Git is not installed. Please install Git."
+    exit 1
+  fi
+
+  # Save the root of the current repository and the current commit
+  current_repo_root=$(git rev-parse --show-toplevel)
+  current_commit=$(git rev-parse HEAD)
+
+  # Inform the user about the copying process
+  echo "Copying issues with label '$label' from $git_repo to the current repository..."
+
+  # Execute gh command to list all issues from git_repo with the label
+  issues_json=$(gh issue list --repo "$git_repo" --label "$label" --json title)
+
+  # Check if the JSON file is empty
+  if [[ -z $issues_json ]]; then
+    echo "No issues with label '$label' found in $git_repo."
+    exit 0
+  fi
+
+  # Process each issue from the JSON file
+  while IFS= read -r line; do
+    title=$(echo "$line" | jq -r '.title')
+    
+    # Check if issue already exists in the current repository
+    if git grep -q "$title"; then
+      echo "Issue '$title' already exists in the current repository."
+    else
+      # Create a new issue with the same title and content
+      echo "Creating new issue with title '$title' in the current repository..."
+      # Add command to create the new issue (not implemented in this code snippet)
+    fi
+  done <<< "$issues_json"
+}
+```

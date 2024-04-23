@@ -177,7 +177,8 @@ async function manageToolActions(openai, threadID, runID, outputDirectory, optio
         }
         else {
           console.error(`${CONSOLE_PROMPT.WARNING}Tool execution failed. The tool had an internal error.`);
-          throw error;
+          if (options.debug) { console.log(error); }
+          return { tool_call_id: call.id, output: 'Unexpected Error ocurred' };
         }
       }
 

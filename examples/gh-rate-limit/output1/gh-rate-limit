@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Function to display program usage and available options
+# This function displays the usage information and available options for the program.
+help() {
+  echo "Usage: gh-notify [options]"
+  echo "Options:"
+  echo "  -u     Show the 'used' rather than 'remaining' limit (Activates the usage flag)"
+  echo "  -h     Prints the help information of the program"
+  exit 1
+}
+
+# Function to make API call to GitHub REST API
+# This function makes a call to the GitHub REST API to retrieve rate limit information.
+gh_api() {
+  local param=$1
+  local response
+
+  if [ -n "$param" ]; then
+    response=$(gh api rate_limit)
+    echo "$response" | jq --raw-output '.resources | to_entries[] | {name: .key} + .value | "\(.name)  \(.limit - .remaining)/\(.limit)  \(.reset | strflocaltime("%H:%M:%S"))"' | column -t
+  else
+    response=$(gh api rate_limit)
+    echo "$response" | jq --raw-output '.resources | to_entries[] | {name: .key} + .value | "\(.name)  \(.remaining)/\(.limit)  \(.reset | strflocaltime("%H:%M:%S"))"' | column -t
+  fi
+}
+
+# Function to make API call to GitHub REST API using gh api command
+call() {
+  local github_pat="<insert_your_github_token_here>"
+  gh api rate_limit
+}
+
+# Main function for command line argument parsing
+# This function parses the command line options and executes the corresponding actions.
+main() {
+  if ! command -v gh &> /dev/null; then
+    echo "Error: Github CLI (gh) is not installed. Please install it and retry."
+    exit 1
+  fi
+
+  if ! command -v jq &> /dev/null; then
+    echo "Error: jq is not installed. Please install it and retry."
+    exit 1
+  fi
+
+  export GH_VERSION="2022-11-28"
+  export GH_HEADER="Accept: application/vnd.github+json"
+
+  local usage_flag=""
+  while getopts ":uh" opt; do
+    case ${opt} in
+      u)
+        usage_flag="-u"
+        ;;
+      h)
+        help
+        ;;
+      \?)
+        echo "Invalid option: -$OPTARG. Use -h for help."
+        exit 1
+        ;;
+    esac
+  done
+  shift $((OPTIND -1))
+
+  gh_api "$usage_flag"
+}
+
+# Call the main function to start the script execution
+main

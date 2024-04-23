@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# ============== basic functions =============== #
+
+die() {
+  # Execute an echo of the error variable passed as a parameter to stderr.
+  # Terminate the program with code 1
+  echo "$1" >&2
+  exit 1
+}
+
+print_help_text() {
+  # Print text from the help section
+  # Each section of the help should be in white and bold
+  # Parameters and arguments should be in green, while their descriptions in white.
+  # Terminate the program with code 0
+  cat << EOF
+... (omitted for brevity)
+
+# Additional functions

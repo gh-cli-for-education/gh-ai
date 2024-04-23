@@ -1,0 +1,99 @@
+#!/bin/bash
+
+# Main function to parse command line arguments and execute corresponding actions
+main() {
+  git_repo=""
+  label=""
+  verbose=false
+
+  # Check `Prerequisites`
+  if ! command -v gh &> /dev/null; then
+    echo "Error: Github CLI (gh) is not installed. Please install Github CLI (gh) before running this program."
+    exit 1
+  fi
+
+  if ! command -v js &> /dev/null; then
+    echo "Error: js is not installed. Please install js before running this program."
+    exit 1
+  fi
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -h|--help)
+        help
+        exit 0
+        ;;
+      --label)
+        label="$2"
+        shift
+        ;;
+      --verbose)
+        verbose=true
+        ;;
+      *)
+        if [ -z "$git_repo" ]; then
+          git_repo="$1"
+        else
+          echo "Error: Unknown command '$1'."
+          exit 1
+        fi
+        ;;
+    esac
+    shift
+  done
+
+  if [ -z "$git_repo" ] || [ -z "$label" ]; then
+    echo "Error: Please provide the <git-repo> and the --label <label>."
+    exit 1
+  fi
+
+  copy_issues "$git_repo" "$label" "$verbose"
+}
+
+# Function to display help information
+help() {
+  echo "Usage: gh-cpissues <git-repo> --label <label> [--verbose]"
+  echo "Arguments:"
+  echo "  git-repo           The target repository in the format '<owner>/<repository>'."
+  echo "Parameters:"
+  echo "  --label            Specify the <label> of the issue to copy."
+  echo "  --verbose          Activates verbose execution and keeps .tmp and .json files."
+}
+
+# Function to copy GitHub issues based on label from one repository to another
+copy_issues() {
+  local git_repo="$1"
+  local label="$2"
+  local verbose="$3"
+
+  if ! command -v git &> /dev/null; then
+    echo "Error: Git is not installed. Please install Git before running this program."
+    exit 1
+  fi
+
+  current_repo_root=$(git rev-parse --show-toplevel)
+  current_commit=$(git rev-parse --short HEAD)
+  
+  echo "Copying issues with label '$label' from $git_repo to the current repository."
+
+  issues=$(gh issue list -R "$git_repo" --label "$label" --json title,body)
+
+  if [[ ! -z "$issues" ]]; then
+    for issue in $(echo "$issues" | jq -c '.[]'); do
+      title=$(echo "$issue" | jq -r '.title')
+      body=$(echo "$issue" | jq -r '.body')
+      
+      existing_issue=$(gh issue list -R "$current_repo_root" --json title | jq --arg title "$title" 'map(select(.title == $title)) | length')
+
+      if [ "$existing_issue" -eq 0 ]; then
+        gh issue create --title "$title" --body "$body" --label "$label" --repo "$current_repo_root"
+      else
+        echo "Issue '$title' already exists in the current repository."
+      fi
+    done
+  else
+    echo "No issues with label '$label' found in $git_repo."
+  fi
+}
+
+main "$@"
