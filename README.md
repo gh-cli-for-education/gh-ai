@@ -6,6 +6,9 @@ gh extension that provides help in the creation of other gh extensions using AI 
 
 ## Installation
 
+```
+gh extension install gh-cli-for-ediucation/gh-ai
+```
 
 ## `.env` file
 
