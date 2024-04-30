@@ -5,6 +5,7 @@ import nearley from 'nearley';
 
 import * as grammarModule from './grammar.js';
 import { CONSOLE_PROMPT } from './utils.js';
+import { OpenAI } from 'openai';
 'use strict';
 
 const ERROR_HANDLER = Object.create(null);
@@ -47,7 +48,15 @@ ERROR_HANDLER['nearleyError'] = (error) => {
 };
 
 ERROR_HANDLER['openaiError'] = (error) => {
-  console.error(`${CONSOLE_PROMPT.ERROR}A(n) ${error.status} ${error.type} ocurred while making the API request.\n\t${error.message}`);
+
+  if (error instanceof OpenAI.APIError) {
+    console.error(`${CONSOLE_PROMPT.ERROR}A(n) ${error.status} ${error.type} ocurred while making the API request.\n\t${error.message}`);
+  } 
+  /// PONER AQUI TODO EL RESTO DE ERRORES POSIBLES
+  else {
+    console.error(`${CONSOLE_PROMPT.ERROR}A core OpenAI API error ocurred:\n\t${error.message}`);
+  }
+  
 }
 
 export { ERROR_HANDLER };

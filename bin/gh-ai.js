@@ -97,7 +97,7 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     else if (Object.hasOwn(error, 'token')) { // Checks if the error object has an 'offset property (It is better to create an specific Error Type)
       ERROR_HANDLER.nearleyError(error);
     }
-    else if (error instanceof OpenAI.APIError) {
+    else if (error instanceof OpenAI.OpenAIError) {
       ERROR_HANDLER.openaiError(error);
     } 
     else {

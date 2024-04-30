@@ -3,6 +3,11 @@
  */
 import * as fs from 'fs/promises';
 import Mustache from 'mustache';
+
+import * as url from 'url';
+
+const DIRNAME = url.fileURLToPath(new URL('.', import.meta.url));
+
 'use strict';
 
 // The escape function is changed to prevent Mustache from escaping symbols like (') into (&quot)
@@ -16,16 +21,16 @@ TEMPLATES = {
   EXTENSION: {},
 };
 
-const EXTENSION_SYSTEM_TEMPLATE            = await fs.readFile('./src/templates/extension/system-prompt.md',     ENCODER);
-const EXTENSION_MAIN_FUNCTION_TEMPLATE     = await fs.readFile('./src/templates/extension/main-function.md',     ENCODER);
-const EXTENSION_GENERIC_FUNCTION_TEMPLATE  = await fs.readFile('./src/templates/extension/generic-function.md',  ENCODER);
-const EXTENSION_FILE_GENERAL_IDEA_TEMPLATE = await fs.readFile('./src/templates/extension/file-general-idea.md', ENCODER);
-const EXTENSION_POST_PROCESSING_TEMPLATE   = await fs.readFile('./src/templates/extension/post-processing.md',   ENCODER);
-const EXTENSION_GENERATE_FILE_TEMPLATE     = await fs.readFile('./src/templates/extension/generate-file.md',     ENCODER);
+const EXTENSION_SYSTEM_TEMPLATE            = await fs.readFile(`${DIRNAME}extension/system-prompt.md`,     ENCODER);
+const EXTENSION_MAIN_FUNCTION_TEMPLATE     = await fs.readFile(`${DIRNAME}extension/main-function.md`,     ENCODER);
+const EXTENSION_GENERIC_FUNCTION_TEMPLATE  = await fs.readFile(`${DIRNAME}extension/generic-function.md`,  ENCODER);
+const EXTENSION_FILE_GENERAL_IDEA_TEMPLATE = await fs.readFile(`${DIRNAME}extension/file-general-idea.md`, ENCODER);
+const EXTENSION_POST_PROCESSING_TEMPLATE   = await fs.readFile(`${DIRNAME}extension/post-processing.md`,   ENCODER);
+const EXTENSION_GENERATE_FILE_TEMPLATE     = await fs.readFile(`${DIRNAME}extension/generate-file.md`,     ENCODER);
 
-const USER_LOG_TEMPLATE     = await fs.readFile('./src/templates/user-log.md',        ENCODER);
-const RESPONSE_LOG_TEMPLATE = await fs.readFile('./src/templates/response-log.md',    ENCODER);
-const README_TEMPLATE       = await fs.readFile('./src/templates/readme-template.md', ENCODER);
+const USER_LOG_TEMPLATE     = await fs.readFile(`${DIRNAME}user-log.md`,        ENCODER);
+const RESPONSE_LOG_TEMPLATE = await fs.readFile(`${DIRNAME}response-log.md`,    ENCODER);
+const README_TEMPLATE       = await fs.readFile(`${DIRNAME}readme-template.md`, ENCODER);
 
 // EXTENSION TEMPLATES 
 TEMPLATES.EXTENSION.SYSTEM = (inputObject) => {
