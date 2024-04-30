@@ -18,21 +18,21 @@ For each file requested by the user, its corresponding code has been generated.
 {{text}}
 ```
 
-#### Assistant Response
+### Assistant Response
 
 {{response}}
 
-#### Petition Usage
+### Petition Usage
 
 Total tokens used: **{{usage.total_tokens}}**
-Tokens used by the gh-ai generated prompt: **{{usage.prompt_tokens}}**.  
-Tokens used by the LLM to generate the answer: **{{usage.completion_tokens}}**.
+* Tokens used by the gh-ai generated prompt: **{{usage.prompt_tokens}}**.  
+* Tokens used by the LLM to generate the answer: **{{usage.completion_tokens}}**.
 
 {{/prompts}}
 ### Total Usage
 
 Total tokens used to generate the {{#extension}}file{{/extension}}: **{{usage.totalTokens}}**.
-Total tokens used by the gh-ai generated prompts: **{{usage.totalPromptTokens}}**.  
-Total tokens used by the LLM to generate the answer: **{{usage.totalCompletionTokens}}**.
+* Total tokens used by the gh-ai generated prompts: **{{usage.totalPromptTokens}}**.  
+* Total tokens used by the LLM to generate the answer: **{{usage.totalCompletionTokens}}**.
 
 {{/userPrompts}}

@@ -130,10 +130,10 @@ For each user prompt you have to follow some rules:
 ```
 # Usage
 
-To be able to execute this program have been needed **19830** Tokens, broken down this way:
+To be able to execute this program have been needed **0** Tokens, broken down this way:
 
-Tokens used by the program gh-ai: **17582**.  
-Tokens used by the LLM to generate the answers: **2248**.
+Tokens used by the program gh-ai: **0**.  
+Tokens used by the LLM to generate the answers: **0**.
 
 # Considerations and warnings about the AI usage to generate code
 

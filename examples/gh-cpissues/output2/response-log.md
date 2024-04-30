@@ -60,83 +60,15 @@ Write here a list of the most important ideas you have been able to extract from
 
 ```
 
-#### Assistant Response
+### Assistant Response
 
-# Generating the code for the Github CLI extension based on the provided description
 
-```bash 
-#!/bin/bash
 
-main() {
-  # Check `Prerequisites`
-  if ! command -v gh &> /dev/null; then
-    echo "Error: Github CLI (gh) is not installed. Please install Github CLI (gh) before running this program."
-    exit 1
-  fi
+### Petition Usage
 
-  if ! command -v js &> /dev/null; then
-    echo "Error: js is not installed. Please install js before running this program."
-    exit 1
-  fi
-
-  # Processes the command line and activates the different flags specified in the help function section.
-  while [[ $# -gt 0 ]]; do
-    case $1 in
-      -h|--help)
-        help
-        exit 0
-        ;;
-      *)
-        echo "Error: Unknown command '$1'."
-        exit 1
-        ;;
-    esac
-    shift
-  done
-
-  # Check if the <git-repo> and <label> variables are assigned, if not, echo an error and exit the program
-  if [ -z "$1" ] || [ -z "$2" ]; then
-    echo "Error: Please provide the <git-repo> and the <label>."
-    exit 1
-  fi
-
-  copy_issues "$1" "$2"
-}
-
-copy_issues() {
-  local repo="$1"
-  local label="$2"
-  local issues=$(gh issue list -R "$repo" --label "$label" --json title,body)
-  
-  for issue in $issues; do
-    title=$(echo "$issue" | jq -r '.title')
-    body=$(echo "$issue" | jq -r '.body')
-    
-    existing_issue=$(gh issue list -R "$repo" --json title | jq --arg title "$title" 'map(select(.title == $title)) | length')
-
-    if [ "$existing_issue" -eq 0 ]; then
-      gh issue create --title "$title" --body "$body" --label "$label" --repo "$repo"
-    fi
-  done
-}
-
-main "$@"
-```
-
-<requirements>
-- Check if Github CLI (gh) is installed, if not, print an error message and exit the program.
-- Check if js is installed, if not, print an error message and exit the program.
-- Parse and process the command line arguments, including activating help flags.
-- Verify that the <git-repo> and <label> variables are provided, otherwise print an error message and exit the program.
-- Implement the `copy_issues` function to copy Github issues from one repository to another based on a specified label.
-- Copy the issues with the same title and body, and avoid copying if an issue with the same title already exists in the target repository.
-</requirements>
-
-#### Petition Usage
-
-Total tokens used: **1903**
-Tokens used by the gh-ai generated prompt: **1309**.  
-Tokens used by the LLM to generate the answer: **594**.
+Total tokens used: ****
+* Tokens used by the gh-ai generated prompt: ****.  
+* Tokens used by the LLM to generate the answer: ****.
 
 ### Petition main and help functions of gh-cpissues.
 
@@ -183,95 +115,15 @@ It must be printed in the following order:
 
 ```
 
-#### Assistant Response
+### Assistant Response
 
-```bash
-#!/bin/bash
 
-main() {
-  git_repo=""
-  label=""
-  verbose=false
 
-  # Check `Prerequisites`
-  if ! command -v gh &> /dev/null; then
-    echo "Error: Github CLI (gh) is not installed. Please install Github CLI (gh) before running this program."
-    exit 1
-  fi
+### Petition Usage
 
-  if ! command -v js &> /dev/null; then
-    echo "Error: js is not installed. Please install js before running this program."
-    exit 1
-  fi
-
-  while [[ $# -gt 0 ]]; do
-    case $1 in
-      -h|--help)
-        help
-        exit 0
-        ;;
-      --label)
-        label="$2"
-        shift
-        ;;
-      --verbose)
-        verbose=true
-        ;;
-      *)
-        if [ -z "$git_repo" ]; then
-          git_repo="$1"
-        else
-          echo "Error: Unknown command '$1'."
-          exit 1
-        fi
-        ;;
-    esac
-    shift
-  done
-
-  if [ -z "$git_repo" ] || [ -z "$label" ]; then
-    echo "Error: Please provide the <git-repo> and the --label <label>."
-    exit 1
-  }
-
-  copy_issues "$git_repo" "$label" "$verbose"
-}
-
-help() {
-  echo "Usage: gh-cpissues <git-repo> --label <label> [--verbose]"
-  echo "Arguments:"
-  echo "  git-repo           The target repository in the format '<owner>/<repository>'."
-  echo "Parameters:"
-  echo "  --label            Specify the <label> of the issue to copy."
-  echo "  --verbose          Activates verbose execution and keeps .tmp and .json files."
-}
-
-copy_issues() {
-  local repo="$1"
-  local label="$2"
-  local verbose="$3"
-  local issues=$(gh issue list -R "$repo" --label "$label" --json title,body)
-  
-  for issue in $issues; do
-    title=$(echo "$issue" | jq -r '.title')
-    body=$(echo "$issue" | jq -r '.body')
-    
-    existing_issue=$(gh issue list -R "$repo" --json title | jq --arg title "$title" 'map(select(.title == $title)) | length')
-
-    if [ "$existing_issue" -eq 0 ]; then
-      gh issue create --title "$title" --body "$body" --label "$label" --repo "$repo"
-    fi
-  done
-}
-
-main "$@"
-```
-
-#### Petition Usage
-
-Total tokens used: **2908**
-Tokens used by the gh-ai generated prompt: **2345**.  
-Tokens used by the LLM to generate the answer: **563**.
+Total tokens used: ****
+* Tokens used by the gh-ai generated prompt: ****.  
+* Tokens used by the LLM to generate the answer: ****.
 
 ### Petition copy_issues of gh-cpissues.
 
@@ -296,50 +148,15 @@ For each line in the JSON file (using the `jq` command), the program should: Ext
 
 ```
 
-#### Assistant Response
+### Assistant Response
 
-```bash
-copy_issues() {
-  local git_repo="$1"
-  local label="$2"
-  local verbose="$3"
 
-  if ! command -v git &> /dev/null; then
-    echo "Error: Git is not installed. Please install Git before running this program."
-    exit 1
-  fi
 
-  local current_repo_root=$(git rev-parse --show-toplevel)
-  local current_commit=$(git rev-parse --short HEAD)
-  
-  echo "Copying issues with label '$label' from $git_repo to the current repository."
+### Petition Usage
 
-  local issues=$(gh issue list -R "$git_repo" --label "$label" --json title,body)
-
-  if [[ ! -z "$issues" ]]; then
-    for issue in $(echo "$issues" | jq -c '.[]'); do
-      title=$(echo "$issue" | jq -r '.title')
-      body=$(echo "$issue" | jq -r '.body')
-      
-      existing_issue=$(gh issue list -R "$current_repo_root" --json title | jq --arg title "$title" 'map(select(.title == $title)) | length')
-
-      if [ "$existing_issue" -eq 0 ]; then
-        gh issue create --title "$title" --body "$body" --label "$label" --repo "$current_repo_root"
-      else
-        echo "Issue '$title' already exists in the current repository."
-      fi
-    done
-  else
-    echo "No issues with label '$label' found in $git_repo."
-  fi
-}
-```
-
-#### Petition Usage
-
-Total tokens used: **3521**
-Tokens used by the gh-ai generated prompt: **3200**.  
-Tokens used by the LLM to generate the answer: **321**.
+Total tokens used: ****
+* Tokens used by the gh-ai generated prompt: ****.  
+* Tokens used by the LLM to generate the answer: ****.
 
 ### Petition post processing of gh-cpissues.
 
@@ -362,115 +179,15 @@ Using the *previously generated code* you have to make some final modification t
 
 ```
 
-#### Assistant Response
+### Assistant Response
 
-```bash
-#!/bin/bash
 
-# Main function to parse command line arguments and execute corresponding actions
-main() {
-  git_repo=""
-  label=""
-  verbose=false
 
-  # Check `Prerequisites`
-  if ! command -v gh &> /dev/null; then
-    echo "Error: Github CLI (gh) is not installed. Please install Github CLI (gh) before running this program."
-    exit 1
-  fi
+### Petition Usage
 
-  if ! command -v js &> /dev/null; then
-    echo "Error: js is not installed. Please install js before running this program."
-    exit 1
-  fi
-
-  while [[ $# -gt 0 ]]; do
-    case $1 in
-      -h|--help)
-        help
-        exit 0
-        ;;
-      --label)
-        label="$2"
-        shift
-        ;;
-      --verbose)
-        verbose=true
-        ;;
-      *)
-        if [ -z "$git_repo" ]; then
-          git_repo="$1"
-        else
-          echo "Error: Unknown command '$1'."
-          exit 1
-        fi
-        ;;
-    esac
-    shift
-  done
-
-  if [ -z "$git_repo" ] || [ -z "$label" ]; then
-    echo "Error: Please provide the <git-repo> and the --label <label>."
-    exit 1
-  fi
-
-  copy_issues "$git_repo" "$label" "$verbose"
-}
-
-# Function to display help information
-help() {
-  echo "Usage: gh-cpissues <git-repo> --label <label> [--verbose]"
-  echo "Arguments:"
-  echo "  git-repo           The target repository in the format '<owner>/<repository>'."
-  echo "Parameters:"
-  echo "  --label            Specify the <label> of the issue to copy."
-  echo "  --verbose          Activates verbose execution and keeps .tmp and .json files."
-}
-
-# Function to copy GitHub issues based on label from one repository to another
-copy_issues() {
-  local git_repo="$1"
-  local label="$2"
-  local verbose="$3"
-
-  if ! command -v git &> /dev/null; then
-    echo "Error: Git is not installed. Please install Git before running this program."
-    exit 1
-  fi
-
-  current_repo_root=$(git rev-parse --show-toplevel)
-  current_commit=$(git rev-parse --short HEAD)
-  
-  echo "Copying issues with label '$label' from $git_repo to the current repository."
-
-  issues=$(gh issue list -R "$git_repo" --label "$label" --json title,body)
-
-  if [[ ! -z "$issues" ]]; then
-    for issue in $(echo "$issues" | jq -c '.[]'); do
-      title=$(echo "$issue" | jq -r '.title')
-      body=$(echo "$issue" | jq -r '.body')
-      
-      existing_issue=$(gh issue list -R "$current_repo_root" --json title | jq --arg title "$title" 'map(select(.title == $title)) | length')
-
-      if [ "$existing_issue" -eq 0 ]; then
-        gh issue create --title "$title" --body "$body" --label "$label" --repo "$current_repo_root"
-      else
-        echo "Issue '$title' already exists in the current repository."
-      fi
-    done
-  else
-    echo "No issues with label '$label' found in $git_repo."
-  fi
-}
-
-main "$@"
-```
-
-#### Petition Usage
-
-Total tokens used: **4369**
-Tokens used by the gh-ai generated prompt: **3620**.  
-Tokens used by the LLM to generate the answer: **749**.
+Total tokens used: ****
+* Tokens used by the gh-ai generated prompt: ****.  
+* Tokens used by the LLM to generate the answer: ****.
 
 ### Petition gh-cpissues file generation.
 
@@ -480,19 +197,19 @@ Tokens used by the LLM to generate the answer: **749**.
 **Generate** a new **file** called **gh-cpissues** whose content is all the **last** *previously generated code* using the **generate_file* tool.
 ```
 
-#### Assistant Response
+### Assistant Response
 
-Great job! The *gh-cpissues* file has been successfully generated with the final code.
 
-#### Petition Usage
 
-Total tokens used: **7129**
-Tokens used by the gh-ai generated prompt: **7108**.  
-Tokens used by the LLM to generate the answer: **21**.
+### Petition Usage
+
+Total tokens used: ****
+* Tokens used by the gh-ai generated prompt: ****.  
+* Tokens used by the LLM to generate the answer: ****.
 
 ### Total Usage
 
-Total tokens used to generate the file: **19830**.
-Total tokens used by the gh-ai generated prompts: **17582**.  
-Total tokens used by the LLM to generate the answer: **2248**.
+Total tokens used to generate the file: **0**.
+* Total tokens used by the gh-ai generated prompts: **0**.  
+* Total tokens used by the LLM to generate the answer: **0**.
 

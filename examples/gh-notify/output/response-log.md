@@ -57,7 +57,8 @@ main() {
 }
 ``
 `
-**The API calls will use the `API REST`** to comunicate with Github APIv3
+**The API calls will use the `API REST`** to comunicate with Github APIv3
+
 </description>
 
 In addition to the *description* the program **must** necessarily **contain** the **following functions**:
@@ -259,7 +260,8 @@ In each iteration, a maximum of 50 notifications can be obtained from the API. F
 
 It is necessary to store all notifications obtained from the API in a variable called `all_notifs`. In each iteration, the previous results must be concatenated with those obtained in that iteration. Also, update the rest of the variables with the new values after the iteration. Check if the requested notification limit has been reached and exit the loop in that case.
 
-With all notifications obtained, a final filter is applied using the variables `exclusion_string` and `filter_string` to execute two `grep` commands in sequence (first exclusion and then filter), followed by the execution of the `column` command. The resulting output is then returned.
+With all notifications obtained, a final filter is applied using the variables `exclusion_string` and `filter_string` to execute two `grep` commands in sequence (first exclusion and then filter), followed by the execution of the `column` command. The resulting output is then returned.
+
 ```
 
 ```
@@ -327,7 +329,8 @@ If the type variable contains the word "Discussion", it executes the `process_di
 
 If the url variable contains the word "null", it executes the `process_url` function. The results of the function are assigned to the variables `number` and `modified_type`.
 
-Finally, it prints all local variables in table form.
+Finally, it prints all local variables in table form.
+
 ```
 
 ```

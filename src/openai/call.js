@@ -143,6 +143,7 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
       isToolOutput = false; 
     }
     else {
+
       run = await openai.beta.threads.runs.create(
         threadID,
         { 
@@ -150,6 +151,18 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
           tool_choice: executeTool ?? 'none',
         }
       ); 
+      
+      /* VER SI SE IMPLEMENTE EL MODO STREAMING
+      run = openai.beta.threads.runs.stream(threadID, {
+        assistant_id: assistantID,
+        tool_choice: executeTool ?? 'none',
+        stream: true
+      });
+
+      for await (const event of run) {
+        console.log(event);
+      }
+      */
     }
 
     // Se guarda la nueva información de la run por cada intento.

@@ -11,7 +11,7 @@
  */
 'use strict';
 
-import { Command, Option, program } from 'commander'; 
+import { Command, Option } from 'commander'; 
 import { z } from 'zod';
 import OpenAI from 'openai';
 import dotEnv from 'dotenv';
