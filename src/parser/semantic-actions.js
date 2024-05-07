@@ -2,76 +2,135 @@
  * Universidad de La Laguna
  * Escuela Superior de Ingeniería y Tecnología
  * Grado en Ingeniería Informática
- * Procesadores de Lenguajes
+ * Trabajo Final de Grado
  *
  * @author Raimon José Mejías Hernández  <alu0101390161@ull.edu.es>
- * @since 09/02/2024
+ * @since 07/05/2024
  * @desc Contains all the semantic actions used by the grammar
  * @external Grammar
  */
 'use strict';
 
-function buildPrompt([properties, eof]) {
+/**
+ * Build the input object that is going to be used by the gh-ai extension
+ * @param {[object, object, object]} 
+ * @returns 
+ */
+function buildInputObject([chatSettings, extension, eof]) {
   return {
-    extension: properties.find((property) => property.type === 'extension')?.content,
-    query: properties.find((property) => property.type === 'query')?.content,
-    chatSettings: properties.find((property) => property.type === 'chatSettings')?.content,
+    chatSettings: chatSettings.content,
+    extension: extension.content,
   };
 }
 
-function buildExtension([extension, properties]) {
+/**
+ * Build the extension property of the prompt
+ * @param {[object, object, object, object, object, object, object]} 
+ * @returns 
+ */
+function buildExtension([extensionToken, languageSettings, description, functions, help, examples, readme]) {
+  
+  let files = [buildFile([extensionToken, description, functions, help])];
+  
+  // En caso de que exista un readme lo guarda como un fichero cualquiera.
+  if (readme) files.push(readme);
+
   return {
     type: 'extension',
     content: {
-      files: properties.filter((property) => property.type === 'file').map((property) => property.content),
-      languageSettings: properties.find((property) => property.type === 'languageSettings')?.content,
-      examples: properties.find((property) => property.type === 'examples')?.content,
-      readme: properties.find((property) => property.type === 'readme')?.content,      
+      languageSettings: languageSettings.content,
+      files: files,
+      examples: examples?.content,    
     }
   };
 }
 
-function buildFile([file, descriptionBlocks, functions, help]) {
-  return {
-    type: 'file',
-    content: {
-      name: file.value,
-      description: descriptionBlocks.map((block) => block.value).join('\n'),
-      functions: functions ?? undefined,
-      help: help?.content
-    }
-  };
-}
-
-function buildFunction([functionToken, parameters, description, orderList]) {
+/**
+ * Build any function given the function name, description and optional parameters 
+ * query and template
+ * @param {[object, object, object, object]}
+ * @returns 
+ */
+function buildFunction([functionToken, description, query, template]) {
   return {
     name: functionToken.value,
-    params: parameters.map((parameter) => { return { parameter:  parameter.value.name, type: parameter.value.value }; }),
-    description: description.map((paragraph) => paragraph.value).join('\n\n'),
-    orderList: orderList.map((element) => element.value.content)
+    description: description.content,
+    query: query?.content,
+    template: template?.content,
   };
 }
 
-function buildHelp([help, usage, header, argumentss, parameters, footer]) {
+/**
+ * Build the help object of a file given the different sections
+ * @param {[object, object, object, object, object, object]} 
+ * @returns 
+ */
+function buildHelp([helpToken, usage, header, argumentss, parameters, footer]) {
   return {
     type: 'help',
     content: {
       usage: usage.value,
-      header: header.map((paragraph) => paragraph.value).join(''),
+      header: header.map((paragraph) => paragraph.value).join('\n\n'),
       arguments: argumentss?.map((argument) => argument.value),
       parameters: parameters?.map((parameter) => parameter.value),
-      footer: footer.map((paragraph) => paragraph.value).join('')
+      footer: footer.map((paragraph) => paragraph.value).join('\n\n')
     } 
   };
 }
 
-function buildReadme([readme, orderedList]) {
+/**
+ * Build any file object given a name, description and the optional properties 
+ * functions and help 
+ * @param {[object, object, object, object]}
+ * @returns 
+ */
+function buildFile([fileName, description, functions, help]) {
   return {
-    type: 'readme',
-    content: orderedList.map((element) => element.value.content)
+    name: fileName.value,
+    description: description.content,
+    functions: functions ?? undefined,
+    help: help?.content
   };
 }
 
+/**
+ * Build a description object for a given section inside the input file
+ * @param {[object, object]} 
+ * @returns 
+ */
+function buildDescription([descriptionToken, descriptionBlocks]) {
+  return {
+    type: 'description',
+    content: descriptionBlocks.map((block) => block.value).join('\n\n'),
+  }
+}
+
+/**
+ * Build a string whose content is the section name and its correspoding description
+ * @param {[object, object]}
+ * @returns 
+ */
+function buildSection([headerToken, description]) {
+  return `${headerToken.value}\n\n ${description.content}`;
+}
+
+/**
+ * Combine all the readme sections description into one big description 
+ * @param {[object]} sections Array with each section string ready to be combined
+ * @returns
+ */
+function buildSections([sections]) {
+  return {
+    type: 'sections',
+    content: sections.flat().join('\n\n'),
+  };
+}
+
+/**
+ * Build an Example object given the input command and the expected output
+ * @param {[object, object]}
+ * @returns 
+ */
 function buildExample([command, output]) {
   return {
     command: command.value,
@@ -79,23 +138,37 @@ function buildExample([command, output]) {
   };
 }
 
-function buildExamples([examples, exampleList]) {
+/**
+ * Wrap all the examples inside the same object 
+ * @param {[object, object]}
+ * @returns 
+ */
+function buildExamples([examplesToken, exampleList]) {
   return {
     type: 'examples',
     content: exampleList
   };
 }
 
+/**
+ * Object that manage the different posible executions of the buildSettings function
+ */
 const buildSettings = {
   chatSettings: (d) => buildSetting(['chatSettings', d[1]]),
   languageSettings: (d) => buildSetting(['languageSettings', d[1]])
 };
 
+/**
+ * Build a generic settings object given the settings name and the list of key:value pairs
+ * @param {[string, object]}
+ * @returns 
+ */
 function buildSetting([type, settings]) {
   let settingsObject = {
     type: type,
     content: {},
   };
+
   settings.forEach((setting) => {
     let settingName = setting.value.name.toLowerCase();
     if (!settingsObject.content[settingName]) {
@@ -106,12 +179,14 @@ function buildSetting([type, settings]) {
 }
 
 export {
-  buildPrompt,
+  buildInputObject,
   buildExtension,
-  buildFile,
   buildFunction,
   buildHelp,
-  buildReadme,
+  buildDescription,
+  buildFile,
+  buildSection,
+  buildSections,
   buildExample,
   buildExamples,
   buildSettings,

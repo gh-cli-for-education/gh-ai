@@ -115,10 +115,10 @@ async function parseInputFile(inputFile, responseObject, options) {
   PARSER.feed(INPUT);
   let inputObject = PARSER.results[0];
   
+  if (options.debug) { console.log(CONSOLE_PROMPT.DEBUG, PARSER.results.length, inputObject); }
+
   // Comprobar que el inputObject sea correcto
   INPUT_SCHEMA.parse(inputObject);
-
-  if (options.debug) { console.log(CONSOLE_PROMPT.DEBUG, inputObject); }
 
   // Añade la información del lenguage al reponseObject
   console.log(responseObject);

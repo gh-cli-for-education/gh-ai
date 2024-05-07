@@ -6,7 +6,7 @@
  * Procesadores de Lenguajes
  *
  * @author Raimon José Mejías Hernández  <alu0101390161@ull.edu.es>
- * @since 09/02/2024
+ * @since 07/05/2024
  * @desc Contains all the tokens used by the Lexer
  * @external Grammar
  */
@@ -40,29 +40,33 @@ function toCaseInsensive(word) {
   return regexSource.join('');
 };
 
+/**
+ * Object that contains all the tokens used by the gh-ai extension
+ */
 const TOKENS = {
   WHITES: { match: /\s+/, lineBreaks: true },
   EOF: '__EOF__',
-  EXTENSION: { match: new RegExp('^# *' + toCaseInsensive('extension')) },
-  QUERY: { match: new RegExp('^# *' + toCaseInsensive('query')) }, 
-  MAIN_FILE: { 
-    match: new RegExp('^#{2} *' + toCaseInsensive('main') + ' *' + toCaseInsensive('file') + ' +gh-[a-z][a-z0-9]*(?:[-][a-z0-9]+)*'), 
+  EXTENSION: { 
+    match: new RegExp('^# *' + toCaseInsensive('extension') + ' +gh-[a-z][a-z0-9]*(?:[-][a-z0-9]+)*'),
     value: (value) => {
-      const MAIN_FILE_CAPTURING = new RegExp('^#{2} *' + toCaseInsensive('main') + ' *' + toCaseInsensive('file') + ' +(gh-[a-z][a-z0-9]*(?:[-][a-z0-9]+)*)');
-      const RESULT = MAIN_FILE_CAPTURING.exec(value);
-      return RESULT[1];
-    } 
-  },  
+      const EXTENSION_CAPTURING = new RegExp('^# *' + toCaseInsensive('extension') + ' +(gh-[a-z][a-z0-9]*(?:[-][a-z0-9]+)*)');
+      const RESULT = EXTENSION_CAPTURING.exec(value);
+      return RESULT[1]
+    },
+  },
+  QUERY: { match: new RegExp('^#{3} *' + toCaseInsensive('query')) },  
   FUNCTION:   { 
-    match: new RegExp('^#{3} *' + toCaseInsensive('function') + ' +(?:.*)'),
+    match: new RegExp('^#{2} *' + toCaseInsensive('function') + ' +(?:[a-zA-Z][a-zA-Z_]*)'),
     value: (value) => {
-      const FUNCTION_CAPTURING = new RegExp('^#{3} *' + toCaseInsensive('function') + ' +(.*)');
+      const FUNCTION_CAPTURING = new RegExp('^#{2} *' + toCaseInsensive('function') + ' +([a-zA-Z][a-zA-Z_]*)');
       const RESULT = FUNCTION_CAPTURING.exec(value);
       return RESULT[1];      
     }
   }, 
-  EXAMPLES:   { match: new RegExp('^#{2} *' + toCaseInsensive('examples')) }, 
-  HELP:       { match: new RegExp('^#{3} *' + toCaseInsensive('help')) },
+  DESCRIPTION: {match: new RegExp('^#{2,3} *' + toCaseInsensive('description')) },
+  TEMPLATE:    { match: new RegExp('^#{3} *' + toCaseInsensive('template')) },
+  EXAMPLES:    { match: new RegExp('^#{2} *' + toCaseInsensive('examples')) }, 
+  HELP:        { match: new RegExp('^#{2} *' + toCaseInsensive('help')) },
   USAGE:      { 
     match: new RegExp('^#{3} *' + toCaseInsensive('usage') + ' +.*'), 
     value: (value) => {
@@ -73,21 +77,13 @@ const TOKENS = {
   },
   ARGUMENTS:  { match: new RegExp('^#{3} *' + toCaseInsensive('arguments')) }, 
   PARAMETERS: { match: new RegExp('^#{3} *' + toCaseInsensive('parameters')) }, 
-  FILE: { 
-    match: new RegExp('^#{2} *' + toCaseInsensive('file') + ' +[a-z][a-z0-9]*(?:[-][a-z0-9]+)*'), 
-    value: (value) => {
-      const FILE_CAPTURING = new RegExp('^#{2} *' + toCaseInsensive('file') + ' +([a-z][a-z0-9]*(?:[-][a-z0-9]+)*)');
-      const RESULT = FILE_CAPTURING.exec(value);
-      return RESULT[1];
-    } 
-  }, 
   LANGUAGE_SETTINGS: { match: new RegExp('^#{2} *' + toCaseInsensive('language') + ' *' + toCaseInsensive('settings')) }, 
   CHAT_SETTINGS:     { match: new RegExp('^# *' + toCaseInsensive('chat') + ' *' + toCaseInsensive('settings')) }, 
-  README:            { match: new RegExp('^#{2} *' + toCaseInsensive('readme')) }, 
+  README:            { match: new RegExp('^#{2} *' + toCaseInsensive('readme')), value: 'readme' }, 
   HEADER:            { match: /^#{1,6}.*/ },
   COMMENT:           { match: new RegExp('^\\[' + toCaseInsensive('comment') + '\\]: +# +\\([^\\n]+\\)') }, 
   LONG_PARAMETER: { 
-    match: /^[-] +[-]{2}[a-zA-Z]{2,}(?:[-][a-zA-Z]{2,})* +(?:.*)/, 
+    match: /^[-] +[-]{2}[a-z]{2,}(?:[-][a-z]{2,})* *(?:.*)/, 
     value: (value) => {
       const LONG_PARAMETER_CAPTURING = /[-] +([-]{2}[a-zA-Z]{2,}(?:[-][a-zA-Z]{2,})*) +(.*)/;
       const RESULT = LONG_PARAMETER_CAPTURING.exec(value);
@@ -99,9 +95,9 @@ const TOKENS = {
     } 
   },
   SHORT_PARAMETER: { 
-    match: /^[-] +[-][a-zA-Z] +(?:.*)/, 
+    match: /^[-] +[-][a-z] *(?:.*)/, 
     value: (value) => {
-      const SHORT_PARAMETER_CAPTURING = /[-] +([-][a-zA-Z]) +(.*)/;
+      const SHORT_PARAMETER_CAPTURING = /[-] +([-][a-zA-Z]) *(.*)/;
       const RESULT = SHORT_PARAMETER_CAPTURING.exec(value);
       return {
         parameter: RESULT[1],
@@ -110,11 +106,23 @@ const TOKENS = {
       };
     } 
   },
-  SETTING: { 
-    match: /^[-] +(?:[a-zA-Z]+) *: *(?:[a-zA-Z]+)/, 
+  LONG_SHORT_PARAMETER: {
+    match: /^[-] +[-][a-z] +[-]{2}[a-z]{2,}(?:[-][a-z]{2,})* *(?:.*)/,
     value: (value) => {
-      const SETTING_CAPTURING = /^[-] +([a-zA-Z]+) *: *([a-zA-Z]+)/;
-      const RESULT = SETTING_CAPTURING.exec(value);
+      const LONG_SHORT_PARAMETER_CAPTURING = /^[-] +([-][a-z]) +([-]{2}[a-z]{2,}(?:[-][a-z]{2,})*) *(?:.*)/;
+      const RESULT = LONG_SHORT_PARAMETER_CAPTURING.exec(value);
+      return {
+        parameter: `${RESULT[1]} ${RESULT[2]}`,
+        argument: null,
+        description: RESULT[3],
+      }
+    },
+  },
+  KEY_VALUE: { 
+    match: /^[-] +(?:[a-zA-Z]+) *(?::|=) *(?:[a-zA-Z]+)/, 
+    value: (value) => {
+      const KEY_VALUE_CAPTURING = /^[-] +([a-zA-Z]+) *(?::|=) *([a-zA-Z]+)/;
+      const RESULT = KEY_VALUE_CAPTURING.exec(value);
       return {
         name: RESULT[1],
         value: RESULT[2]
@@ -122,7 +130,7 @@ const TOKENS = {
     }
   },
   ARGUMENT: { 
-    match: /[-] +(?:[a-z][a-z0-9]*(?:[-][a-z0-9]+)*)(?: +.*)?/,
+    match: /^[-] +(?:[a-z][a-z0-9]*(?:[-][a-z0-9]+)*)(?: +.*)?/,
     value: (value) => {
       const ARGUMENT_CAPTURING = /[-] +([a-z][a-z0-9]*(?:[-][a-z0-9]+)*)(?: +(.*))?/;
       const RESULT = ARGUMENT_CAPTURING.exec(value);

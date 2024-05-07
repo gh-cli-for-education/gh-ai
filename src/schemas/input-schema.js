@@ -34,9 +34,9 @@ const HELP_SCHEMA = z.object({
 
 const FUNCTION_SCHEMA = z.object({
   name: z.string().describe('Function name'),
-  params: z.array(z.object({})).describe('function params').optional(),
   description: z.string().describe('function description'),
-  orderList: z.array(z.string()).describe('').optional(),
+  query: z.string().describe('A query the function should execute').optional(),
+  template: z.string().describe('A Template used to help the llm know how to generate the function').optional(),
 }).describe('').required({
   name: true,
   description: true
@@ -60,30 +60,27 @@ const EXAMPLES_SCHEMA = z.object({
 const LANGUAGE_SETTINGS_SCHEMA = z.object({
   language:      z.string().describe('The specified language used by the extension'),
   specification: z.string().describe('The language specification').optional(),
-  style:         z.string().describe('The coding style for the language').optional()
+  style:         z.string().describe('The coding style for the language').optional().default('Google'),
 }).describe('Script language configuration').required({ language: true }).strict();
 
 const EXTENSION_SCHEMA = z.object({
   files: z.array(FILES_SCHEMA).describe('An Array with all the files expected by the extension'),
   languageSettings: LANGUAGE_SETTINGS_SCHEMA,
   examples: z.array(EXAMPLES_SCHEMA).describe('An Array with all the usage examples of the extension').optional(),
-  readme: z.array(z.string()).describe('TODO').optional(),
 }).describe('The extension proposal, fill all the parameters for a better result').required({
   languageSettings: true,
   files: true,
 }).strict(); 
 
-const QUERY_SCHEMA = z.object({});
-
 const CHAT_SETTINGS_SCHEMA = z.object({
-  language: z.string().describe('The llm language response'),
+  language: z.string().describe('The llm language response').optional().default('string'),
+  nickname: z.string().describe('How the llm should call the user').optional().default('user'),
 }).describe('The chat settings of the llm').required().strict();
 
 const INPUT_SCHEMA = z.object({
-  extension: EXTENSION_SCHEMA.optional(),
-  query: QUERY_SCHEMA.optional(),
   chatSettings: CHAT_SETTINGS_SCHEMA,
-}).required({ chatSettings: true }).strict();
+  extension: EXTENSION_SCHEMA,
+}).required({ chatSettings: true, extension: true }).strict();
 
 /**
  * @description Allow zod package to produce custom error messages 

@@ -54,10 +54,11 @@ PROMPT_GENERATOR['EXTENSION'] = async function generatePrompts(inputObject, resp
     }
 
     // Por cada función se genera su correspondiente prompt
-    file.functions.forEach((functionn) => {
+    console.log(file);
+    file.functions?.forEach((oFunctionn) => {
       filePrompts.push({
-        title: `${functionn.name} of ${file.name}.`,
-        text: TEMPLATES.EXTENSION.GENERIC_FUNCTION(functionn),
+        title: `${oFunctionn.name} of ${file.name}.`,
+        text: TEMPLATES.EXTENSION.GENERIC_FUNCTION(oFunctionn),
         reponse: undefined,
         usage: {},
         executeTool: undefined,
