@@ -4,38 +4,30 @@ Read once again the *requirements* and the *previously generated code* written b
 
 Then **generate a new approach** and make sure to add the functions described in the following section.
 
-## {{name}} Function 
+## Function {{name}} 
 
 Use the following *description* as guide to generate the corresponding code.
 
 ```
 {{description}}
 ```
-{{#params.length}}
 
-### Parameters
+{{#template}}
+Here you have a template of how the function should looks like:
 
-The function receives the following parameters:
+{{template}}
 
-{{#params}}
-{{functionParametersParaser}}
-{{/params}}
-{{/params.length}}
-{{#orderList.length}}
+make sure to complete and generate all the code specified in the comments.
+{{/template}}
 
-### Code Steps
+{{#query}}
+### Query
 
-Follow the list step by step and make sure to **Generate the corresponding code**
+Use the following description inside the ''' to generate a GraphQL Query to interact with the Github API v4
 
-{{#orderList}}
+''' 
+{{query}}
+'''
 
-<step>
-{{.}}
-</step>
+{{/query}}
 
-<code>
-Put here the gerated code using the content from the *step tag* as a guide.
-</code>
-
-{{/orderList}}
-{{/orderList.length}}

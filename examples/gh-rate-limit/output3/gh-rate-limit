@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Global variables
+GITHUB_API_VERSION="2022-11-28"
+ACCEPT_HEADER="Accept: application/vnd.github+json"
+USAGE="Usage: gh-rate-limit [options]"
+
+# Function to print the program usage and options
+help() {
+  echo "$USAGE"
+  echo "Options:"
+  echo "  -u     Show the 'used' rather than 'remaining' limit"
+  echo "  -h     Print the help information"
+  exit 1
+}
+
+# Main function to parse the command line arguments
+main() {
+  usage_flag=false
+
+  # Command line parsing
+  while getopts ":uh" opt; do
+    case $opt in
+      u) usage_flag=true;;
+      h) help;;
+      :) echo "Option -$OPTARG requires an argument." >&2
+         exit 1
+         ;;
+      \?) echo "Invalid option: -$OPTARG" >&2
+         exit 1
+         ;;
+    esac
+  done
+}
+
+# Function to make a call to the Github REST API
+call() {
+  local remaining_flag=""
+  local header_flag="X-GitHub-Api-Version: $GITHUB_API_VERSION"
+  local api="https://api.github.com/rate_limit"
+
+  if [ "$usage_flag" = true ]; then
+    remaining_flag=".resources | to_entries[] | {name: .key} + .value | .used"
+  else
+    remaining_flag=".resources | to_entries[] | {name: .key} + .value | .remaining"
+  fi
+
+  result=$(gh api graphql -f "$header_flag" -f "$ACCEPT_HEADER" -X GET -d query='\n    {\n      viewer {\n        login\n      }\n    }\n  ' | jq --raw-output "$remaining_flag")
+
+  if [ -n "$result" ]; then
+    echo "$result"
+  else
+    echo "Error: Unable to fetch data from the Github API."
+  fi
+}
+
+# Call the main function
+main

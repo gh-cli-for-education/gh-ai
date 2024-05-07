@@ -26,88 +26,78 @@ PROMPT_GENERATOR['EXTENSION'] = async function generatePrompts(inputObject, resp
   responseObject.systemPrompt = TEMPLATES.EXTENSION.SYSTEM(inputObject);
   
   const EXTENSION = inputObject.extension;
+  const MAIN_FILE = EXTENSION.files[0];
+  
+  let filePrompts = [];
 
-  // Por cada fichero pedido por el usuario
-  EXTENSION.files.forEach((file, index) => {
-    let filePrompts = []
+  // Se añade La idea general del fichero al prompt
+  filePrompts.push({
+    title: `general idea of ${MAIN_FILE.name}.`,
+    text: TEMPLATES.EXTENSION.FILE_GENERAL_IDEA(MAIN_FILE),
+    reponse: undefined,
+    usage: {},
+    executeTool: undefined,
+    askForChanges: false,
+  });
 
-    // Se añade La idea general del fichero al prompt
+  filePrompts.push({
+    title: `main and help functions of ${MAIN_FILE.name}.`,
+    text: TEMPLATES.EXTENSION.MAIN_FUNCTION(MAIN_FILE),
+    reponse: undefined,
+    usage: {},
+    executeTool: undefined,
+    askForChanges: false,
+  });
+
+  MAIN_FILE.functions?.forEach((oFunction) => {
     filePrompts.push({
-      title: `general idea of ${file.name}.`,
-      text: TEMPLATES.EXTENSION.FILE_GENERAL_IDEA(file),
+      title: `${oFunction.name} of ${MAIN_FILE.name}.`,
+      text: TEMPLATES.EXTENSION.GENERIC_FUNCTION(oFunction),
       reponse: undefined,
       usage: {},
       executeTool: undefined,
       askForChanges: false,
-    });
-
-    // El primer fichero del userPrompt siempre se tratará como un MainFile
-    if (index === 0) { 
-      filePrompts.push({
-        title: `main and help functions of ${file.name}.`,
-        text: TEMPLATES.EXTENSION.MAIN_FUNCTION(file),
-        reponse: undefined,
-        usage: {},
-        executeTool: undefined,
-        askForChanges: false,
-      });
-    }
-
-    // Por cada función se genera su correspondiente prompt
-    console.log(file);
-    file.functions?.forEach((oFunctionn) => {
-      filePrompts.push({
-        title: `${oFunctionn.name} of ${file.name}.`,
-        text: TEMPLATES.EXTENSION.GENERIC_FUNCTION(oFunctionn),
-        reponse: undefined,
-        usage: {},
-        executeTool: undefined,
-        askForChanges: false,
-      });
-    });
-    
-    // Se hace un post procesado del fichero en un prompt por separado
-    filePrompts.push({
-      title: `post processing of ${file.name}.`,
-      text: TEMPLATES.EXTENSION.POST_PROCESSING({ 
-        name: file.name, 
-        languageSettings: inputObject.extension.languageSettings 
-      }),
-      reponse: undefined,
-      usage: {},
-      executeTool: undefined,
-      askForChanges: false,
-    });
-
-    // Se genera un prompt para indicarle a la IA que debe generar el fichero utilizando las tools
-    filePrompts.push({
-      title: `${file.name} file generation.`,
-      text: TEMPLATES.EXTENSION.GENERATE_FILE(file),
-      reponse: undefined,
-      usage: {},
-      executeTool: { type: 'function', function: { name: 'generate_file'} },
-      askForChanges: true,
-    });
-
-    // Se guarda el prompt completo en el promptObject
-    responseObject.userPrompts.push({
-      title: file.name,
-      prompts: filePrompts,
-      usage: {
-        totalPromptTokens: 0,
-        totalCompletionTokens: 0,
-        totalTokens: 0,
-      }
     });
   });
 
-  // En caso de pedir una extension, se añade a la lista de userPrompts
-  if (EXTENSION.readme) {
+  filePrompts.push({
+    title: `post processing of ${MAIN_FILE.name}.`,
+    text: TEMPLATES.EXTENSION.POST_PROCESSING({ 
+      name: MAIN_FILE.name, 
+      languageSettings: inputObject.extension.languageSettings 
+    }),
+    reponse: undefined,
+    usage: {},
+    executeTool: undefined,
+    askForChanges: false,
+  });
+
+  filePrompts.push({
+    title: `${MAIN_FILE.name} file generation.`,
+    text: TEMPLATES.EXTENSION.GENERATE_FILE(MAIN_FILE),
+    reponse: undefined,
+    usage: {},
+    executeTool: { type: 'function', function: { name: 'generate_file'} },
+    askForChanges: true,
+  });
+
+  responseObject.userPrompts.push({
+    title: MAIN_FILE.name,
+    prompts: filePrompts,
+    usage: {
+      totalPromptTokens: 0,
+      totalCompletionTokens: 0,
+      totalTokens: 0,
+    }
+  });
+
+  // En caso de pedir un readme, se añade a la lista de userPrompts
+  if (EXTENSION.files.length > 1) {
     responseObject.userPrompts.push({
       title: 'Readme',
       prompts: [{
         title: 'Readme file generation',
-        text: TEMPLATES.README(EXTENSION.readme),
+        text: TEMPLATES.README(EXTENSION.files[1]),
         reponse: undefined,
         usage: {},
         executeTool: { type: 'function', function: { name: 'generate_file'} },

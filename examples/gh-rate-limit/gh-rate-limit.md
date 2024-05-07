@@ -2,14 +2,12 @@
 
 - language: english
 
-# Extension
+# Extension gh-rate-limit
 
 ## LanguageSettings
 
 - language: bash
 - style: Google
-
-## Main File gh-rate-limit
 
 gh-rate-limit is an extension of the Github Command Line Interface (Github CLI) whose purpose is to show the user their existing rate limits and when its resets. The program does exactly the same as executing the following command:
 
@@ -43,13 +41,19 @@ main () {
 
 Make sure the program is executable.
 
-### function call
+## function call
 
 The function makes a call to the Github REST API using the `gh api` command, utilizing local variables as headers for the call. This function translates the content in the following code block, taking into account the `usage` flag to check the remaining or percentage of usage.
 
-curl -fSsL -H "Authorization: token $(github_pat)" -X GET https://api.github.com/rate_limit | jq --raw-output '.resources | to_entries[] | {name: .key} + .value | "\(.name)  \(.remaining) \(.limit)  \(.reset | strflocaltime("%H:%M:%S") )"' | column -t
+### query
 
-### help
+Translate the Rest api call inside the following codeblock into a GraphQL call
+
+```bash
+curl -fSsL -H "Authorization: token $(github_pat)" -X GET https://api.github.com/rate_limit | jq --raw-output '.resources | to_entries[] | {name: .key} + .value | "\(.name)  \(.remaining) \(.limit)  \(.reset | strflocaltime("%H:%M:%S") )"' | column -t
+```
+
+## help
 
 ### usage gh-rate-limit [options]
 
