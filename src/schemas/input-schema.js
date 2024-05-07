@@ -5,82 +5,81 @@
  * Trabajo de Fin de Grado
  *
  * @author Raimon José Mejías Hernández  <alu0101390161@ull.edu.es>
- * @date 05/02/2024
+ * @date 07/05/2024
  * @desc @TODO hacer la descripción
  */
 import { z } from "zod";
 'use strict';
 
 const ARGUMENT_SCHEMA = z.object({
-  argument:    z.string().describe('The argument\'s name'),
-  description: z.string().describe('The argument\'s description'),
-}).describe('Describe the schema that an argument must follow').required().strict();
+  argument:    z.string(),
+  description: z.string().optional(),
+})
+.required({ argument: true }).strict();
 
 const PARAMETER_SCHEMA = z.object({
-  parameter:   z.string().describe('The string value of the parameter'),
+  parameter:   z.string(),
   argument:    z.nullable(ARGUMENT_SCHEMA.omit({ description: true })),
-  description: z.string().describe('The parameter\'s description'),
-}).describe('Describe the schema that a parameter must follow').required().strict();
+  description: z.string().optional(),
+})
+.required({ parameter: true }).strict();
 
 const HELP_SCHEMA = z.object({
-  usage:       z.string().describe('The usage block of a help function'),
-  header:      z.string().describe('The string containing the usage and more useful info'),
-  arguments:   z.array(ARGUMENT_SCHEMA).describe('The main file arguments').optional(),
-  parameters:  z.array(PARAMETER_SCHEMA).describe('The main file parameters').optional(),
-  footer:      z.string().describe('More aditional information about the program').optional()
-}).describe('help fuction output expected').required({ 
-  header: true
-}).strict();
+  usage:      z.string(),
+  header:     z.string().optional(),
+  arguments:  z.array(ARGUMENT_SCHEMA).optional(),
+  parameters: z.array(PARAMETER_SCHEMA).optional(),
+  footer:     z.string().optional(),
+})
+.required({ usage: true }).strict();
 
 const FUNCTION_SCHEMA = z.object({
-  name: z.string().describe('Function name'),
-  description: z.string().describe('function description'),
-  query: z.string().describe('A query the function should execute').optional(),
-  template: z.string().describe('A Template used to help the llm know how to generate the function').optional(),
-}).describe('').required({
-  name: true,
-  description: true
-}).strict();
+  name:        z.string(),
+  description: z.string(),
+  query:       z.string().optional(),
+  template:    z.string().optional(),
+})
+.required({ name: true, description: true }).strict();
 
 const FILES_SCHEMA = z.object({
-  name:        z.string().describe('The expected name of the object'),
-  description: z.string().describe('The description of the object'),
-  functions:   z.array(FUNCTION_SCHEMA).describe('The description of all functions from the file').optional(),
+  name:        z.string(),
+  description: z.string(),
+  functions:   z.array(FUNCTION_SCHEMA).optional(),
   help:        HELP_SCHEMA.optional()
-}).describe('A generic schema for any object that has a name and a description').required({
-  name: true,
-  description: true
-}).strict();
+})
+.required({ name: true, description: true }).strict();
 
 const EXAMPLES_SCHEMA = z.object({
-  command: z.string().describe('The example command to execute'),
-  output:  z.string().describe('The expected example output')
-}).describe('Usage example of the expected extension').required().strict();
+  command: z.string(),
+  output:  z.string()
+})
+.required({ command: true, output: true }).strict();
 
 const LANGUAGE_SETTINGS_SCHEMA = z.object({
-  language:      z.string().describe('The specified language used by the extension'),
-  specification: z.string().describe('The language specification').optional(),
-  style:         z.string().describe('The coding style for the language').optional().default('Google'),
-}).describe('Script language configuration').required({ language: true }).strict();
+  language:      z.string(),
+  specification: z.string().optional(),
+  style:         z.string().optional().default('Google'),
+})
+.required({ language: true }).strict();
 
 const EXTENSION_SCHEMA = z.object({
-  files: z.array(FILES_SCHEMA).describe('An Array with all the files expected by the extension'),
+  files:            z.array(FILES_SCHEMA),
   languageSettings: LANGUAGE_SETTINGS_SCHEMA,
-  examples: z.array(EXAMPLES_SCHEMA).describe('An Array with all the usage examples of the extension').optional(),
-}).describe('The extension proposal, fill all the parameters for a better result').required({
-  languageSettings: true,
-  files: true,
-}).strict(); 
+  examples:         z.array(EXAMPLES_SCHEMA).optional(),
+})
+.required({ languageSettings: true, files: true,}).strict(); 
 
 const CHAT_SETTINGS_SCHEMA = z.object({
-  language: z.string().describe('The llm language response').optional().default('string'),
-  nickname: z.string().describe('How the llm should call the user').optional().default('user'),
-}).describe('The chat settings of the llm').required().strict();
+  language: z.string().optional().default('string'),
+  nickname: z.string().optional().default('user'),
+})
+.required().strict();
 
 const INPUT_SCHEMA = z.object({
   chatSettings: CHAT_SETTINGS_SCHEMA,
-  extension: EXTENSION_SCHEMA,
-}).required({ chatSettings: true, extension: true }).strict();
+  extension:    EXTENSION_SCHEMA,
+})
+.required({ chatSettings: true, extension: true }).strict();
 
 /**
  * @description Allow zod package to produce custom error messages 
@@ -88,29 +87,50 @@ const INPUT_SCHEMA = z.object({
  * @param {object} ctx 
  */
 const customErrorMap = (issue, ctx) => {
-  if (issue.code === z.ZodIssueCode.invalid_type) {
-    if (issue.path.length === 0) { return { message: 'Expected an object. Received nothing' }; }
-    let amountOfHashs = 0;
-    issue.path.map((path) => amountOfHashs += isNaN(path));
-    let errorMsg = `Expected a ${'#'.repeat(amountOfHashs)}${issue.path[issue.path.length - 1].toString().toUpperCase()} property `;
-    console.log(issue);
-    if (issue.path.length > 1) {
+  let amountOfHashs = 0;
+  let errorMsg = '';
+  switch (issue.code) {
+
+    case z.ZodIssueCode.invalid_type:
+      if (issue.path.length === 0) { return { message: 'Expected an object. Received nothing' }; }
+      issue.path.map((path) => amountOfHashs += isNaN(path));
+      errorMsg = `Expected a ${'#'.repeat(amountOfHashs)}${issue.path[issue.path.length - 1].toString().toUpperCase()} property `;
+      // console.log(issue);
       amountOfHashs = 1;
       errorMsg += 'in ';
-      issue.path.map((path, index) => {
+      issue.path.forEach((path, index) => {
+        const ARROW_STRING = (index < issue.path.length - 1)? ' -> ' : '';
         if (isNaN(path)) {
-          errorMsg += `${'#'.repeat(amountOfHashs)}${path.toUpperCase()}${(index < issue.path.length)? ' -> ' : ''}`;
+          errorMsg += `${'#'.repeat(amountOfHashs)}${path.toUpperCase()}${ARROW_STRING}`;
           amountOfHashs++;
         } else {
-          errorMsg += `at index ${path} inside the array -> `;
+          errorMsg += `at index ${path} inside the array${ARROW_STRING}`;
         }
-      })
-    }
-    errorMsg += `with a ${issue.expected.toUpperCase()} value. Received `;
-    errorMsg += `${(issue.received === 'undefined')? 'nothing' : `a(n) ${issue.received.toUpperCase()} value instead`}.`;
-    return { message: errorMsg };
+      });
+      errorMsg += `with a ${issue.expected.toUpperCase()} value. Received `;
+      errorMsg += `${(issue.received === 'undefined')? 'nothing' : `a(n) ${issue.received.toUpperCase()} value instead`}.`;
+      return { message: errorMsg };
+
+    case z.ZodIssueCode.unrecognized_keys:
+      if (issue.path.length === 0) { 
+        return { message: `Unrecognized Setting(s) [ ${issue.keys.join(' ')} ] at InputObject core.` }; 
+      }
+      errorMsg = `Unrecognized Setting(s) [ ${issue.keys.join(' ')} ] in `;
+      amountOfHashs = 1;
+      issue.path.forEach((path, index) => {
+        const ARROW_STRING = (index < issue.path.length - 1)? ' -> ' : '';
+        if (isNaN(path)) {
+          errorMsg += `${'#'.repeat(amountOfHashs)}${path.toUpperCase()}${ARROW_STRING}`;
+          amountOfHashs++;
+        } else {
+          errorMsg += `at index ${path} inside the array${ARROW_STRING}`;
+        }
+      });
+      return { message: errorMsg };
+    
+    default: 
+      return { message: ctx.defaultError };
   }
-  return { message: ctx.defaultError };
 };
 
 z.setErrorMap(customErrorMap);

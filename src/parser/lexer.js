@@ -79,7 +79,7 @@ const TOKENS = {
   PARAMETERS: { match: new RegExp('^#{3} *' + toCaseInsensive('parameters')) }, 
   LANGUAGE_SETTINGS: { match: new RegExp('^#{2} *' + toCaseInsensive('language') + ' *' + toCaseInsensive('settings')) }, 
   CHAT_SETTINGS:     { match: new RegExp('^# *' + toCaseInsensive('chat') + ' *' + toCaseInsensive('settings')) }, 
-  README:            { match: new RegExp('^#{2} *' + toCaseInsensive('readme')), value: 'readme' }, 
+  README:            { match: new RegExp('^#{2} *' + toCaseInsensive('readme')), value: (value) => 'readme' }, 
   HEADER:            { match: /^#{1,6}.*/ },
   COMMENT:           { match: new RegExp('^\\[' + toCaseInsensive('comment') + '\\]: +# +\\([^\\n]+\\)') }, 
   LONG_PARAMETER: { 
