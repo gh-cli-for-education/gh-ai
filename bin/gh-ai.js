@@ -40,6 +40,7 @@ PROGRAM
   .version(PACKAGE_DATA.version, '-v, --version', 'Print the current version of the program')
   .argument('<input-file>', 'The input file used to feed the llm')
   .argument('<output-directory>', 'The directory path where all the files created by the llm will be stored')
+  // Añadir opción -o y ruta por defecto en caso de que no se pase nada. 
   .option('-d, --debug', 'Output extra information about the execution process')
   .option('--tokens-verbose', 'Output the token usage information in each prompt')
   .option('--save-thread', 'Make the program not delete the used thread, instead it will save it inside the generated README file')
