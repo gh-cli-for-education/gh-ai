@@ -1,5 +1,12 @@
 /**
- * 
+ * Universidad de La Laguna
+ * Escuela Superior de Ingeniería y Tecnología
+ * Grado en Ingeniería Informática
+ * Trabajo Final de Grado
+ *
+ * @author Raimon José Mejías Hernández  <alu0101390161@ull.edu.es>
+ * @since 20/05/2024
+ * @desc Contains the definition of the external tools an assistant can use
  */
 import * as fs from 'fs/promises';
 
@@ -10,20 +17,6 @@ import { CONSOLE_PROMPT } from '../utils.js';
 'use strict';
 
 const TOOLS_DESCRIPTIONS = [
-  {
-    type: 'function',
-    function: {
-      name: 'search_documentation',
-      description: 'Call this function whenever you need help making a gh extension, specially when you need information from the Github Cli documentation',
-      parameters: {
-        type: 'object',
-        properties: {
-          // poner aquí las properties 
-        }
-      },
-      required: undefined
-    }
-  },
   {
     type: 'function',
     function: {
@@ -75,10 +68,6 @@ TOOLS['generate_file'] = async (input, outputDirectory) => {
 
   // Se le envia un output a la IA
   return 'Function executed successfully. Now use the tool **talk_with_user** to tell him that you are done generating the code.';     
-};
-
-TOOLS['search_documentation'] = async (input) => {
-  return 'function not implemented yet';
 };
 
 TOOLS['talk_with_user'] = async (input) => {

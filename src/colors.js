@@ -6,8 +6,7 @@
  *
  * @author Raimon José Mejías Hernández  <alu0101390161@ull.edu.es>
  * @since 09/02/2024
- * @desc Contains all the parser rules and the corresponding semantic actions
- * @external Grammar
+ * @desc Contains all the possible colors used by the program prompts
  */
 'use strict';
 

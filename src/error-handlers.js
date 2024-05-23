@@ -1,11 +1,18 @@
 /**
- * cabecera 
+ * Universidad de La Laguna
+ * Escuela Superior de Ingeniería y Tecnología
+ * Grado en Ingeniería Informática
+ * Trabajo de Fin de Grado
+ *
+ * @author Raimon José Mejías Hernández  <alu0101390161@ull.edu.es>
+ * @date 20/05/2024
+ * @desc Contains all the function that handles the possible errors of the program
  */
 import nearley from 'nearley';
+import { OpenAI } from 'openai';
 
 import * as grammarModule from './grammar.js';
 import { CONSOLE_PROMPT } from './utils.js';
-import { OpenAI } from 'openai';
 'use strict';
 
 const ERROR_HANDLER = Object.create(null);
@@ -47,12 +54,16 @@ ERROR_HANDLER['nearleyError'] = (error) => {
   console.error(`\nThe expected tokens are: ${expectedTokens.map((match) => match[1])}`);  
 };
 
+/**
+ * Parse an OpenAI API Error, checking the type and logging the corresponding 
+ * error message
+ * @param {object} error An OpenAI API error
+ */
 ERROR_HANDLER['openaiError'] = (error) => {
 
   if (error instanceof OpenAI.APIError) {
     console.error(`${CONSOLE_PROMPT.ERROR}A(n) ${error.status} ${error.type} ocurred while making the API request.\n\t${error.message}`);
   } 
-  /// PONER AQUI TODO EL RESTO DE ERRORES POSIBLES
   else {
     console.error(`${CONSOLE_PROMPT.ERROR}A core OpenAI API error ocurred:\n\t${error.message}`);
   }

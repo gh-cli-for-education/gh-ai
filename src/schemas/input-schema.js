@@ -5,8 +5,10 @@
  * Trabajo de Fin de Grado
  *
  * @author Raimon José Mejías Hernández  <alu0101390161@ull.edu.es>
- * @date 07/05/2024
- * @desc @TODO hacer la descripción
+ * @date 20/05/2024
+ * @desc It contains the implementation of the different parts that make up the 
+ * input object's schema, as well as the management of the various errors that 
+ * can occur with the schema.
  */
 import { z } from "zod";
 'use strict';
@@ -66,6 +68,7 @@ const EXTENSION_SCHEMA = z.object({
   files:            z.array(FILES_SCHEMA),
   languageSettings: LANGUAGE_SETTINGS_SCHEMA,
   examples:         z.array(EXAMPLES_SCHEMA).optional(),
+  readme:           FILES_SCHEMA.optional(),
 })
 .required({ languageSettings: true, files: true,}).strict(); 
 
@@ -92,7 +95,9 @@ const customErrorMap = (issue, ctx) => {
   switch (issue.code) {
 
     case z.ZodIssueCode.invalid_type:
-      if (issue.path.length === 0) { return { message: 'Expected an object. Received nothing' }; }
+      if (issue.path.length === 0) { 
+        return { message: 'Expected an object. Received nothing' }; 
+      }
       issue.path.map((path) => amountOfHashs += isNaN(path));
       errorMsg = `Expected a ${'#'.repeat(amountOfHashs)}${issue.path[issue.path.length - 1].toString().toUpperCase()} property `;
       // console.log(issue);

@@ -5,8 +5,9 @@
  * Trabajo de Fin de Grado
  *
  * @author Raimon José Mejías Hernández  <alu0101390161@ull.edu.es>
- * @date 05/02/2024
- * @desc @TODO hacer la descripción
+ * @date 20/05/2024
+ * @desc It contains the implementation of the different parts that make up the 
+ * response object's schema.
  */
 import { z } from "zod";
 'use strict';

@@ -15,7 +15,7 @@
   "scripts": {
     "test": "mocha",
     "compile": "nearleyc src/parser/parser.ne -o src/grammar.js",
-    "railroad": "nearley-railroad src/parser/parser.ne -o grammat.html"
+    "railroad": "nearley-railroad src/parser/parser.ne -o ./debug/grammat.html"
   },
   "repository": {
     "type": "git",

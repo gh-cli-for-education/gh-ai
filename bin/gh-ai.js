@@ -6,8 +6,8 @@
  * Trabajo de Fin de Grado
  *
  * @author Raimon José Mejías Hernández  <alu0101390161@ull.edu.es>
- * @date 01/02/2024
- * @desc @TODO hacer la descripción
+ * @date 20/05/2024
+ * @desc Main file of the program it parse the command line parameters 
  */
 'use strict';
 
@@ -34,7 +34,6 @@ PROGRAM
   .addHelpText('after','\nAditional help:\n  If no option is passed the program will execute in \'interactive mode\' asking the user different program options one by one');
 
 // Program options and arguments 
-
 PROGRAM
   .allowUnknownOption()
   .version(PACKAGE_DATA.version, '-v, --version', 'Print the current version of the program')
@@ -49,12 +48,17 @@ PROGRAM
   .addOption(new Option('-l, --llm-api <API>', 'Select the llm <API> to use').choices(Object.keys(API)).default(DEFAULT_LLM))
   .addOption(new Option('-t, --command-type <TYPE>', 'Select the command needed').choices(Object.keys(HELP_TYPES)).default(HELP_TYPES.EXTENSION));
   
-// Program actions to options values
+/**
+ * Main function of the gh-ai extension
+ * @param {string} inputFile name of the input file
+ * @param {string} outputDirectory name of the output directory
+ * @param {object} options object with all the program options
+ */
 PROGRAM.action(async (inputFile, outputDirectory, options) => {
-  // Contiene toda la información extraida del prompt del usuario
+  // Contains all the data extracted from the input file
   let inputObject = {}; 
 
-  // Es una unión del inputObject y el prompt Object con la información util para el usuario
+  // Contains all the data extracted from the llm response
   let responseObject = {
     systemPrompt: undefined,
     userPrompts: [],
@@ -71,7 +75,7 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     thread: undefined
   };
 
-  // Antes de empezar el programa se comprueba que el directorio este vacio o no exista
+  // Before the starting the parser, it checks the output file is valid
   let errorWithDirectoryCreation = await checkDirectoryExistance(outputDirectory, options);
 
   if (errorWithDirectoryCreation) {
@@ -95,7 +99,8 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     if (error instanceof z.ZodError) { 
       ERROR_HANDLER.zodError(error);
     }
-    else if (Object.hasOwn(error, 'token')) { // Checks if the error object has an 'offset property (It is better to create an specific Error Type)
+    // Checks if the error object has an 'offset property (It is better to create an specific Error Type)
+    else if (Object.hasOwn(error, 'token')) { 
       ERROR_HANDLER.nearleyError(error);
     }
     else if (error instanceof OpenAI.OpenAIError) {
@@ -107,7 +112,7 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     }
   }
   
-  // No importa lo que pase, se tienen que generar los logs
+  // No matter what happens the log objects must be generated
   await createProgramLogs(inputObject, responseObject, inputFile, outputDirectory, options);
   
   process.exit(0);
@@ -115,6 +120,9 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
 
 PROGRAM.parse(process.argv);
 
+/**
+ * Event that checks if CTRL+C or CTRL+D is pressed 
+ */
 const gracefulShutdown = () => { 
   console.log(`${CONSOLE_PROMPT.GH_AI}Cancelling the program execution...`);
   process.env.GRACEFUL_SHUTDOWN = true; 

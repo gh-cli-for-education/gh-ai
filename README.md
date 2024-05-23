@@ -131,8 +131,7 @@ The inclusion of the block is completely optional because the configuration has 
 
 The format of the **Chat Settings** block is as follows:
 
-![chat-settings-grammar-rule](./doc/resources/chat-settings-grammar-rule.jpg)
-
+![chat-settings-grammar-rule](doc\resources\chat-settings-grammar-rule.png)
 
 As an example, the following **Chat Settings** block is provided:
 
@@ -154,7 +153,7 @@ One of the first actions that the user must take when writing the input file is 
 
 By using the different elements of Markdown language, a detailed description of the program's functionality should be written along with a series of secondary blocks that allow the inclusion of useful details to the extension description. These secondary blocks serve as reference points for the user to gain a clear and structured understanding of the desired extension.
 
-![extension-grammar-rule](./doc/resources/extension-grammar-rule.jpg)
+![extension-grammar-rule](doc\resources\extensionProperties-semantic-rule.PNG)
 
 ```md
 # Extension gh-rate-limit
@@ -306,8 +305,6 @@ The block is designed to replicate the common format used in this type of functi
 ### Examples Block
 
 One way to improve the language model's response is to provide a series of examples that it can use as a reference to generate the extension code. For this reason, the input file allows the introduction of examples through the **Examples** secondary block, within the main **Extension** block. Once the section is opened, as many examples as the user deems necessary can be indicated, as long as they follow the following format:
-
-![example-grammar-rule](./doc/resources/example-grammar-rule.jpg)
 
 Each example must indicate the input through the command line as well as the corresponding result of executing the extension with that configuration.
 
