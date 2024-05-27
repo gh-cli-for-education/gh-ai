@@ -131,7 +131,7 @@ The inclusion of the block is completely optional because the configuration has 
 
 The format of the **Chat Settings** block is as follows:
 
-![chat-settings-grammar-rule](doc\resources\chat-settings-grammar-rule.png)
+![chat-settings-grammar-rule](doc/resources/chat-settings-grammar-rule.png)
 
 As an example, the following **Chat Settings** block is provided:
 
@@ -153,7 +153,7 @@ One of the first actions that the user must take when writing the input file is 
 
 By using the different elements of Markdown language, a detailed description of the program's functionality should be written along with a series of secondary blocks that allow the inclusion of useful details to the extension description. These secondary blocks serve as reference points for the user to gain a clear and structured understanding of the desired extension.
 
-![extension-grammar-rule](doc\resources\extensionProperties-semantic-rule.PNG)
+![extension-grammar-rule](doc/resources/extensionProperties-semantic-rule.PNG)
 
 ```md
 # Extension gh-rate-limit
