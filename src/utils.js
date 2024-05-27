@@ -128,9 +128,9 @@ async function checkDirectoryExistance(path, options) {
 /**
  * Parse the input file from the user and returns an object with
  * the extracted values 
- * @param   {string} inputFile The inputfile in simplex markdown format
- * @param   {object} responseObject The responseObject where the language data is going to be stored
- * @param   {object} options 
+ * @param {string} inputFile The inputfile in simplex markdown format
+ * @param {object} responseObject The responseObject where the language data is going to be stored
+ * @param {object} options 
  */
 async function parseInputFile(inputFile, responseObject, options) {
   const PARSER = new nearley.Parser(nearley.Grammar.fromCompiled(grammarModule.grammar));
@@ -153,33 +153,31 @@ async function parseInputFile(inputFile, responseObject, options) {
 }
 
 /**
- * 
- * @param {*} apiResponse 
- * @param {*} options 
+ * Generates the conversation log using the data from the program execution
+ * @param {object} inputObject 
+ * @param {object} responseObject 
+ * @param {string} inputFile 
+ * @param {string} outputDirectory 
+ * @param {object} options 
  */
-async function createProgramLogs(inputObject, responseObject, inputFile, outputDirectory, options) {
+async function createConversationLog(inputObject, responseObject, inputFile, outputDirectory, options) {
   const TYPE = options.commandType.toUpperCase();
-
   try {
-    console.log(`${CONSOLE_PROMPT.GH_AI}Generating ${outputDirectory}/user-log.md where you can find all the input information`);
-    const USER_LOG = TEMPLATES[TYPE].USER_LOG(inputObject, inputFile, responseObject, options);
-    await fs.writeFile(`${outputDirectory}/user-log.md`, USER_LOG);
-  
-    console.log(`${CONSOLE_PROMPT.GH_AI}Generating ${outputDirectory}/reponse-log.md where you can find all the output information`);
-    const RESPONSE_LOG = TEMPLATES[TYPE].RESPONSE_LOG(responseObject, options);
-    await fs.writeFile(`${outputDirectory}/response-log.md`, RESPONSE_LOG);  
+    console.log(`${CONSOLE_PROMPT.GH_AI}Generating ${outputDirectory}/conversation-log.md...`);
+    const CONVERSATION_LOG = TEMPLATES[TYPE].CONVERSATION_LOG(inputObject, inputFile, responseObject, options);
+    await fs.writeFile(`${outputDirectory}/conversation-log.md`, CONVERSATION_LOG);
   } 
   catch (error) {
-    console.error(`${CONSOLE_PROMPT.ERROR}It was not possible to create the log files.`);
+    console.log(error);
+    console.error(`${CONSOLE_PROMPT.ERROR}It was not possible to create the conversation-log file.`);
   }
-
 }
 
 export { 
   askYesNoQuestionToUser,
   checkDirectoryExistance,
   parseInputFile,
-  createProgramLogs,
+  createConversationLog,
   HELP_TYPES,
   PACKAGE_DATA,
   API,

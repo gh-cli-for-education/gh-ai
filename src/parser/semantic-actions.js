@@ -5,42 +5,58 @@
  * Trabajo Final de Grado
  *
  * @author Raimon José Mejías Hernández  <alu0101390161@ull.edu.es>
- * @since 07/05/2024
+ * @since 19/05/2024
  * @desc Contains all the semantic actions used by the grammar
  * @external Grammar
  */
 'use strict';
 
 /**
+ * Return the first node of type targetType inside the properties array.
+ * If there is no node of type TargetType then returns undefined.
+ * @param {Array} properties 
+ * @param {string} targetType 
+ */
+function findFirstPropertyType(properties, targetType) {
+  return properties.find((property) => {
+    return property.type === targetType;
+  })?.content;
+}
+
+/**
  * Build the input object that is going to be used by the gh-ai extension
- * @param {[object, object, object]} 
+ * @param {[Array, object]} 
  * @returns 
  */
-function buildInputObject([chatSettings, extension, eof]) {
+function buildInputObject([properties, eof]) {
   return {
-    chatSettings: chatSettings.content,
-    extension: extension.content,
+    chatSettings: findFirstPropertyType(properties, 'chatSettings'),
+    extension: findFirstPropertyType(properties, 'extension'),
   };
 }
 
 /**
  * Build the extension property of the prompt
- * @param {[object, object, object, object, object, object, object]} 
+ * @param {[object, object, Array]} 
  * @returns 
  */
-function buildExtension([extensionToken, languageSettings, description, functions, help, examples, readme]) {
+function buildExtension([extensionToken, description, extensionProperties]) {
   
-  let files = [buildFile([extensionToken, description, functions, help])];
-  
-  // En caso de que exista un readme lo guarda como un fichero cualquiera.
-  if (readme) files.push(readme);
+  const FUNCTIONS = extensionProperties.filter((property) => { 
+    return property.type === 'function'; 
+  }).map((functions) => {
+    return functions.content;
+  });
+  const HELP = findFirstPropertyType(extensionProperties, 'help');
 
   return {
     type: 'extension',
     content: {
-      languageSettings: languageSettings.content,
-      files: files,
-      examples: examples?.content,    
+      name: extensionToken.value,
+      languageSettings: findFirstPropertyType(extensionProperties, 'languageSettings'),
+      files: [buildFile([extensionToken, description, FUNCTIONS, HELP])],
+      examples: findFirstPropertyType(extensionProperties, 'examples'),
+      readme: findFirstPropertyType(extensionProperties, 'readme'),    
     }
   };
 }
@@ -53,10 +69,13 @@ function buildExtension([extensionToken, languageSettings, description, function
  */
 function buildFunction([functionToken, description, query, template]) {
   return {
-    name: functionToken.value,
-    description: description.content,
-    query: query?.content,
-    template: template?.content,
+    type: 'function',
+    content: {
+      name: functionToken.value,
+      description: description.content,
+      query: query?.content,
+      template: template?.value,
+    }
   };
 }
 
@@ -89,8 +108,23 @@ function buildFile([fileName, description, functions, help]) {
     name: fileName.value,
     description: description.content,
     functions: functions ?? undefined,
-    help: help?.content
+    help: help ?? undefined,
   };
+}
+
+/**
+ * Build a file object that correspond to a readme.md 
+ * @param {[object, object]}
+ * @returns
+ */
+function buildReadme([readmeToken, sections]) {
+  return {
+    type: 'readme',
+    content: {
+      name: 'README.md',
+      description: sections.content,
+    }
+  }
 }
 
 /**
@@ -101,7 +135,12 @@ function buildFile([fileName, description, functions, help]) {
 function buildDescription([descriptionToken, descriptionBlocks]) {
   return {
     type: 'description',
-    content: descriptionBlocks.map((block) => block.value).join('\n\n'),
+    content: descriptionBlocks.map((block) => {
+      if (block.type === 'ITEM_LIST') {
+        return `${block.value.delimiter} ${block.value.content}`
+      }
+      return block.value;
+    }).join('\n\n'),
   }
 }
 
@@ -111,7 +150,8 @@ function buildDescription([descriptionToken, descriptionBlocks]) {
  * @returns 
  */
 function buildSection([headerToken, description]) {
-  return `${headerToken.value}\n\n ${description.content}`;
+  const HEADER = headerToken.value;
+  return `${'#'.repeat(HEADER.depth)} ${HEADER.content}\n\n ${description.content}`;
 }
 
 /**
@@ -190,4 +230,5 @@ export {
   buildExample,
   buildExamples,
   buildSettings,
+  buildReadme,
 };

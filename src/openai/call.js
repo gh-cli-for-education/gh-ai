@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Universidad de La Laguna
  * Escuela Superior de Ingeniería y Tecnología
@@ -6,12 +5,12 @@
  * Trabajo de Fin de Grado
  *
  * @author Raimon José Mejías Hernández  <alu0101390161@ull.edu.es>
- * @date 12/02/2024
- * @desc @TODO hacer la descripción
+ * @date 25/02/2024
+ * @desc Contains the implementation of the OpenAI API Call
  */
 import OpenAI from 'openai';
 import { sleep } from 'openai/core.js';
-import ora, { oraPromise } from 'ora';
+import ora from 'ora';
 
 import { CONSOLE_PROMPT, askYesNoQuestionToUser } from '../utils.js';
 'use strict';
@@ -19,13 +18,14 @@ import { CONSOLE_PROMPT, askYesNoQuestionToUser } from '../utils.js';
 const DEFAULT_MODEL = 'gpt-3.5-turbo-0125';
 
 /**
- * 
- * @param {OpenAI} openai 
- * @param {string} systemPrompt 
- * @param {string} llmModel 
- * @param {object} toolDescriptions 
- * @param {string} assistantID 
- * @returns {object}
+ * Given a configuration the fuction create or retreivean assistant, depends 
+ * on the assistantID parameter.
+ * @param {object} openai The OpenAI API object
+ * @param {string} systemPrompt The instructions used to configure the assistant's context.
+ * @param {string} llmModel The llm model used by the assistant
+ * @param {object} toolDescriptions all the tools that can be used by the assistant.
+ * @param {string} assistantID Used to retreive an already created assistant.
+ * @returns {object} The assistant Object
  */
 async function createOrRetreiveAssistant(openai, systemPrompt, llmModel, toolDescriptions, assistantID) { 
 
@@ -37,7 +37,7 @@ async function createOrRetreiveAssistant(openai, systemPrompt, llmModel, toolDes
     instructions: systemPrompt
   };
 
-  if (assistantID) { // Si en el process.env existe un assistant ID, se extrae dicho assistant en lugar de crear uno nuevo  
+  if (assistantID) {
 
     let assistant = await openai.beta.assistants.retrieve(assistantID);
     let askForUpdate = false;
@@ -106,19 +106,13 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
   const DELAY = 10000; // 10s
   const MAX_TRIES = 10;
   let currentTry = 0;
-  let isToolOutput = false;
 
   if (!runID) { // En caso de que sea un tool output no se debe crear ningún mensaje nuevo
-
     // Añadir el mensaje a la conversación
     await openai.beta.threads.messages.create(
       threadID,
       { role: 'user', content: prompt }
     );
-  
-  }
-  else {
-    isToolOutput = true;
   }
 
   let callResult = {
@@ -127,12 +121,13 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
   };
 
   // Repetir la llamada todas las veces necesarias hasta que MAX_TRIES sea alcanzado, se complete la run u ocurra un fallo
+  let isToolOutput = true;
   while (currentTry < MAX_TRIES) {
 
     let run = {};
 
     // Si runID es especificado entonces se debe enviar el toolOutput a la IA
-    if (isToolOutput) { 
+    if (runID !== undefined && isToolOutput) { 
       run = await openai.beta.threads.runs.submitToolOutputs(
         threadID,
         runID,
@@ -151,18 +146,6 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
           tool_choice: executeTool ?? 'none',
         }
       ); 
-      
-      /* VER SI SE IMPLEMENTE EL MODO STREAMING
-      run = openai.beta.threads.runs.stream(threadID, {
-        assistant_id: assistantID,
-        tool_choice: executeTool ?? 'none',
-        stream: true
-      });
-
-      for await (const event of run) {
-        console.log(event);
-      }
-      */
     }
 
     // Se guarda la nueva información de la run por cada intento.
@@ -171,12 +154,8 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
     let spinner = ora({ color: 'blue' }).start();
     callResult.runStatus = await checkRunStatus(openai, run.id, threadID, spinner);
     
-    if (process.env.GRACEFUL_SHUTDOWN) {
-      return callResult;
-    }
-
     // La run termina siempre que no se llegue a un Rate_Limit
-    if (callResult.runStatus !== 'rate_limit_exceeded') {
+    if (callResult.runStatus !== 'rate_limit_exceeded' || process.env.GRACEFUL_SHUTDOWN) {
       if (callResult.runStatus === 'error') { // En caso de error, mostrarle información al usuario
         console.error(`${CONSOLE_PROMPT.ERROR}The API call couldn't be executed correctly, Generating Logs and stopping execution.`);  
       }
@@ -207,7 +186,7 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
  * @param {string} runID 
  * @param {string} threadID 
  * @param {Ora} spinner
- * @returns 
+ * @returns {string}
  */
 async function checkRunStatus(openai, runID, threadID, spinner) {
 

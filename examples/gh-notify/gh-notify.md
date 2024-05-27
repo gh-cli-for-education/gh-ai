@@ -2,17 +2,9 @@
 
 - language: english
 
-# Extension
-
-## LanguageSettings
-
-- language: bash
-- style: Google
-
-## MainFile gh-notify
+# Extension gh-notify
 
 gh-notify is an extension of the Github Command Line Interface (Github CLI) whose purpose is to allow the user to view their Github notifications through the command line
-
 
 The extension has a series of prerequisites which are:
 
@@ -60,7 +52,12 @@ main() {
 
 **The API calls will use the `API REST`** to comunicate with Github APIv3
 
-### Function print_notifs
+## LanguageSettings
+
+- language: bash
+- style: Google
+
+## Function print_notifs
 
 The print_notifs function is responsible for printing on the command line the information obtained from the notifications after making the API call. To do this, the function constantly checks the number of pages read as well as the total number of notifications obtained, always ensuring not to exceed the limit imposed by the `num_notifications` variable. For each iteration of the loop, it calls the `get_notifs` function with the current page number as a parameter. In case of an error, the `die` function is called with the corresponding error message.
 
@@ -70,7 +67,7 @@ It is necessary to store all notifications obtained from the API in a variable c
 
 With all notifications obtained, a final filter is applied using the variables `exclusion_string` and `filter_string` to execute two `grep` commands in sequence (first exclusion and then filter), followed by the execution of the `column` command. The resulting output is then returned.
 
-### Function process_page 
+## Function process_page 
 
 Processes a page containing GitHub notifications, extracting important information and applying a specific format.
 
@@ -82,8 +79,7 @@ If the url variable contains the word "null", it executes the `process_url` func
 
 Finally, it prints all local variables in table form.
 
-
-### Help
+## Help
 
 ### Usage gh notify [options]
 

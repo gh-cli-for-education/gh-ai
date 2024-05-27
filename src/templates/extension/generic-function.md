@@ -1,29 +1,24 @@
-# Code expansion 
+# Task: Generate the {{name}} function. 
 
-Read once again the *requirements* and the *previously generated code* written by you.
+Using all the information gathered in the requirements analysis task along with the information provided in the following Details section, your task is to generate the {{name}} function, meeting all the specified requirements.
 
-Then **generate a new approach** and make sure to add the functions described in the following section.
+## Details 
 
-## Function {{name}} 
+### Description 
 
-Use the following *description* as guide to generate the corresponding code.
-
-```
 {{description}}
-```
-
 {{#template}}
-Here you have a template of how the function should looks like:
+#### Template
+
+Inside the codeblock you can find a template of how the function should looks like, make sure to complete and generate all the code specified in the comments.
 
 {{template}}
-
-make sure to complete and generate all the code specified in the comments.
 {{/template}}
 
 {{#query}}
-### Query
+#### Query
 
-Use the following description inside the ''' to generate a GraphQL Query to interact with the Github API v4
+The function calls the GitHub APIv4 using a GraphQL query. The query must be constructed from the description inside the ''', written in natural language:
 
 ''' 
 {{query}}

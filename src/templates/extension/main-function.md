@@ -1,17 +1,18 @@
-# Code expansion
+# Task: Main and help function generation
 
-Read once again the *requirements* and the *previously generated code* written by you.
+Using all the information gathered in the requirements analysis task along with the information provided in the following Details section, your task is to generate the main and help functions of the {{name}} extension, meeting all the specified requirements.
 
-Then **generate a new approach** and make sure to add the functions described in the following sections.
+## Details
 
-## Main Function
+### Main function 
+
 Add to *previously generated code* a **new** **main function** whose purpose is to *parse the command line*, the code must process the possible parameters and arguments the code should be able to receive. Depending on the readed information *the function should execute the corresponding action* associated to that specific parameter.
 
 In case there was already a main function parsing the command line you must overwrite the previous one.
 
 {{#help}}
 {{#help.arguments.length}}
-### Arguments supported by the program 
+#### Arguments supported by the program 
 
 The arguments the program must support are:
 
@@ -23,7 +24,7 @@ The arguments the program must support are:
 
 {{/help.arguments.length}}
 {{#help.parameters.length}}
-### Parameters supported by the program
+#### Parameters supported by the program
 
 The parameters the program must support are: 
 
@@ -35,7 +36,7 @@ The parameters the program must support are:
 
 {{/help.parameters.length}}
 {{/help}}
-## Help function 
+### Help function 
 
 If the `-h, --help` parameter has not been specified you must add it to the processing, in that case it has to execute the **help function**.
 

@@ -16,7 +16,7 @@ import { z } from 'zod';
 import OpenAI from 'openai';
 import dotEnv from 'dotenv';
 
-import { parseInputFile, createProgramLogs, checkDirectoryExistance } from '../src/utils.js';
+import { parseInputFile, createConversationLog, checkDirectoryExistance } from '../src/utils.js';
 import { HELP_TYPES, PACKAGE_DATA, CONSOLE_PROMPT } from '../src/utils.js';
 import { API } from '../src/openai/gh-ai-openai.js';
 import { ERROR_HANDLER } from '../src/error-handlers.js';
@@ -39,7 +39,6 @@ PROGRAM
   .version(PACKAGE_DATA.version, '-v, --version', 'Print the current version of the program')
   .argument('<input-file>', 'The input file used to feed the llm')
   .argument('<output-directory>', 'The directory path where all the files created by the llm will be stored')
-  // Añadir opción -o y ruta por defecto en caso de que no se pase nada. 
   .option('-d, --debug', 'Output extra information about the execution process')
   .option('--tokens-verbose', 'Output the token usage information in each prompt')
   .option('--save-thread', 'Make the program not delete the used thread, instead it will save it inside the generated README file')
@@ -90,10 +89,10 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     inputObject = await parseInputFile(inputFile, responseObject, options);
 
     console.log(`${CONSOLE_PROMPT.GH_AI}Generating prompts...`);
-    await PROMPT_GENERATOR[options.commandType.toUpperCase()](inputObject, responseObject, responseObject, options);
+    await PROMPT_GENERATOR[options.commandType.toUpperCase()](inputObject, responseObject, options);
 
-    console.log(`${CONSOLE_PROMPT.GH_AI}Starting ${options.llmApi} API call. This process may take a few seconds.`);
-    await API[options.llmApi](responseObject, outputDirectory, options);
+    // console.log(`${CONSOLE_PROMPT.GH_AI}Starting ${options.llmApi} API call. This process may take a few seconds.`);
+    // await API[options.llmApi](responseObject, outputDirectory, options);
 
   } catch (error) {
     if (error instanceof z.ZodError) { 
@@ -101,7 +100,7 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     }
     // Checks if the error object has an 'offset property (It is better to create an specific Error Type)
     else if (Object.hasOwn(error, 'token')) { 
-      ERROR_HANDLER.nearleyError(error);
+      ERROR_HANDLER.nearleyError(error, inputFile);
     }
     else if (error instanceof OpenAI.OpenAIError) {
       ERROR_HANDLER.openaiError(error);
@@ -110,10 +109,11 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
       console.error(`${CONSOLE_PROMPT.ERROR}An unexpected error has ocurred\n ${error.message}`);
       if (options.debug) { console.error(error); }
     }
+    process.exit(1);
   }
   
   // No matter what happens the log objects must be generated
-  await createProgramLogs(inputObject, responseObject, inputFile, outputDirectory, options);
+  await createConversationLog(inputObject, responseObject, inputFile, outputDirectory, options);
   
   process.exit(0);
 });

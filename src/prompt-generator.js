@@ -2,24 +2,43 @@
  * Universidad de La Laguna
  * Escuela Superior de Ingeniería y Tecnología
  * Grado en Ingeniería Informática
- * Procesadores de Lenguajes
+ * Trabajo de Fin de Grado
  *
  * @author Raimon José Mejías Hernández  <alu0101390161@ull.edu.es>
- * @since 09/02/2024
- * @desc Contains all the parser rules and the corresponding semantic actions
- * @external Grammar
+ * @date 20/05/2024
+ * @desc Contains the implementation of the different prompt generators  
  */
+import { TEMPLATES } from './templates/templates.js';
+import { CONSOLE_PROMPT } from './utils.js';
 'use strict';
-
-import { TEMPLATES } from "./templates/templates.js";
 
 let PROMPT_GENERATOR = Object.create(null);
 
 /**
- * 
- * @param {*} inputObject 
- * @param {*} responseObject 
- * @param {*} options 
+ * Auxiliary function to create a prompt object 
+ * @param {string} title 
+ * @param {string} text 
+ * @param {object} tools 
+ * @param {boolean} askForChanges 
+ * @returns 
+ */
+function generatePromptObject(title, text, tools = undefined, askForChanges = false) {
+  return {
+    title: title,
+    text: text,
+    reponse: undefined,
+    usage: {},
+    executeTool: tools,
+    askForChanges: askForChanges,    
+  }
+}
+
+/**
+ * Prompt generator of the Extension command help, parse the inputObject 
+ * to generate the prompts and store them in the response object
+ * @param {object} inputObject 
+ * @param {object} responseObject 
+ * @param {object} options 
  */
 PROMPT_GENERATOR['EXTENSION'] = async function generatePrompts(inputObject, responseObject, options) {
   
@@ -30,56 +49,40 @@ PROMPT_GENERATOR['EXTENSION'] = async function generatePrompts(inputObject, resp
   
   let filePrompts = [];
 
-  // Se añade La idea general del fichero al prompt
-  filePrompts.push({
-    title: `general idea of ${MAIN_FILE.name}.`,
-    text: TEMPLATES.EXTENSION.FILE_GENERAL_IDEA(MAIN_FILE),
-    reponse: undefined,
-    usage: {},
-    executeTool: undefined,
-    askForChanges: false,
-  });
-
-  filePrompts.push({
-    title: `main and help functions of ${MAIN_FILE.name}.`,
-    text: TEMPLATES.EXTENSION.MAIN_FUNCTION(MAIN_FILE),
-    reponse: undefined,
-    usage: {},
-    executeTool: undefined,
-    askForChanges: false,
-  });
+  filePrompts.push(generatePromptObject(
+    `Requirement analysis of ${EXTENSION.name}.`,
+    TEMPLATES.EXTENSION.REQUIREMENT_ANALYSIS(EXTENSION),
+  ));
+  filePrompts.push(generatePromptObject(
+    `General idea of ${EXTENSION.name}.`,
+    TEMPLATES.EXTENSION.FILE_GENERAL_IDEA(EXTENSION),
+  ));
+  filePrompts.push(generatePromptObject(
+    `main and help functions of ${EXTENSION.name}.`,
+    TEMPLATES.EXTENSION.MAIN_FUNCTION(MAIN_FILE),
+  ));
 
   MAIN_FILE.functions?.forEach((oFunction) => {
-    filePrompts.push({
-      title: `${oFunction.name} of ${MAIN_FILE.name}.`,
-      text: TEMPLATES.EXTENSION.GENERIC_FUNCTION(oFunction),
-      reponse: undefined,
-      usage: {},
-      executeTool: undefined,
-      askForChanges: false,
-    });
+    filePrompts.push(generatePromptObject(
+      `${oFunction.name} of ${EXTENSION.name}.`,
+      TEMPLATES.EXTENSION.GENERIC_FUNCTION(oFunction),
+    ));
   });
 
-  filePrompts.push({
-    title: `post processing of ${MAIN_FILE.name}.`,
-    text: TEMPLATES.EXTENSION.POST_PROCESSING({ 
+  filePrompts.push(generatePromptObject(
+    `post processing of ${EXTENSION.name}.`,
+    TEMPLATES.EXTENSION.POST_PROCESSING({ 
       name: MAIN_FILE.name, 
       languageSettings: inputObject.extension.languageSettings 
-    }),
-    reponse: undefined,
-    usage: {},
-    executeTool: undefined,
-    askForChanges: false,
-  });
+    })
+  ));
 
-  filePrompts.push({
-    title: `${MAIN_FILE.name} file generation.`,
-    text: TEMPLATES.EXTENSION.GENERATE_FILE(MAIN_FILE),
-    reponse: undefined,
-    usage: {},
-    executeTool: { type: 'function', function: { name: 'generate_file'} },
-    askForChanges: true,
-  });
+  filePrompts.push(generatePromptObject(
+    `${EXTENSION.name} file generation.`,
+    TEMPLATES.EXTENSION.GENERATE_FILE(MAIN_FILE),
+    { type: 'function', function: { name: 'generate_file'} },
+    true
+  ));
 
   responseObject.userPrompts.push({
     title: MAIN_FILE.name,
@@ -91,18 +94,17 @@ PROMPT_GENERATOR['EXTENSION'] = async function generatePrompts(inputObject, resp
     }
   });
 
-  // En caso de pedir un readme, se añade a la lista de userPrompts
-  if (EXTENSION.files.length > 1) {
+  if (EXTENSION.readme) {
     responseObject.userPrompts.push({
       title: 'Readme',
-      prompts: [{
-        title: 'Readme file generation',
-        text: TEMPLATES.README(EXTENSION.files[1]),
-        reponse: undefined,
-        usage: {},
-        executeTool: { type: 'function', function: { name: 'generate_file'} },
-        askForChanges: true,
-      }],
+      prompts: [
+        generatePromptObject(
+          'Readme file generation',
+          TEMPLATES.README(EXTENSION),
+          { type: 'function', function: { name: 'generate_file'} },
+          true
+        )
+      ],
       usage: {
         totalPromptTokens: 0,
         totalCompletionTokens: 0,
@@ -112,8 +114,11 @@ PROMPT_GENERATOR['EXTENSION'] = async function generatePrompts(inputObject, resp
   }
 
   if (options.debug) { 
-    console.log(JSON.stringify(responseObject.userPrompts, null, 2)); 
+    console.log(`${CONSOLE_PROMPT.DEBUG}Generated prompts using the extracted data from inputObject.`);
+    console.log(responseObject.userPrompts);
   }
 }
+
+Object.freeze(PROMPT_GENERATOR);
 
 export { PROMPT_GENERATOR };

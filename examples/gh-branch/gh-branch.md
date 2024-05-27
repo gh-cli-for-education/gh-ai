@@ -2,14 +2,12 @@
 
 - language: english
 
-# Extension
-
-## MainFile gh-branch  
+# Extension gh-branch  
 
 gh-branch is a Github CLI extension whose purpose is to display an interactive branch switcher listing local branches in relation of the pull request in the repository.
 The selected branch is checked out.
 
-### function list_branches 
+## function list_branches 
 
 this function should let the user: switch, delete and list all the local brances of a repository.
 This function depends on fzf as a fuzzy finder. 
@@ -23,7 +21,7 @@ The function use the gh api command to make a GraphQL query to extract informati
 6. In case the parameter `--static` is active list all branches and exit the program.
 7. The branches should have a different color depending on the pull request state and the author.login
 
-### help
+## help
 
 ### Usage gh branch [options]
 

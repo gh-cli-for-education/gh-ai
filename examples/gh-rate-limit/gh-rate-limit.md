@@ -4,11 +4,6 @@
 
 # Extension gh-rate-limit
 
-## LanguageSettings
-
-- language: bash
-- style: Google
-
 gh-rate-limit is an extension of the Github Command Line Interface (Github CLI) whose purpose is to show the user their existing rate limits and when its resets. The program does exactly the same as executing the following command:
 
 ```bash
@@ -40,6 +35,11 @@ main () {
 ```
 
 Make sure the program is executable.
+
+## LanguageSettings
+
+- language: bash
+- style: Google
 
 ## function call
 

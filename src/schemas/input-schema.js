@@ -60,23 +60,24 @@ const EXAMPLES_SCHEMA = z.object({
 const LANGUAGE_SETTINGS_SCHEMA = z.object({
   language:      z.string(),
   specification: z.string().optional(),
-  style:         z.string().optional().default('Google'),
+  style:         z.string().optional(),
 })
 .required({ language: true }).strict();
 
 const EXTENSION_SCHEMA = z.object({
+  name:             z.string(),
   files:            z.array(FILES_SCHEMA),
   languageSettings: LANGUAGE_SETTINGS_SCHEMA,
   examples:         z.array(EXAMPLES_SCHEMA).optional(),
   readme:           FILES_SCHEMA.optional(),
 })
-.required({ languageSettings: true, files: true,}).strict(); 
+.required({ name: true, languageSettings: true, files: true }).strict(); 
 
 const CHAT_SETTINGS_SCHEMA = z.object({
-  language: z.string().optional().default('string'),
-  nickname: z.string().optional().default('user'),
+  language: z.string().optional(),
+  nickname: z.string().optional(),
 })
-.required().strict();
+.required({ language: false, nickname: false }).strict();
 
 const INPUT_SCHEMA = z.object({
   chatSettings: CHAT_SETTINGS_SCHEMA,
@@ -99,21 +100,21 @@ const customErrorMap = (issue, ctx) => {
         return { message: 'Expected an object. Received nothing' }; 
       }
       issue.path.map((path) => amountOfHashs += isNaN(path));
-      errorMsg = `Expected a ${'#'.repeat(amountOfHashs)}${issue.path[issue.path.length - 1].toString().toUpperCase()} property `;
-      // console.log(issue);
+      errorMsg = `Expected a ${'#'.repeat(amountOfHashs)}${issue.path[issue.path.length - 1].toString()} property `;
+
       amountOfHashs = 1;
       errorMsg += 'in ';
       issue.path.forEach((path, index) => {
-        const ARROW_STRING = (index < issue.path.length - 1)? ' -> ' : '';
+        const ARROW_STRING = (index < issue.path.length - 1)? ' -> ' : ' ';
         if (isNaN(path)) {
-          errorMsg += `${'#'.repeat(amountOfHashs)}${path.toUpperCase()}${ARROW_STRING}`;
+          errorMsg += `${'#'.repeat(amountOfHashs)}${path}${ARROW_STRING}`;
           amountOfHashs++;
         } else {
           errorMsg += `at index ${path} inside the array${ARROW_STRING}`;
         }
       });
-      errorMsg += `with a ${issue.expected.toUpperCase()} value. Received `;
-      errorMsg += `${(issue.received === 'undefined')? 'nothing' : `a(n) ${issue.received.toUpperCase()} value instead`}.`;
+      errorMsg += `with a ${issue.expected} value. Received `;
+      errorMsg += `${(issue.received === 'undefined')? 'nothing' : `a(n) ${issue.received} value instead`}.`;
       return { message: errorMsg };
 
     case z.ZodIssueCode.unrecognized_keys:
@@ -123,9 +124,9 @@ const customErrorMap = (issue, ctx) => {
       errorMsg = `Unrecognized Setting(s) [ ${issue.keys.join(' ')} ] in `;
       amountOfHashs = 1;
       issue.path.forEach((path, index) => {
-        const ARROW_STRING = (index < issue.path.length - 1)? ' -> ' : '';
+        const ARROW_STRING = (index < issue.path.length - 1)? ' -> ' : ' ';
         if (isNaN(path)) {
-          errorMsg += `${'#'.repeat(amountOfHashs)}${path.toUpperCase()}${ARROW_STRING}`;
+          errorMsg += `${'#'.repeat(amountOfHashs)}${path}${ARROW_STRING}`;
           amountOfHashs++;
         } else {
           errorMsg += `at index ${path} inside the array${ARROW_STRING}`;

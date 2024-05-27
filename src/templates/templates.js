@@ -19,22 +19,22 @@ const DIRNAME = url.fileURLToPath(new URL('.', import.meta.url));
 const ENCODER = 'utf-8';
 
 // Extension templates
-const EXTENSION_SYSTEM_TEMPLATE            = await fs.readFile(`${DIRNAME}extension/system-prompt.md`,     ENCODER);
-const EXTENSION_MAIN_FUNCTION_TEMPLATE     = await fs.readFile(`${DIRNAME}extension/main-function.md`,     ENCODER);
-const EXTENSION_GENERIC_FUNCTION_TEMPLATE  = await fs.readFile(`${DIRNAME}extension/generic-function.md`,  ENCODER);
-const EXTENSION_FILE_GENERAL_IDEA_TEMPLATE = await fs.readFile(`${DIRNAME}extension/file-general-idea.md`, ENCODER);
-const EXTENSION_POST_PROCESSING_TEMPLATE   = await fs.readFile(`${DIRNAME}extension/post-processing.md`,   ENCODER);
-const EXTENSION_GENERATE_FILE_TEMPLATE     = await fs.readFile(`${DIRNAME}extension/generate-file.md`,     ENCODER);
+const EXTENSION_SYSTEM_TEMPLATE               = await fs.readFile(`${DIRNAME}extension/system-prompt.md`,        ENCODER);
+const EXTENSION_MAIN_FUNCTION_TEMPLATE        = await fs.readFile(`${DIRNAME}extension/main-function.md`,        ENCODER);
+const EXTENSION_GENERIC_FUNCTION_TEMPLATE     = await fs.readFile(`${DIRNAME}extension/generic-function.md`,     ENCODER);
+const EXTENSION_REQUIREMENT_ANALYSIS_TEMPLATE = await fs.readFile(`${DIRNAME}extension/requirement-analysis.md`, ENCODER);
+const EXTENSION_FILE_GENERAL_IDEA_TEMPLATE    = await fs.readFile(`${DIRNAME}extension/file-general-idea.md`,    ENCODER);
+const EXTENSION_POST_PROCESSING_TEMPLATE      = await fs.readFile(`${DIRNAME}extension/post-processing.md`,      ENCODER);
+const EXTENSION_GENERATE_FILE_TEMPLATE        = await fs.readFile(`${DIRNAME}extension/generate-file.md`,        ENCODER);
 
 // Generic templates
-const USER_LOG_TEMPLATE     = await fs.readFile(`${DIRNAME}user-log.md`,        ENCODER);
-const RESPONSE_LOG_TEMPLATE = await fs.readFile(`${DIRNAME}response-log.md`,    ENCODER);
-const README_TEMPLATE       = await fs.readFile(`${DIRNAME}readme-template.md`, ENCODER);
+const CONVERSATION_LOG_TEMPLATE = await fs.readFile(`${DIRNAME}conversation-log.md`, ENCODER);
+const README_TEMPLATE           = await fs.readFile(`${DIRNAME}readme-template.md`, ENCODER);
 
 let TEMPLATES = { EXTENSION: {}, };
 
 // The escape function is changed to prevent Mustache from escaping symbols like (') into (&quot)
-Mustache.escape = (value) => { return value; }
+Mustache.escape = (value) => { return value; };
 
 /**
  * Given the inputObject it generate the assistant's system instructions 
@@ -42,7 +42,7 @@ Mustache.escape = (value) => { return value; }
  * @returns {string} 
  */
 TEMPLATES.EXTENSION.SYSTEM = (inputObject) => {
-  return Mustache.render(EXTENSION_SYSTEM_TEMPLATE, inputObject);
+  return Mustache.render(EXTENSION_SYSTEM_TEMPLATE, inputObject).trim();
 };
 
 /**
@@ -59,8 +59,8 @@ TEMPLATES.EXTENSION.MAIN_FUNCTION = (fileObject) => {
   fileObject.parameterParser = function () {
     return `${this.parameter} ${this.argument ?? ''} ${this.description}`;
   }
-  return Mustache.render(EXTENSION_MAIN_FUNCTION_TEMPLATE, fileObject);
-}
+  return Mustache.render(EXTENSION_MAIN_FUNCTION_TEMPLATE, fileObject).trim();
+};
 
 /**
  * Given a functionObject from the functions array it overwrite the generic_function 
@@ -72,8 +72,8 @@ TEMPLATES.EXTENSION.GENERIC_FUNCTION = (functionObject) => {
   functionObject.functionParametersParaser = function () {
     return `A parameter called: **${this.name}** of type *${this.value}*`
   }
-  return Mustache.render(EXTENSION_GENERIC_FUNCTION_TEMPLATE, functionObject);
-}
+  return Mustache.render(EXTENSION_GENERIC_FUNCTION_TEMPLATE, functionObject).trim();
+};
 
 /**
  * Given a fileObject from the files array it overwrite the file_general_idea 
@@ -81,13 +81,32 @@ TEMPLATES.EXTENSION.GENERIC_FUNCTION = (functionObject) => {
  * @param {object} fileObject 
  * @returns {string}
  */
-TEMPLATES.EXTENSION.FILE_GENERAL_IDEA = (fileObject) => {
-  fileObject.functionNames = function () { return `- ${this.name}`; }
-  fileObject.parseExamples = function () { 
-    return `- Give the following input: ${this.command}.\n\n This is what the program is expected to output:\n\n ${this.output}\n`;
+TEMPLATES.EXTENSION.FILE_GENERAL_IDEA = (extensionObject) => {
+  return Mustache.render(EXTENSION_FILE_GENERAL_IDEA_TEMPLATE, extensionObject).trim();
+};
+
+TEMPLATES.EXTENSION.REQUIREMENT_ANALYSIS = (extensionObject) => {
+  const INPUT = {
+    name: extensionObject.name,
+    description: extensionObject.files[0].description,
+    functions: extensionObject.files[0].functions,
+    examples: extensionObject.examples,
+    parseExamples: function () { 
+      return `- Given the following input: ${this.command}.\n\n This is what the program is expected to output:\n\n${this.output}\n`;
+    },
+    parseFunctions: function () {
+      let msg = `A function called ${this.name}, whose purpose is:\n\n${this.description}\n\n`;
+      if (this.query) {
+        msg += `The function calls the GitHub APIv4 using a GraphQL query. The query must be constructed from this description written in natural language:\n\n${this.query}\n\n`;
+      }
+      if (this.template) {
+        msg += `Use this codeblock as a template to build the function:\n\n${this.template}\n`;
+      }
+      return msg;
+    } 
   }
-  return Mustache.render(EXTENSION_FILE_GENERAL_IDEA_TEMPLATE, fileObject);
-}
+  return Mustache.render(EXTENSION_REQUIREMENT_ANALYSIS_TEMPLATE, INPUT).trim();
+};
 
 /**
  * Given a settingsObject from the nputObject it overwrite the post_processing 
@@ -96,8 +115,8 @@ TEMPLATES.EXTENSION.FILE_GENERAL_IDEA = (fileObject) => {
  * @returns {string}
  */
 TEMPLATES.EXTENSION.POST_PROCESSING = (settingsObject) => {
-  return Mustache.render(EXTENSION_POST_PROCESSING_TEMPLATE, settingsObject);
-}
+  return Mustache.render(EXTENSION_POST_PROCESSING_TEMPLATE, settingsObject).trim();
+};
 
 /**
  * Given a fileObject from the files array it overwrite the generate_file template 
@@ -106,8 +125,8 @@ TEMPLATES.EXTENSION.POST_PROCESSING = (settingsObject) => {
  * @returns {string}
  */
 TEMPLATES.EXTENSION.GENERATE_FILE = (fileObject) => {
-  return Mustache.render(EXTENSION_GENERATE_FILE_TEMPLATE, fileObject);
-}
+  return Mustache.render(EXTENSION_GENERATE_FILE_TEMPLATE, fileObject).trim();
+};
 
 /**
  * Given the readmeObject from the inputObject it overwrite the readme template 
@@ -115,48 +134,34 @@ TEMPLATES.EXTENSION.GENERATE_FILE = (fileObject) => {
  * @param {object} readmeObject 
  * @returns {string}
  */
-TEMPLATES.README = (readmeObject) => {
-  return Mustache.render(README_TEMPLATE, readmeObject);
-}
+TEMPLATES.README = (extensionObject) => {
+  return Mustache.render(README_TEMPLATE, extensionObject).trim();
+};
 
-/**
- * Given the input information it overwrite the user_log template with the 
- * new data. 
- * @param {object} inputObject 
- * @param {string} inputFile 
- * @param {object} responseObject 
- * @param {object} options 
- * @returns {string}
- */
-TEMPLATES.EXTENSION.USER_LOG = (inputObject, inputFile, responseObject, options) => {
-  const LOG = {
-    inputObject,
-    inputFile, 
-    systemPrompt: responseObject.systemPrompt,
-    usage: responseObject.usage,
-    assistant: responseObject.assistant,
-    thread: responseObject.thread,
-    options,
-    parseInputObject: function() { return JSON.stringify(this, null, 2); }
-  }
-  return Mustache.render(USER_LOG_TEMPLATE, LOG);
-}
 
 /**
  * Given the responseObject and the program options it overwrite the reponse_log
  * template with the new data. 
+ * @param {object} inputObject 
+ * @param {string} inputFile 
  * @param {object} reponseObject 
  * @param {object} options 
  * @returns {string}
  */
-TEMPLATES.EXTENSION.RESPONSE_LOG = (reponseObject, options) => {
-  const LOG = {
+TEMPLATES.EXTENSION.CONVERSATION_LOG = (inputObject, inputFile, reponseObject, options) => {
+  const INPUT = {
+    inputObject,
+    inputFile,
+    systemPrompt: reponseObject.systemPrompt,
     userPrompts: reponseObject.userPrompts,
     config: reponseObject.config,
-    options: options,
+    assistant: reponseObject.assistant,
+    thread: reponseObject.thread,
+    options,
+    parseInputObject: function() { return JSON.stringify(this, null, 2); }
   };
-  LOG[options.commandType] = true;
-  return Mustache.render(RESPONSE_LOG_TEMPLATE, LOG);
+  INPUT[options.commandType] = true;
+  return Mustache.render(CONVERSATION_LOG_TEMPLATE, INPUT).trim();
 };
 
 // It prevents adding new elements to the object.

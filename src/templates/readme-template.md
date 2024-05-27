@@ -1,23 +1,20 @@
-# Creation of a `README.md` file
+# Task: Creation of a `README.md` file for {{extension.name}} extension
 
-To conclude this conversation the last thing to write is a `README.md` file. This file must contain enough information to satisfy any use doubts.
-Make sure to include information that agrees with what was *previusly generated*.
+Using all the information gathered in the requirements analysis, the code generation fase and the information provided in the *Details* section, your next task is to write a `README.md` file. This file must contain enough information to satisfy any use doubts. Make sure to include information that agrees with what was *previusly generated*. U
 
-{{#description}}
+## Details 
+
+{{#readme.description}}
 Use The following instructions as a guide for what you have to write:
 
-'''
-{{description}}
-'''
+{{readme.description}}
 
-Make sure to expand the content inside the '''.
-
-{{/readme}}
-{{^readme}}
+{{/readme.description}}
+{{^readme.description}}
 The file must contain the following sections:
 
 - Description
 - Installation
 - Usage
 - Examples
-{{/readme}}
+{{/readme.description}}
