@@ -91,8 +91,8 @@ PROGRAM.action(async (inputFile, outputDirectory, options) => {
     console.log(`${CONSOLE_PROMPT.GH_AI}Generating prompts...`);
     await PROMPT_GENERATOR[options.commandType.toUpperCase()](inputObject, responseObject, options);
 
-    // console.log(`${CONSOLE_PROMPT.GH_AI}Starting ${options.llmApi} API call. This process may take a few seconds.`);
-    // await API[options.llmApi](responseObject, outputDirectory, options);
+    console.log(`${CONSOLE_PROMPT.GH_AI}Starting ${options.llmApi} API call. This process may take a few seconds.`);
+    await API[options.llmApi](responseObject, outputDirectory, options);
 
   } catch (error) {
     if (error instanceof z.ZodError) { 
