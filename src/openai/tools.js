@@ -10,10 +10,8 @@
  */
 import * as fs from 'fs/promises';
 
-import { COLORS } from "../colors.js";
 import { API_RESPONSE_SCHEMA } from '../schemas/api-response-schema.js';
 import { CONSOLE_PROMPT } from '../utils.js';
-
 'use strict';
 
 const TOOLS_DESCRIPTIONS = [
@@ -46,10 +44,9 @@ const TOOLS_DESCRIPTIONS = [
       parameters: {
         type: 'object',
         properties: {
-          motive: { type: 'string', description: 'One of the three possible motives (chat, question or error) to talk with the user.' },
           message: { type: 'string', description: 'The message you want to send to the user.'},
         },
-        required: ['motive', 'message']
+        required: ['message']
       }
     }
   },
@@ -57,32 +54,33 @@ const TOOLS_DESCRIPTIONS = [
 
 const TOOLS = Object.create(null);
 
+/**
+ * Generate a file using the AI input as content
+ * @param {object} input 
+ * @param {string} outputDirectory 
+ * @returns 
+ */
 TOOLS['generate_file'] = async (input, outputDirectory) => {    
 
-  // Se comprueba si el input de la IA es correcto
+  // Check if the AI input is correct
+  console.log(JSON.stringify(input, null, 2));
   input = JSON.parse(input);
   API_RESPONSE_SCHEMA.parse(input);
 
-  // Se crea el fichero
   await fs.writeFile(`${outputDirectory}/${input.file.name}`, input.file.content);
 
-  // Se le envia un output a la IA
   return 'Function executed successfully. Now use the tool **talk_with_user** to tell him that you are done generating the code.';     
 };
 
+/**
+ * Prints the AI message in the command line for the user to see it
+ * @param {object} input 
+ * @returns {string}
+ */
 TOOLS['talk_with_user'] = async (input) => {
-
-  // Se comprueba que el input de la IA se correcta
+  // Check if the AI input is correct
   input = JSON.parse(input);
-
-  const PROMPTS = {
-    chat: COLORS.yellow(CONSOLE_PROMPT.CHATGPT),
-    questions: COLORS.magenta(CONSOLE_PROMPT.CHATGPT),
-    error: COLORS.red(CONSOLE_PROMPT.CHATGPT)
-  };
-
-  console.log(`${PROMPTS[input.motive]}${input.message}`);
-
+  console.log(`${CONSOLE_PROMPT.CHATGPT}${input.message}`);
   return 'Do not respond after executing this tool.';
 };
 

@@ -18,7 +18,7 @@ import { CONSOLE_PROMPT, askYesNoQuestionToUser } from '../utils.js';
 const DEFAULT_MODEL = 'gpt-3.5-turbo-0125';
 
 /**
- * Given a configuration the fuction create or retreivean assistant, depends 
+ * Given a configuration the fuction create or retreive an assistant, depends 
  * on the assistantID parameter.
  * @param {object} openai The OpenAI API object
  * @param {string} systemPrompt The instructions used to configure the assistant's context.
@@ -42,21 +42,16 @@ async function createOrRetreiveAssistant(openai, systemPrompt, llmModel, toolDes
     let assistant = await openai.beta.assistants.retrieve(assistantID);
     let askForUpdate = false;
 
-    // Arrow function para sacar solo estas properties del objeto
+    // An arrow function used to extract the data from the object
     const unwrapper = (({model, name, description, instructions}) => {
        return {model, name, description, instructions};
     });
 
     const ASSISTANT_OLD_CONFIGURATION = unwrapper(assistant);
 
-    // Recorre el objeto comprobando que tengan la misma configuración
+    // parse the object looking for a different configuration
     for (const KEY of Object.keys(ASSISTANT_OLD_CONFIGURATION)) { 
 
-      /** 
-       * @TODO Ver como hacer para que se pueda comprobar que contiene las tools correctas
-       * Ver como implementar un tag que mantega el ultimo tipo de commandType que ejecuto este assistant,
-       * con eso ya se puede saber si se ha cambiado gran parte de la configuración 
-      */
       if (ASSISTANT_CONFIGURATION[KEY] !== ASSISTANT_OLD_CONFIGURATION[KEY]) { 
         console.log(`${CONSOLE_PROMPT.WARNING}The old assistant configuration of "${assistant.name}" doesn't match with the new configuration readed from the inputObject.`);
         askForUpdate = true;
@@ -65,7 +60,6 @@ async function createOrRetreiveAssistant(openai, systemPrompt, llmModel, toolDes
 
     }
 
-    // En caso de que alguna configuración no coincida, preguntar al usuario si quiere actualizarlo
     if (askForUpdate) {
       await askYesNoQuestionToUser('  Do you want to update the assistant configuration?', async () => {
         console.log(`${CONSOLE_PROMPT.GH_AI}Updating assistant's configuration.`);
@@ -76,12 +70,11 @@ async function createOrRetreiveAssistant(openai, systemPrompt, llmModel, toolDes
     return assistant;
   }
 
-  // Si no existe process.env.ASSISTANT_ID se genera un nuevo asistente
   return await openai.beta.assistants.create(ASSISTANT_CONFIGURATION);
 }
 
 /**
- * 
+ * Create or retreive a Thread object
  * @param {OpenAI} openai 
  * @param {string} threadID 
  */
@@ -93,13 +86,14 @@ async function createOrRetreiveThread(openai, threadID) {
 }
 
 /**
- * 
- * @param {OpenAI} openai 
+ * Call the OpenAI API to make the llm respond to a given prompt.
+ * @param {object} openai 
+ * @param {object} prompt 
  * @param {string} assistantID 
  * @param {string} threadID 
- * @param {string} outputDirectory 
- * @param {object} options 
- * @returns 
+ * @param {object} executeTool 
+ * @param {string} runID 
+ * @returns {object}
  */
 async function call(openai, prompt, assistantID, threadID, executeTool = undefined, runID = undefined) {
 
@@ -107,8 +101,8 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
   const MAX_TRIES = 10;
   let currentTry = 0;
 
-  if (!runID) { // En caso de que sea un tool output no se debe crear ningún mensaje nuevo
-    // Añadir el mensaje a la conversación
+  // In case it is a tool ouput a new message is not created 
+  if (!runID) {
     await openai.beta.threads.messages.create(
       threadID,
       { role: 'user', content: prompt }
@@ -120,25 +114,22 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
     runStatus: undefined,
   };
 
-  // Repetir la llamada todas las veces necesarias hasta que MAX_TRIES sea alcanzado, se complete la run u ocurra un fallo
+
   let isToolOutput = true;
   while (currentTry < MAX_TRIES) {
 
     let run = {};
 
-    // Si runID es especificado entonces se debe enviar el toolOutput a la IA
     if (runID !== undefined && isToolOutput) { 
       run = await openai.beta.threads.runs.submitToolOutputs(
         threadID,
         runID,
         prompt
       );
-
-      // El envio se debe hacer solo una vez, en caso de que la run entre en rate_limit_exceeded se debe crear una nueva run y no volver a enviar el toolOutput. 
+      // the tool input must be done just once 
       isToolOutput = false; 
     }
     else {
-
       run = await openai.beta.threads.runs.create(
         threadID,
         { 
@@ -148,22 +139,21 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
       ); 
     }
 
-    // Se guarda la nueva información de la run por cada intento.
+    // Each try the run id is stored
     callResult.runID = run.id;
 
     let spinner = ora({ color: 'blue' }).start();
     callResult.runStatus = await checkRunStatus(openai, run.id, threadID, spinner);
     
-    // La run termina siempre que no se llegue a un Rate_Limit
+    // The doesn't end if a rate limit is reached
     if (callResult.runStatus !== 'rate_limit_exceeded' || process.env.GRACEFUL_SHUTDOWN) {
-      if (callResult.runStatus === 'error') { // En caso de error, mostrarle información al usuario
+      if (callResult.runStatus === 'error') {
         console.error(`${CONSOLE_PROMPT.ERROR}The API call couldn't be executed correctly, Generating Logs and stopping execution.`);  
       }
       spinner.stop();
       return callResult;
     }
 
-    // En caso de Rate Limit se vuelve a crear la run y se intenta de nuevo hasta que se alcance MAX_TRIES
     currentTry++;
     
     if (MAX_TRIES - currentTry <= MAX_TRIES * 0.5) {
@@ -174,14 +164,14 @@ async function call(openai, prompt, assistantID, threadID, executeTool = undefin
     spinner.stop();
   }
 
-  // Si se alcanza MAX_TRIES El resultado se comporta como un error de la API
+  // If the max try is reached then the run failed.
   callResult.runStatus = 'failed';
   console.error(`${CONSOLE_PROMPT.ERROR}The program used the max amount of calls but the API didn't respond, finishing execution.`);
   return callResult;
 }
 
 /**
- * 
+ * Check the run status 
  * @param {OpenAI} openai 
  * @param {string} runID 
  * @param {string} threadID 
@@ -192,10 +182,8 @@ async function checkRunStatus(openai, runID, threadID, spinner) {
 
   const DELAY = 2500; // 2.5s
 
-  // Comprobar constantemente si la conversación ha terminado correctamente
   while (!process.env.GRACEFUL_SHUTDOWN) {
 
-    // Comprobar la conversación en el momento actual
     const RUN = await openai.beta.threads.runs.retrieve(threadID, runID);
     
     switch (RUN.status) {
@@ -223,7 +211,7 @@ async function checkRunStatus(openai, runID, threadID, spinner) {
 
       case 'completed': 
         spinner.succeed(`${CONSOLE_PROMPT.OPENAI}The run has been completed, extracting the AI response.`);
-        return RUN.status; //
+        return RUN.status;
 
       case 'queued':
         spinner.text = `${CONSOLE_PROMPT.OPENAI}The run is still in queue. Waiting for the API to received.`;
@@ -238,7 +226,7 @@ async function checkRunStatus(openai, runID, threadID, spinner) {
         spinner.text = `${CONSOLE_PROMPT.OPENAI}The run is being cancelled.`;
         break;
 
-      default: // En caso de que la Run se encuentre en un estado desconocido. Error
+      default: // In case there is an unknown status
         throw new OpenAI.APIError(-1, {
           type: 'no_status_support_error', 
           message: 'The run is in a not supported status.'

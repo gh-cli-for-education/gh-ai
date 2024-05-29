@@ -37,7 +37,7 @@ const PACKAGE_DATA = Object.freeze({
 const CONSOLE_PROMPT = Object.freeze({
   GH_AI:   COLORS.yellow('GH-AI>: '),
   OPENAI:  COLORS.blue('GH-AI-OPENAI>: '),
-  CHATGPT: 'CHATGPT>: ',
+  CHATGPT: COLORS.yellow('CHATGPT>: '),
   ERROR:   COLORS.red('GH-AI-ERROR>: '),
   WARNING: COLORS.magenta('GH-AI-WARNING>: '),
   DEBUG:   COLORS.green('DEBUG>: '),  

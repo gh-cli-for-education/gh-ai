@@ -15,6 +15,8 @@ Extract and write in this list all the variables you detect within the informati
 Extract and write in this list all the functions you detect within the information provided in the *Details* section. The format of the list should be as follows: <Function Name>: <Function requirements>
 ```
 
+**Once they are done, show the lists**
+
 ## Details
 
 {{description}}

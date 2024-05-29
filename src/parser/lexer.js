@@ -51,7 +51,7 @@ const TOKENS = {
     value: (value) => {
       const EXTENSION_CAPTURING = new RegExp(`^[#][ ]+${toCaseInsensive('extension')}[ ]+(gh-[a-z][a-z0-9]*(?:[-][a-z0-9]+)*)`);
       const RESULT = EXTENSION_CAPTURING.exec(value);
-      return RESULT[1]
+      return RESULT[1];
     },
   },
   FUNCTION: { 
@@ -125,7 +125,7 @@ const TOKENS = {
         parameter: `${RESULT[1]} ${RESULT[2]}`,
         argument: null,
         description: RESULT[3],
-      }
+      };
     },
   },
   KEY_VALUE: { 
@@ -161,7 +161,6 @@ const TOKENS = {
         content: RESULT[3]
       };
     },
-
   },
   CODEBLOCK: { match: /^[`]{3}(?:[a-zA-Z]+)(?:[^\n]|\n)*?[`]{3}$/, lineBreaks: true, },
   HIGHLIGHT: { match: /[`](?:[^\n]*?)[`]/ },

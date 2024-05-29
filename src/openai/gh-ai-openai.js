@@ -161,7 +161,8 @@ async function manageToolActions(openai, threadID, runID, outputDirectory, optio
     let requiredActions = RUN.required_action.submit_tool_outputs;
     let outputs = await Promise.all(requiredActions.tool_calls.map(async (call) => {
 
-      console.log(`${CONSOLE_PROMPT.DEBUG}Executing ${call.function.name} tool.`);
+      if (options.debug) 
+        console.log(`${CONSOLE_PROMPT.DEBUG}Executing ${call.function.name} tool.`);
 
       let toolOutput = '';
 
@@ -169,7 +170,6 @@ async function manageToolActions(openai, threadID, runID, outputDirectory, optio
         toolOutput = await TOOLS[call.function.name](call.function.arguments, outputDirectory, options);
         console.log(`${CONSOLE_PROMPT.GH_AI}Tool executed successfully!.`);
       } catch (error) {
-
         console.error(`${CONSOLE_PROMPT.WARNING}Tool execution failed. The AI failed to give a valid input.`);
         if (error instanceof SyntaxError) {
           toolOutput = 'The input object doens\'t have a valid JSON Syntax.';
