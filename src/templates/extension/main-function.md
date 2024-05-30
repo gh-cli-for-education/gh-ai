@@ -1,12 +1,12 @@
 # Task: Main and help function generation
 
-Using all the information gathered in the requirements analysis task along with the information provided in the following Details section, your task is to generate the main and help functions of the {{name}} extension, meeting all the specified requirements.
+Using all the information gathered in the requirements analysis task along with the information provided in the following *Details* section, your task is to generate the main and help functions of the {{name}} extension, meeting all the specified requirements.
 
 ## Details
 
 ### Main function 
 
-Add to *previously generated code* a **new** **main function** whose purpose is to *parse the command line*, the code must process the possible parameters and arguments the code should be able to receive. Depending on the readed information *the function should execute the corresponding action* associated to that specific parameter.
+Add to the *previously generated code* a **new** **main function** whose purpose is to *parse the command line*, the code must process the possible parameters and arguments the code should be able to receive. Depending on the readed information *the function should execute the corresponding action* associated to that specific parameter.
 
 In case there was already a main function parsing the command line you must overwrite the previous one.
 

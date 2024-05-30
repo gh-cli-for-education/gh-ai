@@ -20,13 +20,7 @@ Extract and write in this list all the functions you detect within the informati
 ## Details
 
 {{description}}
-{{#functions.length}}
-In addition to the *description* the program **must** necessarily **contain** the **following functions**:
 
-{{#functions}}
-{{parseFunctions}}
-{{/functions}}
-{{/functions.length}}
 {{#examples.length}}
 Here are some examples of what the program must output given certain inputs:
 

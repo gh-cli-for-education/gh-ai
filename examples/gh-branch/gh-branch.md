@@ -53,6 +53,11 @@ foo@bar:~$ gh branch --static
 
 ## readme
 
+# Installation
 1. Write how to **install** th gh-branch extension using the Github CLI program.
+
+# Usage
 2. Write the **help** and usage of the gh-branch extension.
+   
+# Examples 
 3. Write some **examples** of use.

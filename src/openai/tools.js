@@ -63,13 +63,12 @@ const TOOLS = Object.create(null);
 TOOLS['generate_file'] = async (input, outputDirectory) => {    
 
   // Check if the AI input is correct
-  console.log(JSON.stringify(input, null, 2));
   input = JSON.parse(input);
   API_RESPONSE_SCHEMA.parse(input);
 
   await fs.writeFile(`${outputDirectory}/${input.file.name}`, input.file.content);
 
-  return 'Function executed successfully. Now use the tool **talk_with_user** to tell him that you are done generating the code.';     
+  return 'Function executed successfully.';     
 };
 
 /**
@@ -80,7 +79,9 @@ TOOLS['generate_file'] = async (input, outputDirectory) => {
 TOOLS['talk_with_user'] = async (input) => {
   // Check if the AI input is correct
   input = JSON.parse(input);
-  console.log(`${CONSOLE_PROMPT.CHATGPT}${input.message}`);
+  if (input.message) {
+    console.log(`${CONSOLE_PROMPT.CHATGPT}${input.message}`);
+  }
   return 'Do not respond after executing this tool.';
 };
 

@@ -164,28 +164,28 @@ async function manageToolActions(openai, threadID, runID, outputDirectory, optio
       if (options.debug) 
         console.log(`${CONSOLE_PROMPT.DEBUG}Executing ${call.function.name} tool.`);
 
-      let toolOutput = '';
+      let toolOutput = {
+        tool_call_id: call.id,
+        output: '',
+      };
 
       try {
-        toolOutput = await TOOLS[call.function.name](call.function.arguments, outputDirectory, options);
+        toolOutput.output = await TOOLS[call.function.name](call.function.arguments, outputDirectory, options);
         console.log(`${CONSOLE_PROMPT.GH_AI}Tool executed successfully!.`);
       } catch (error) {
         console.error(`${CONSOLE_PROMPT.WARNING}Tool execution failed. The AI failed to give a valid input.`);
-        if (error instanceof SyntaxError) {
-          toolOutput = 'The input object doens\'t have a valid JSON Syntax.';
-        }
-        else if (error instanceof z.ZodError) {
-          toolOutput = 'The input JSON doesn\'t follow the expected Schema.';
+        if (error instanceof SyntaxError || error instanceof z.ZodError) {
+          let errorMsg = (error instanceof SyntaxError)? 'JSON Syntax' : 'Schema';
+          toolOutput.output = `The input object doens't have a valid ${errorMsg}. Make sure to rewrite the input using the correct syntax and schema.`;
         }
         else {
           console.error(`${CONSOLE_PROMPT.WARNING}Tool execution failed. The tool had an internal error.`);
           if (options.debug) { console.log(error); }
-          return { tool_call_id: call.id, output: 'Unexpected Error ocurred' };
+          toolOutput.output = 'Unexpected Error ocurred';
         }
+        return toolOutput;
       }
-
-      toolOutput += 'Execute the same tool again with a valid syntax.';
-      return { tool_call_id: call.id, output: toolOutput };
+      return toolOutput;
     }));
 
     return { tool_outputs: outputs };
